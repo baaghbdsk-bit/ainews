@@ -1,0 +1,85 @@
+
+> ai-news@0.1.0 dev
+> next dev
+
+▲ Next.js 16.4.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.244:3000
+- Environments: .env.local
+✓ Ready in 12.1s
+✓ Running next.config.ts took 920ms
+- Cache Components enabled
+- Partial Prefetching enabled
+
+○ Compiling /explore ...
+Failed to fetch feed https://blog.google/technology/ai/rss/: TypeError: fetch failed
+    at async fetchFeedXml (src\lib\feeds\fetch-ai-news.ts:133:17)
+    at async loadFeed (src\lib\feeds\fetch-ai-news.ts:155:15)
+    at async fetchAiNews (src\lib\feeds\fetch-ai-news.ts:179:19)
+    at async ExplorePage (src\app\explore\page.tsx:62:36)
+  131 |   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  132 |   try {
+> 133 |     const res = await fetch(url, {
+      |                 ^
+  134 |       signal: controller.signal,
+  135 |       redirect: 'error',
+  136 |       headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9' }, {
+  [cause]: Error: unexpected redirect
+      at ignore-listed frames
+}
+ GET /explore 200 in 6.5s (next.js: 1795ms, application-code: 4.7s)
+Failed to fetch feed https://blog.google/technology/ai/rss/: TypeError: fetch failed
+    at async fetchFeedXml (src\lib\feeds\fetch-ai-news.ts:133:17)
+    at async loadFeed (src\lib\feeds\fetch-ai-news.ts:155:15)
+    at async fetchAiNews (src\lib\feeds\fetch-ai-news.ts:179:19)
+    at async ExplorePage (src\app\explore\page.tsx:62:36)
+  131 |   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  132 |   try {
+> 133 |     const res = await fetch(url, {
+      |                 ^
+  134 |       signal: controller.signal,
+  135 |       redirect: 'error',
+  136 |       headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9' }, {
+  [cause]: Error: unexpected redirect
+      at ignore-listed frames
+}
+ GET /explore 200 in 2.1s (next.js: 7ms, application-code: 2.1s)
+Failed to fetch feed https://blog.google/technology/ai/rss/: TypeError: fetch failed
+    at async fetchFeedXml (src\lib\feeds\fetch-ai-news.ts:133:17)
+    at async loadFeed (src\lib\feeds\fetch-ai-news.ts:155:15)
+    at async fetchAiNews (src\lib\feeds\fetch-ai-news.ts:179:19)
+    at async ExplorePage (src\app\explore\page.tsx:62:36)
+  131 |   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  132 |   try {
+> 133 |     const res = await fetch(url, {
+      |                 ^
+  134 |       signal: controller.signal,
+  135 |       redirect: 'error',
+  136 |       headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9' }, {
+  [cause]: Error: unexpected redirect
+      at ignore-listed frames
+}
+ GET /explore 200 in 2.7s (next.js: 9ms, application-code: 2.7s)
+✓ Compiled in 84ms
+✓ Compiled in 93ms
+✓ Compiled in 1089ms
+✓ Compiled in 142ms
+✓ Compiled in 87ms
+✓ Compiled in 477ms
+✓ Compiled in 157ms
+✓ Compiled in 4.6s
+✓ Compiled in 1257ms
+✓ Compiled in 192ms
+○ Compiling / ...
+ GET / 200 in 2.3s (next.js: 354ms, application-code: 1912ms)
+ GET /explore 200 in 2.7s (next.js: 173ms, application-code: 2.6s)
+ GET / 200 in 105ms (next.js: 9ms, application-code: 96ms)
+ GET / 200 in 121ms (next.js: 3ms, application-code: 118ms)
+ GET /explore 200 in 537ms (next.js: 32ms, application-code: 506ms)
+ GET / 200 in 125ms (next.js: 7ms, application-code: 117ms)
+ GET /explore 200 in 572ms (next.js: 38ms, application-code: 534ms)
+ GET /explore 200 in 7.9s (next.js: 642ms, application-code: 7.3s)
+ GET / 200 in 1318ms (next.js: 316ms, application-code: 1002ms)
+ GET /explore 200 in 6.9s (next.js: 56ms, application-code: 6.8s)
+ GET / 200 in 8.0s (next.js: 586ms, application-code: 7.4s)
+Terminate batch job (Y/N)? [?25h

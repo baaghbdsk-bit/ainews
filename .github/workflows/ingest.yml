@@ -1,0 +1,47 @@
+name: Ingest AI news (every 30 minutes)
+
+# Fires every 30 minutes and pushes the latest RSS feeds into Supabase, then revalidates
+# the timeline. No LLM, no paid tier - keeps the archive fresh on the free plan.
+#
+# Secrets required in GitHub -> Settings -> Secrets and variables -> Actions:
+#   CRON_SECRET              - bearer token the route checks (any long random string)
+#   NEXT_PUBLIC_SUPABASE_URL - your Supabase project URL
+#   SUPABASE_SERVICE_ROLE_KEY - server key (bypasses RLS so the job can INSERT)
+#   INGEST_URL               - publicly reachable URL of this app, e.g.
+#                              https://<project>.vercel.app
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    env:
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      INGEST_URL: ${{ secrets.INGEST_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Run ingestion job
+        run: |
+          if [ -z "$INGEST_URL" ]; then
+            echo "INGEST_URL is not set. Set it to your deployed app URL in Secrets."
+            exit 1
+          fi
+          curl -fsS \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$INGEST_URL/api/cron/ingest"
