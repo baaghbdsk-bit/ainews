@@ -1,6 +1,6 @@
 import { FEEDS, loadFeed, AI_NEWS_TAG, type Story } from './fetch-ai-news';
 import { createClient } from '@supabase/supabase-js';
-import { revalidatePath, updateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 /** Supabase client used only by the background job. Uses the service role, so
  *  the job can write rows (it bypasses RLS) without any browser key or user. */
@@ -90,7 +90,7 @@ export async function runIngest(): Promise<IngestResult> {
 
   // 5. Tell the timeline to re-resolve within the hour.
   revalidatePath('/');
-  updateTag(AI_NEWS_TAG);
+  revalidateTag(AI_NEWS_TAG, 'max');
 
   return {
     fetched: unique.length,
