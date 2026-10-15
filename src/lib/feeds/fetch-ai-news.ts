@@ -208,7 +208,14 @@ async function fetchFeedXml(url: string): Promise<string | null> {
     const body = await res.text();
     return body.length > MAX_RESPONSE_BYTES ? null : body;
   } catch (err) {
-    console.error(`Failed to fetch feed ${url}:`, err);
+    // A timeout is expected on slow feeds — the feed is simply skipped, so
+    // log it as a warning (a raw AbortError via console.error trips the
+    // Next.js dev overlay without indicating a real failure).
+    if (err instanceof Error && err.name === 'AbortError') {
+      console.warn(`Feed timed out after ${FETCH_TIMEOUT_MS}ms, skipping: ${url}`);
+    } else {
+      console.error(`Failed to fetch feed ${url}:`, err);
+    }
     return null;
   } finally {
     clearTimeout(timer);
