@@ -10,7 +10,8 @@
 //
 // Options:
 //   --base-url <url>   app to call (default http://localhost:3000 or $BASE_URL)
-//   --limit <n>        rows per call (default 40; the route caps it at 500)
+//   --limit <n>        rows per call (default 12; the route caps it at 500, and
+//                      a long batch can outlive a local server's request timeout)
 //   --max-rows <n>     stop after this many summaries (default: no limit)
 //   --max-minutes <n>  stop after this long (default 20)
 //   --passes <n>       stop after this many calls (default: no limit)
@@ -35,7 +36,7 @@ const baseUrl = (argValue('--base-url', process.env.BASE_URL ?? 'http://localhos
   '',
 );
 const secret = process.env.CRON_SECRET;
-const limit = Math.floor(positiveNumber(argValue('--limit', '40'), 40));
+const limit = Math.floor(positiveNumber(argValue('--limit', '12'), 12));
 const maxRows = positiveNumber(argValue('--max-rows', ''), Number.POSITIVE_INFINITY);
 const maxMinutes = positiveNumber(argValue('--max-minutes', '20'), 20);
 const maxPasses = positiveNumber(argValue('--passes', ''), Number.POSITIVE_INFINITY);
@@ -55,6 +56,7 @@ let total = 0;
 let passes = 0;
 let noProgress = 0;
 let throttledStreak = 0;
+let passFailures = 0;
 let remaining = null;
 let stopReason = 'unknown';
 
@@ -75,25 +77,35 @@ while (true) {
   }
 
   passes += 1;
-  let body;
+  let body = null;
+  let failure = null;
   try {
     const res = await fetch(`${baseUrl}/api/cron/ingest?mode=summarize&summarizeLimit=${limit}`, {
       headers: { authorization: `Bearer ${secret}` },
     });
     body = await res.json().catch(() => null);
-    if (!res.ok || !body) {
-      console.error(`pass ${passes}: HTTP ${res.status} — ${JSON.stringify(body ?? '(no body)')}`);
-      stopReason = `HTTP ${res.status}`;
+    if (!res.ok || !body) failure = `HTTP ${res.status} — ${JSON.stringify(body ?? '(no body)')}`;
+  } catch (error) {
+    failure = `request failed — ${error.message}`;
+  }
+
+  if (failure) {
+    // Each row is committed as it is summarized, so a dropped or truncated
+    // request (e.g. a local server's request timeout) loses nothing: retry the
+    // pass instead of aborting the whole drain.
+    passFailures += 1;
+    passes -= 1;
+    console.log(`pass ${passes + 1} failed: ${failure} (retry ${passFailures}/3)`);
+    if (passFailures >= 3) {
+      stopReason = failure;
       process.exitCode = 1;
       break;
     }
-  } catch (error) {
-    console.error(`pass ${passes}: request failed — ${error.message}`);
-    stopReason = 'request failed (is the app running?)';
-    process.exitCode = 1;
-    break;
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    continue;
   }
 
+  passFailures = 0;
   const summarized = body.summarized ?? 0;
   const rateLimited = body.rateLimited === true;
   const errors = Array.isArray(body.errors) ? body.errors : [];
