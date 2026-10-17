@@ -59,11 +59,13 @@ supabase/migrations/       table, RLS, seed  [USY-11]
 
 | ID | Title | Status |
 |----|-------|--------|
-| [USY-07](USY-07-auto-update-pipeline.md) | Automated ingestion / auto-update pipeline | in-progress |
+| [USY-07](USY-07-auto-update-pipeline.md) | Automated ingestion / auto-update pipeline | done |
 | [USY-17](USY-17-routing-and-nav-consolidation.md) | Routing & navigation consolidation | done |
 | [USY-18](USY-18-content-enrichment.md) | Content enrichment (non-generic text) | done |
 | [USY-19](USY-19-full-article-pages.md) | Full article pages with official link at end | proposed |
-| [USY-20](USY-20-scheduled-ingest-job.md) | Scheduled ingest job (cron) | decided |
+| [USY-20](USY-20-scheduled-ingest-job.md) | Scheduled ingest job (cron) | done |
+| [USY-21](USY-21-full-article-extraction.md) | Full article extraction (zero cost) | done |
+| [USY-22](USY-22-story-summaries.md) | Story summaries (LLM + extractive fallback) | done |
 
 > **Deep-dive:** [ANALYSIS-hourly-updates.md](ANALYSIS-hourly-updates.md) — full
 > analysis of how to keep the timeline updated every hour (scheduler options,

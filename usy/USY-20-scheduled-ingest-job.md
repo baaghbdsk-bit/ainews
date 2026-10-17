@@ -1,6 +1,6 @@
 # USY-20 — Scheduled ingest job (auto-update)
 
-**Status:** decided (user: "do at last" · free-tier constraint applied)
+**Status:** done (user: "do at last" · free-tier constraint applied)
 
 > **Full analysis:** see [ANALYSIS-hourly-updates.md](ANALYSIS-hourly-updates.md)
 > for the scheduler-options comparison, data-flow, cost, safety, and phased plan.

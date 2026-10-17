@@ -1,0 +1,43 @@
+name: Migrate database
+
+# Applies new files in supabase/migrations/ whenever they change on main, so
+# schema changes ship with the code without anyone touching the SQL Editor.
+#
+# Requires one repository secret:
+#   DATABASE_URL - Supabase connection string (Project Settings -> Database).
+#                  Use the "Session pooler" or "Direct connection" URI.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'scripts/migrate.mjs'
+      - '.github/workflows/migrate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is not set. Add it in Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          node scripts/migrate.mjs

@@ -11,6 +11,7 @@ export type Story = {
   summary: string;
   significance: string;
   source: string;
+  company?: string;
   sourceUrl: string;
   color: string;
 };
@@ -29,6 +30,7 @@ export const stories: Story[] = [
     significance:
       "Intensified the late-2025 frontier race, with Google regaining top marks on several reasoning and coding benchmarks and pushing competitors to respond quickly.",
     source: "Google",
+    company: "Google",
     sourceUrl: "https://blog.google/products/gemini/gemini-3/",
     color: "green",
   },
@@ -45,6 +47,7 @@ export const stories: Story[] = [
     significance:
       "Consolidated the fast-versus-reasoning split into a single product experience and reset the frontier for general-purpose assistants.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/introducing-gpt-5/",
     color: "blue",
   },
@@ -61,6 +64,7 @@ export const stories: Story[] = [
     significance:
       "Marked a step change in autonomous coding and long-running agent tasks, a focus area the leading labs were now competing hard on.",
     source: "Anthropic",
+    company: "Anthropic",
     sourceUrl: "https://www.anthropic.com/news/claude-4",
     color: "orange",
   },
@@ -77,6 +81,7 @@ export const stories: Story[] = [
     significance:
       "Reset US export policy just as it was taking effect, adding uncertainty for global compute distribution and allies' AI infrastructure plans.",
     source: "U.S. Department of Commerce",
+    company: "U.S. Department of Commerce",
     sourceUrl: "https://www.bis.gov/",
     color: "coral",
   },
@@ -93,6 +98,7 @@ export const stories: Story[] = [
     significance:
       "Made very long-context coding and document workflows practical for API customers, pressuring rivals on both context length and price.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/gpt-4-1/",
     color: "blue",
   },
@@ -109,6 +115,7 @@ export const stories: Story[] = [
     significance:
       "Kept strong open-weight competition alive against closed frontier models, though early reviews were mixed on some coding and reasoning tasks.",
     source: "Meta",
+    company: "Meta",
     sourceUrl: "https://ai.meta.com/blog/llama-4-multimodal-intelligence/",
     color: "violet",
   },
@@ -125,6 +132,7 @@ export const stories: Story[] = [
     significance:
       "Pushed \"thinking\" models into the mainstream and raised the bar for coding assistants and agentic applications.",
     source: "Google",
+    company: "Google",
     sourceUrl: "https://blog.google/technology/google-deepmind/gemini-model-thinking-updates-march-2025/",
     color: "green",
   },
@@ -141,6 +149,7 @@ export const stories: Story[] = [
     significance:
       "Served as a bridge to reasoning models while OpenAI gathered data on scaling pre-training, hinting at the unified systems to come.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/introducing-gpt-4-5/",
     color: "blue",
   },
@@ -157,6 +166,7 @@ export const stories: Story[] = [
     significance:
       "Popularized user-controlled reasoning depth, letting developers trade latency for accuracy within a single model.",
     source: "Anthropic",
+    company: "Anthropic",
     sourceUrl: "https://www.anthropic.com/news/claude-3-7-sonnet",
     color: "orange",
   },
@@ -173,6 +183,7 @@ export const stories: Story[] = [
     significance:
       "Reinforced the trend of well-funded challengers closing the gap with frontier labs within months of each major release.",
     source: "xAI",
+    company: "xAI",
     sourceUrl: "https://x.ai/news/grok-3",
     color: "violet",
   },
@@ -189,6 +200,7 @@ export const stories: Story[] = [
     significance:
       "R1's open weights and low reported cost challenged assumptions about compute barriers and sent the DeepSeek app to the top of app stores.",
     source: "DeepSeek",
+    company: "DeepSeek",
     sourceUrl: "https://api-docs.deepseek.com/news/news250120",
     color: "blue",
   },
@@ -205,6 +217,7 @@ export const stories: Story[] = [
     significance:
       "A landmark bet that frontier progress depends on massive new compute and energy capacity, reshaping infrastructure investment and US AI policy.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/announcing-the-stargate-project/",
     color: "green",
   },
@@ -221,6 +234,7 @@ export const stories: Story[] = [
     significance:
       "The world's first comprehensive AI law moved from proposal to enforcement, creating binding obligations global providers must design around.",
     source: "European Commission",
+    company: "European Commission",
     sourceUrl: "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
     color: "coral",
   },
@@ -237,6 +251,7 @@ export const stories: Story[] = [
     significance:
       "A risk-based framework moved from proposal to law, setting obligations that would shape how high-risk AI systems are built and deployed across a major market.",
     source: "Council of the European Union",
+    company: "Council of the European Union",
     sourceUrl:
       "https://www.consilium.europa.eu/en/press/press-releases/2024/05/21/artificial-intelligence-ai-act-council-gives-final-green-light-to-the-first-worldwide-rules-on-ai/",
     color: "coral",
@@ -254,6 +269,7 @@ export const stories: Story[] = [
     significance:
       "The announcement pushed multimodal interaction into the mainstream product conversation: AI was no longer just a text box, but an interface that could see and hear.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/hello-gpt-4o/",
     color: "blue",
   },
@@ -270,6 +286,7 @@ export const stories: Story[] = [
     significance:
       "The work pointed toward AI systems that could help researchers reason about the chemistry of life, not only the shape of individual proteins.",
     source: "Google DeepMind",
+    company: "Google DeepMind",
     sourceUrl: "https://deepmind.google/discover/blog/alphafold-3-predicts-the-structure-and-interactions-of-all-of-lifes-molecules/",
     color: "green",
   },
@@ -286,6 +303,7 @@ export const stories: Story[] = [
     significance:
       "The demos made video generation a central frontier for generative AI while raising urgent questions about provenance, safety, and synthetic media.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/sora/",
     color: "violet",
   },
@@ -302,6 +320,7 @@ export const stories: Story[] = [
     significance:
       "The move tested a platform model for AI: developers and communities could create purpose-built assistants inside an existing distribution channel.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/introducing-the-gpt-store/",
     color: "orange",
   },
@@ -318,6 +337,7 @@ export const stories: Story[] = [
     significance:
       "The launch signaled that leading labs were building multimodality into the model itself, rather than treating each input type as a separate add-on.",
     source: "Google",
+    company: "Google",
     sourceUrl: "https://blog.google/technology/ai/google-gemini-ai/",
     color: "blue",
   },
@@ -334,6 +354,7 @@ export const stories: Story[] = [
     significance:
       "Capable downloadable models gave developers a credible alternative to closed APIs and accelerated the open-weight AI ecosystem.",
     source: "Meta AI",
+    company: "Meta",
     sourceUrl: "https://ai.meta.com/blog/llama-2/",
     color: "green",
   },
@@ -350,6 +371,7 @@ export const stories: Story[] = [
     significance:
       "Its launch made the pace of model progress tangible to a broad audience and intensified debate about capability evaluation and responsible deployment.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/gpt-4/",
     color: "violet",
   },
@@ -366,6 +388,7 @@ export const stories: Story[] = [
     significance:
       "A simple chat interface made generative AI immediately accessible to millions and changed the public, business, and policy conversation almost overnight.",
     source: "OpenAI",
+    company: "OpenAI",
     sourceUrl: "https://openai.com/index/chatgpt/",
     color: "orange",
   },

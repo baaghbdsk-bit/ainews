@@ -1,5 +1,9 @@
 # Phase 2 Setup Instructions
 
+> **Historical note:** this is the original Phase 2 walkthrough. For the current,
+> canonical setup steps see [`QUICK_START.md`](./QUICK_START.md). Migrations are now
+> applied with `npm run db:migrate` instead of copy/pasting SQL by hand.
+
 ## What's Already Done ✅
 
 - ✅ Supabase client libraries installed (`@supabase/supabase-js`, `@supabase/ssr`)
@@ -46,54 +50,45 @@ Once your project is ready:
    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...your-very-long-key
    ```
 
-### 4. Create Database Schema (2 minutes)
+### 4. Apply Migrations (1 minute)
 
-1. In Supabase dashboard, go to **SQL Editor**
-2. Click **New Query**
-3. Paste the contents of `supabase/migrations/001_create_stories_table.sql`
-4. Click **Run** (bottom right)
-5. Verify: Go to **Table Editor** → you should see `stories` table
+Add your `DATABASE_URL` (Project Settings → Database → Connection string) to
+`.env.local`, then run:
 
-### 5. Implement Row-Level Security (2 minutes)
+```powershell
+npm run db:migrate
+```
 
-1. In **SQL Editor**, create another new query
-2. Paste the contents of `supabase/migrations/002_enable_rls.sql`
-3. Click **Run**
-4. Verify: Go to **Authentication** → **Policies** → `stories` table should show 5 policies
+This applies every file in `supabase/migrations/` in order — schema, RLS, seed,
+editor-only writes, article body, search_path hardening — and records them in
+`public.schema_migrations`, so re-running is a no-op. No SQL Editor copy/paste.
 
-### 6. Seed Initial Data (2 minutes)
+Verify: **Table Editor** → `stories` shows the 9 published seed rows;
+**Authentication** → **Policies** lists the RLS policies.
 
-1. In **SQL Editor**, create another new query
-2. Paste the contents of `supabase/migrations/003_seed_stories.sql`
-3. Click **Run**
-4. Verify: Go to **Table Editor** → `stories` → should show 9 published stories
-
-### 7. Generate TypeScript Types (1 minute)
+### 5. Generate TypeScript Types (1 minute)
 
 Run this command in your terminal:
 ```powershell
-npx supabase gen types typescript --project-id your-project-ref > src/lib/supabase/database.types.ts
+npx supabase gen types typescript --project-id your-project-ref > src/lib/supabase/types.ts
 ```
 
 Replace `your-project-ref` with your actual project reference (found in Project Settings → General → Reference ID).
 
-### 8. Fix TypeScript Errors (1 minute)
+### 6. TypeScript Types (1 minute)
 
-1. Open `src/lib/actions/stories.ts`
-2. Remove the `// @ts-nocheck` line at the top
-3. Add this import at the top:
-   ```typescript
-   import type { Database } from '@/lib/supabase/database.types';
-   ```
-4. Run `npm run build` to verify everything compiles
+`src/lib/supabase/types.ts` is hand-written and already matches the schema.
+`src/lib/supabase/database.types.ts` simply re-exports `Database` from it for
+backwards compatibility, so most projects can skip this step. If you regenerated
+`types.ts` above, just run `npm run typecheck` to confirm everything compiles.
 
-### 9. Test Everything (2 minutes)
+### 7. Test Everything (2 minutes)
 
 ```powershell
 npm run dev
 ```
 
-Open http://localhost:3000/explore
+Open http://localhost:3000
 
 - ✅ Should see 9 stories from database (not seed data)
 - ✅ Click a story → detail page loads from database
@@ -110,12 +105,11 @@ Open http://localhost:3000/explore
 - Verify project URL doesn't have trailing slash
 
 ### "Table 'stories' does not exist"
-- Run migration `001_create_stories_table.sql` in SQL Editor
-- Check for error messages in SQL Editor output
+- Run `npm run db:migrate` (applies `001_create_stories_table.sql` first)
 
 ### "Row-level security policy violation"
-- Run migration `002_enable_rls.sql`
-- Verify all 5 policies are created in Authentication → Policies
+- Run `npm run db:migrate` (applies `002_enable_rls.sql`)
+- Verify policies exist in Authentication → Policies
 
 ### Build still fails with TypeScript errors
 - Make sure you ran `npx supabase gen types`

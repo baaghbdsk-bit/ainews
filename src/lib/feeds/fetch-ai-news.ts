@@ -1,6 +1,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { XMLParser } from 'fast-xml-parser';
 import type { Story } from '@/lib/schemas/story';
+import { canonicalizeUrl, slugify } from '@/lib/slug';
 
 export type { Story };
 export type Topic = Story['topic'];
@@ -10,12 +11,31 @@ export const FEEDS: FeedSource[] = [
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', topic: 'Models' },
   { name: 'Google AI Blog', url: 'https://blog.google/technology/ai/rss/', topic: 'Research' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', topic: 'Models' },
+  { name: 'AWS Machine Learning', url: 'https://aws.amazon.com/blogs/machine-learning/feed/', topic: 'Research' },
+  { name: 'NVIDIA AI', url: 'https://blogs.nvidia.com/feed/', topic: 'Products' },
+  { name: 'The Batch (DeepLearning.AI)', url: 'https://www.deeplearning.ai/the-batch/feed/', topic: 'Research' },
+  { name: 'Import AI', url: 'https://importai.substack.com/feed', topic: 'Research' },
+  { name: 'VentureBeat AI', url: 'https://venturebeat.com/ai/feed/', topic: 'Products' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed', topic: 'Research' },
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', topic: 'Products' },
   { name: 'The Verge AI', url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', topic: 'Products' },
+  { name: 'Anthropic News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/anthropic-news.xml', topic: 'Models' },
+  { name: 'Anthropic Research', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/anthropic-research.xml', topic: 'Models' },
+  { name: 'Claude News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/claude-news.xml', topic: 'Models' },
+  { name: 'AI RSS Feeds (aggregator)', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/ai-rss-feeds-news.xml', topic: 'Products' },
+  { name: 'Allen AI', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/allenai-news.xml', topic: 'Research' },
+  { name: 'AISI Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/aisi-blog.xml', topic: 'Research' },
+  { name: 'CETAS Research', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cetas-research.xml', topic: 'Research' },
+  { name: 'Cohere Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cohere-blog.xml', topic: 'Models' },
+  { name: 'Mistral News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/mistral-news.xml', topic: 'Models' },
+  { name: 'TLDR AI', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/tldr-ai.xml', topic: 'Products' },
 ];
 
 const FETCH_TIMEOUT_MS = 3000;
+// One retry absorbs transient upstream hiccups without letting a slow or dead
+// feed stall the batch (all feeds load in parallel) for long.
+const MAX_FETCH_ATTEMPTS = 2;
+const RETRY_BACKOFF_MS = 400;
 // Large feeds (OpenAI, Hugging Face) carry thousands of historical entries;
 // capping high keeps 4+ years of timeline depth while staying bounded.
 const MAX_ITEMS_PER_FEED = 400;
@@ -55,6 +75,21 @@ function stripHtml(input: string): string {
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#038;/g, '&')
+    .replace(/&eacute;/g, 'e')
+    .replace(/&#8211;/g, '–')
+    .replace(/&#8216;/g, '‘')
+    .replace(/&#8217;/g, '’')
+    .replace(/&#8220;/g, '“')
+    .replace(/&#8221;/g, '”')
+    .replace(/&#8230;/g, '…')
+    .replace(/&#(\d+);/g, (_, code: string) => {
+      try {
+        return String.fromCodePoint(Number(code));
+      } catch {
+        return '';
+      }
+    })
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -62,6 +97,15 @@ function stripHtml(input: string): string {
 function truncate(input: string, max: number): string {
   if (input.length <= max) return input;
   return input.slice(0, max - 1).trimEnd() + '…';
+}
+
+/** Short, deterministic hash of a URL so slugs stay unique across sources. */
+function shortHash(input: string): string {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = ((hash << 5) - hash + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(36).slice(0, 6);
 }
 
 /** Trim the "The post … appeared first on …" / "Continue reading" boilerplate
@@ -129,25 +173,38 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
   const link = toHttpsUrl(textOf(item.link) || atomLink(item));
   const dateRaw =
     textOf(item.pubDate) || textOf(item.published) || textOf(item.updated) || textOf(item['dc:date']);
-  const eventDate = toIsoDate(dateRaw);
+  let eventDate = toIsoDate(dateRaw);
   const summary = bestSummaryText(item);
 
   if (!title || !link || !eventDate) return null;
 
-  const slugBase = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-  const slug = `${slugBase}-${eventDate}`;
+  // Feeds sometimes publish entries dated in the future (scheduled posts,
+  // timezone skew). Clamp to today so they don't pin to the top of the
+  // timeline as if they had already happened.
+  const today = new Date().toISOString().slice(0, 10);
+  if (eventDate > today) eventDate = today;
+
+  const slug = `${slugify(title).slice(0, 70)}-${eventDate}-${shortHash(link)}`;
   const now = new Date().toISOString();
+
+  // Feeds sometimes publish title-only entries with no description/content.
+  // Storing the bare title as the summary renders a useless timeline row, so
+  // fall back to a factual one-liner (title + source + date) — the same shape
+  // the DB backfill uses for historical thin summaries.
+  const thinSummary = !summary || summary.length < 20 || summary.toLowerCase() === title.toLowerCase();
+  const when = new Date(eventDate).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  const resolvedSummary = thinSummary ? `${title} — announced via ${feed.name} on ${when}.` : summary;
 
   return {
     id: slug,
     slug,
     title: truncate(title, 255),
-    summary: truncate(summary || title, 1000),
-    significance: buildSignificance(title, summary, feed, eventDate),
+    summary: truncate(resolvedSummary, 1000),
+    significance: buildSignificance(title, resolvedSummary, feed, eventDate),
     source: feed.name,
     source_url: link,
     topic: feed.topic,
@@ -191,7 +248,12 @@ function buildSignificance(title: string, summary: string, feed: FeedSource, eve
   return `${title}. Covered by ${feed.name} on ${when}.`;
 }
 
-async function fetchFeedXml(url: string): Promise<string | null> {
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** A single fetch attempt. Returns the body, or `null` when the response is
+ *  definitive (bad status / too large / unparseable) — meaning a retry will not
+ *  help. Returns `undefined` for transient failures so the caller can retry. */
+async function fetchFeedXmlOnce(url: string): Promise<string | null | undefined> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -200,7 +262,10 @@ async function fetchFeedXml(url: string): Promise<string | null> {
       redirect: 'follow',
       headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9' },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // 5xx is worth one retry; 4xx is a permanent miss.
+      return res.status >= 500 ? undefined : null;
+    }
 
     const declared = Number(res.headers.get('content-length') ?? 0);
     if (declared > MAX_RESPONSE_BYTES) return null;
@@ -212,14 +277,24 @@ async function fetchFeedXml(url: string): Promise<string | null> {
     // log it as a warning (a raw AbortError via console.error trips the
     // Next.js dev overlay without indicating a real failure).
     if (err instanceof Error && err.name === 'AbortError') {
-      console.warn(`Feed timed out after ${FETCH_TIMEOUT_MS}ms, skipping: ${url}`);
+      console.warn(`Feed timed out after ${FETCH_TIMEOUT_MS}ms: ${url}`);
     } else {
       console.error(`Failed to fetch feed ${url}:`, err);
     }
-    return null;
+    return undefined;
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchFeedXml(url: string): Promise<string | null> {
+  for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
+    const result = await fetchFeedXmlOnce(url);
+    if (result !== undefined) return result;
+    if (attempt < MAX_FETCH_ATTEMPTS) await delay(RETRY_BACKOFF_MS * attempt);
+  }
+  console.warn(`Feed unavailable after ${MAX_FETCH_ATTEMPTS} attempts, skipping: ${url}`);
+  return null;
 }
 
 export async function loadFeed(feed: FeedSource): Promise<Story[]> {
@@ -257,8 +332,9 @@ export async function fetchAiNews(): Promise<Story[]> {
   const merged: Story[] = [];
   for (const batch of results) {
     for (const story of batch) {
-      if (story.source_url && !seen.has(story.source_url)) {
-        seen.add(story.source_url);
+      const key = story.source_url ? canonicalizeUrl(story.source_url) : '';
+      if (key && !seen.has(key)) {
+        seen.add(key);
         merged.push(story);
       }
     }

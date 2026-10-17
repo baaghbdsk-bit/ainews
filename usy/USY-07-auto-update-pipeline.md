@@ -1,6 +1,6 @@
 # USY-07 — Automated ingestion of the latest AI developments
 
-**Status:** proposed
+**Status:** done (implemented: `fetchAiNews` + `runIngest` + `/api/cron/ingest` + ingest workflow)
 
 ## Goal
 "How will we stay updated with the latest AI records? We'll create a job /

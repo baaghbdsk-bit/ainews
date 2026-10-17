@@ -18,7 +18,13 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import {
+  PAGE_SIZE,
+  type StoryDisplay,
+  type TimelineFacets,
+  type TimelineFilters,
+} from "@/lib/timeline-shared";
 
 const topics = [
   { label: "Everything", value: "all", icon: Compass },
@@ -28,38 +34,15 @@ const topics = [
   { label: "Policy", value: "Policy", icon: Landmark },
 ] as const;
 
-export interface StoryDisplay {
-  id: string;
-  slug: string;
-  title: string;
-  summary: string;
-  significance: string;
-  source: string;
-  sourceUrl: string;
-  topic: "Models" | "Products" | "Research" | "Policy";
-  date: string;
-  day: string;
-  month: string;
-  year: string;
-  color: string;
-}
-
 interface ExploreClientProps {
+  /** First page, server-rendered; further pages come from /api/stories. */
   initialStories: StoryDisplay[];
-}
-
-// How many rows exist in the DOM at once; more are appended as the reader scrolls.
-const PAGE_SIZE = 60;
-
-// Lowercased search haystack per story, built once instead of on every keystroke.
-const searchTextCache = new WeakMap<StoryDisplay, string>();
-function haystackOf(story: StoryDisplay): string {
-  let text = searchTextCache.get(story);
-  if (text === undefined) {
-    text = `${story.title} ${story.summary} ${story.significance} ${story.source} ${story.topic} ${story.date}`.toLowerCase();
-    searchTextCache.set(story, text);
-  }
-  return text;
+  /** Unfiltered total across the whole merged timeline. */
+  initialTotal: number;
+  /** Stories matching the current filters (1:1 with initialStories on load). */
+  matchingTotal: number;
+  /** Distinct years / months / companies over the full merge. */
+  facets: TimelineFacets;
 }
 
 const redundancyCache = new Map<string, boolean>();
@@ -224,273 +207,493 @@ function TopicTabs({ activeTopic, onSelect }: TopicTabsProps) {
   );
 }
 
-export function ExploreClient({ initialStories }: ExploreClientProps) {
+/** Single-select company dropdown. The panel is absolutely positioned flush
+ * against the trigger's bottom edge (`top: 100%`) so the list opens directly
+ * on the field, and flips upward when there isn't room below.
+ */
+function CompanySelect({
+  options,
+  value,
+  onChange,
+}: {
+  options: string[];
+  value: string;
+  onChange: (selected: string) => void;
+}) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLUListElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState<'down' | 'up'>('down');
+
+  useEffect(() => {
+    if (!isOpen || !panelRef.current || !triggerRef.current) return;
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const panelRect = panelRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - triggerRect.bottom - 10;
+    const spaceAbove = triggerRect.top - 10;
+    setPosition(spaceBelow < panelRect.height && spaceAbove > spaceBelow ? 'up' : 'down');
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node) &&
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="company-select">
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label="Filter by company"
+        className="company-select-trigger"
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        <span className="company-select-trigger-label">{value === 'all' ? 'All companies' : value}</span>
+        <ChevronDown size={13} strokeWidth={2} />
+      </button>
+      {isOpen && (
+        <ul
+          ref={panelRef}
+          role="listbox"
+          aria-label="Companies"
+          className={`company-select-panel ${position === 'up' ? 'panel-open-up' : ''}`}
+        >
+          <li role="option" aria-selected={value === 'all'}>
+            <button
+              type="button"
+              className={`company-select-option ${value === 'all' ? 'is-selected' : ''}`}
+              onClick={() => {
+                onChange('all');
+                setIsOpen(false);
+              }}
+            >
+              All companies
+            </button>
+          </li>
+          {options.map((option) => (
+            <li key={option} role="option" aria-selected={value === option}>
+              <button
+                type="button"
+                className={`company-select-option ${value === option ? 'is-selected' : ''}`}
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                }}
+              >
+                {option}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export function ExploreClient({
+  initialStories,
+  initialTotal,
+  matchingTotal,
+  facets,
+}: ExploreClientProps) {
   const [activeTopic, setActiveTopic] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [activeYear, setActiveYear] = useState<string>("all");
   const [activeMonth, setActiveMonth] = useState<string>("all");
+  const [activeCompany, setActiveCompany] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const [stories, setStories] = useState<StoryDisplay[]>(initialStories);
+  const [matching, setMatching] = useState(matchingTotal);
+  const [hasMore, setHasMore] = useState(initialStories.length < matchingTotal);
+  // isFiltering: a filter/search refetch that will REPLACE the list.
+  // isLoadingMore: an infinite-scroll fetch that will APPEND to the list.
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
   const [activeTimelineIndex, setActiveTimelineIndex] = useState(0);
-    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-    const timelineRef = useRef<HTMLElement>(null);
-    const sentinelRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-      const years = useMemo(
-        () => Array.from(new Set(initialStories.map((s) => s.year))).sort((a, b) => b.localeCompare(a)),
-        [initialStories],
-      );
-      const monthOptions = useMemo(
-        () =>
-          Array.from(new Map(initialStories.map((s) => [s.date.slice(5, 7), s.month])).entries()).sort(([a], [b]) =>
-            a.localeCompare(b),
-          ),
-        [initialStories],
-      );
+  // Single-flight fetch: a new request always supersedes the running one, and
+  // only the request that is still current gets to touch loading state.
+  const inFlightRef = useRef<AbortController | null>(null);
 
-      const filteredStories = useMemo(
-        () =>
-          initialStories.filter((story) => {
-            const matchesTopic = activeTopic === "all" || story.topic === activeTopic;
-            const matchesYear = activeYear === "all" || story.year === activeYear;
-            const matchesMonth = activeMonth === "all" || story.date.slice(5, 7) === activeMonth;
-            return matchesTopic && matchesYear && matchesMonth && haystackOf(story).includes(search.toLowerCase().trim());
-          }),
-        [initialStories, activeTopic, activeYear, activeMonth, search],
-      );
+  // Latest filter values for fetches started from effects/observers without
+  // re-subscribing them on every keystroke.
+  const filtersRef = useRef<TimelineFilters>({});
+  useEffect(() => {
+    filtersRef.current = {
+      topic: activeTopic,
+      year: activeYear,
+      month: activeMonth,
+      company: activeCompany,
+      q: search.trim(),
+    };
+  }, [activeTopic, activeYear, activeMonth, activeCompany, search]);
 
-      // Only the first `visibleCount` rows are mounted; the sentinel below the list
-      // tops it up as the reader approaches the end.
-      const visibleStories = useMemo(() => filteredStories.slice(0, visibleCount), [filteredStories, visibleCount]);
-      const hasMore = visibleCount < filteredStories.length;
+  const fetchPage = useCallback(
+    (filters: TimelineFilters, offset: number, mode: "replace" | "append") => {
+      inFlightRef.current?.abort();
+      const controller = new AbortController();
+      inFlightRef.current = controller;
 
-      const filterKey = `${activeTopic}|${activeYear}|${activeMonth}|${search}`;
-      const [lastFilterKey, setLastFilterKey] = useState(filterKey);
+      // A replace cancels any pending append (and vice versa via the abort
+      // above) so the two flags can never both stick on.
+      setIsFiltering(mode === "replace");
+      setIsLoadingMore(mode === "append");
 
-      // Reset the mounted window when the filter set changes. Comparing the
-      // previous filter key during render is the documented alternative to
-      // syncing it back in an effect.
-      if (filterKey !== lastFilterKey) {
-        setLastFilterKey(filterKey);
-        setVisibleCount(PAGE_SIZE);
-      }
+      const params = new URLSearchParams();
+      if (filters.topic && filters.topic !== "all") params.set("topic", filters.topic);
+      if (filters.year && filters.year !== "all") params.set("year", filters.year);
+      if (filters.month && filters.month !== "all") params.set("month", filters.month);
+      if (filters.company && filters.company !== "all") params.set("company", filters.company);
+      if (filters.q) params.set("q", filters.q);
+      params.set("offset", String(offset));
+      params.set("limit", String(PAGE_SIZE));
 
-      useEffect(() => {
-        const handleScroll = () => {
-          if (!timelineRef.current) return;
-          const timeline = timelineRef.current;
-
-          // Calculate progress based on scroll position
-          const scrollTop = timeline.scrollTop || (timeline.parentElement?.scrollTop || 0);
-          const scrollHeight = timeline.scrollHeight - timeline.clientHeight;
-          if (scrollHeight <= 0) return;
-          
-          const progress = Math.max(0, Math.min(1, scrollTop / scrollHeight));
-          const newIndex = Math.round(progress * Math.max(filteredStories.length - 1, 0));
-          
-          // Only update on significant index changes to prevent render thrashing
-          if (newIndex !== activeTimelineIndex) {
-            setActiveTimelineIndex(newIndex);
+      (async () => {
+        try {
+          const res = await fetch(`/api/stories?${params.toString()}`, { signal: controller.signal });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = (await res.json()) as {
+            stories: StoryDisplay[];
+            total: number;
+            matching: number;
+            hasMore: boolean;
+          };
+          setStories((prev) => (mode === "append" ? [...prev, ...data.stories] : data.stories));
+          setMatching(data.matching);
+          setHasMore(data.hasMore);
+          setLoadError(false);
+        } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          console.error("Failed to load timeline page:", err);
+          // Keep whatever is on screen; surface the error only when the list
+          // would otherwise render empty.
+          setLoadError(true);
+        } finally {
+          if (inFlightRef.current === controller) {
+            inFlightRef.current = null;
+            setIsFiltering(false);
+            setIsLoadingMore(false);
           }
-        };
+        }
+      })();
+    },
+    [],
+  );
 
-        const throttleTimer = setInterval(handleScroll, 50);
-        return () => clearInterval(throttleTimer);
-      }, [activeTimelineIndex, filteredStories.length]);
+  // Skip the initial mount — SSR already delivered page one.
+  const skipDiscreteFetch = useRef(true);
+  const skipSearchFetch = useRef(true);
 
-      useEffect(() => {
-        if (!hasMore) return;
-        const sentinel = sentinelRef.current;
-        if (!sentinel) return;
+  // Discrete filter changes refetch immediately (replace).
+  useEffect(() => {
+    if (skipDiscreteFetch.current) {
+      skipDiscreteFetch.current = false;
+      return;
+    }
+    setActiveTimelineIndex(0);
+    fetchPage(filtersRef.current, 0, "replace");
+  }, [activeTopic, activeYear, activeMonth, activeCompany, fetchPage]);
 
-        // Throttled to one appended page at a time; the sentinel only qualifies
-        // again once the list has grown and it has been pushed out of range.
-        let pending = 0;
-        const check = () => {
-          if (pending) return;
-          if (sentinel.getBoundingClientRect().top > window.innerHeight + 800) return;
-          pending = window.setTimeout(() => {
-            pending = 0;
-          }, 120);
-          setVisibleCount((count) => count + PAGE_SIZE);
-        };
+  // Search is debounced so typing doesn't fire a request per keystroke.
+  useEffect(() => {
+    if (skipSearchFetch.current) {
+      skipSearchFetch.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setActiveTimelineIndex(0);
+      fetchPage(filtersRef.current, 0, "replace");
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search, fetchPage]);
 
-        // IntersectionObserver covers the no-scroll case; the scroll/resize listeners
-        // keep the list growing where observer delivery is unavailable.
-        const observer = new IntersectionObserver(
-          (entries) => {
-            if (entries.some((entry) => entry.isIntersecting)) check();
-          },
-          { rootMargin: "1200px 0px" },
-        );
-        observer.observe(sentinel);
-        window.addEventListener("scroll", check, { passive: true });
-        window.addEventListener("resize", check, { passive: true });
-        check();
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFilterOpen) {
+        setIsFilterOpen(false);
+      }
+    };
 
-        return () => {
-          observer.disconnect();
-          window.removeEventListener("scroll", check);
-          window.removeEventListener("resize", check);
-          if (pending) window.clearTimeout(pending);
-        };
-      }, [hasMore, visibleStories.length]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFilterOpen]);
 
-      const hasActiveFilters =
-        activeTopic !== "all" || activeYear !== "all" || activeMonth !== "all" || search.trim() !== "";
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current) return;
+      const timeline = timelineRef.current;
 
-      const clearFilters = () => {
-        setSearch("");
-        setActiveTopic("all");
-        setActiveYear("all");
-        setActiveMonth("all");
-        setActiveTimelineIndex(0);
-      };
+      // Calculate progress based on scroll position
+      const scrollTop = timeline.scrollTop || (timeline.parentElement?.scrollTop || 0);
+      const scrollHeight = timeline.scrollHeight - timeline.clientHeight;
+      if (scrollHeight <= 0) return;
 
-      const totalStories = initialStories.length;
-            const shownStories = filteredStories.length;
+      const progress = Math.max(0, Math.min(1, scrollTop / scrollHeight));
+      const newIndex = Math.round(progress * Math.max(stories.length - 1, 0));
 
-                  const toggleExpanded = useCallback((id: string) => {
-                    setExpandedId((current) => (current === id ? null : id));
-                  }, []);
+      // Only update on significant index changes to prevent render thrashing
+      if (newIndex !== activeTimelineIndex) {
+        setActiveTimelineIndex(newIndex);
+      }
+    };
 
-        return (
-      <main className="site-frame archive-page">
-        <header className="topbar archive-topbar">
-                  <Link className="wordmark" href="/" aria-label="Signal, home">
-                    <span className="wordmark-symbol">
-                      <Orbit size={19} strokeWidth={2.1} />
-                    </span>
-                    <span>
-                      signal<span className="wordmark-period">.</span>
-                    </span>
-                  </Link>
-                  <TopicTabs
-                    activeTopic={activeTopic}
-                    onSelect={(value) => {
-                      setActiveTopic(value);
-                      setActiveTimelineIndex(0);
-                    }}
+    const throttleTimer = setInterval(handleScroll, 50);
+    return () => clearInterval(throttleTimer);
+  }, [activeTimelineIndex, stories.length]);
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    // Throttled to one appended page at a time; the sentinel only qualifies
+    // again once the list has grown and it has been pushed out of range.
+    let pending = 0;
+    const check = () => {
+      if (pending || isFiltering || isLoadingMore) return;
+      if (sentinel.getBoundingClientRect().top > window.innerHeight + 800) return;
+      pending = window.setTimeout(() => {
+        pending = 0;
+      }, 120);
+      fetchPage(filtersRef.current, stories.length, "append");
+    };
+
+    // IntersectionObserver covers the no-scroll case; the scroll/resize listeners
+    // keep the list growing where observer delivery is unavailable.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) check();
+      },
+      { rootMargin: "1200px 0px" },
+    );
+    observer.observe(sentinel);
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check, { passive: true });
+    check();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+      if (pending) window.clearTimeout(pending);
+    };
+  }, [hasMore, stories.length, isFiltering, isLoadingMore, fetchPage]);
+
+  // Abort any in-flight request on unmount so state updates never land late.
+  useEffect(() => {
+    const inFlight = inFlightRef;
+    return () => inFlight.current?.abort();
+  }, []);
+
+  const hasActiveFilters =
+    activeTopic !== "all" || activeYear !== "all" || activeMonth !== "all" || search.trim() !== "" || activeCompany !== "all";
+
+  const clearFilters = () => {
+    setSearch("");
+    setActiveTopic("all");
+    setActiveYear("all");
+    setActiveMonth("all");
+    setActiveCompany("all");
+    setActiveTimelineIndex(0);
+  };
+
+  const totalStories = initialTotal;
+  const shownStories = matching;
+
+  const toggleExpanded = useCallback((id: string) => {
+    setExpandedId((current) => (current === id ? null : id));
+  }, []);
+
+  const retryLoad = useCallback(() => {
+    fetchPage(filtersRef.current, 0, "replace");
+  }, [fetchPage]);
+
+  const showEmpty = stories.length === 0 && !isFiltering && !loadError;
+
+  return (
+    <main className="site-frame archive-page">
+      <header className="topbar archive-topbar">
+        <Link className="wordmark" href="/" aria-label="Signal, home">
+          <span className="wordmark-symbol">
+            <Orbit size={19} strokeWidth={2.1} />
+          </span>
+          <span>
+            signal<span className="wordmark-period">.</span>
+          </span>
+        </Link>
+        <TopicTabs
+          activeTopic={activeTopic}
+          onSelect={(value) => {
+            setActiveTopic(value);
+            setActiveTimelineIndex(0);
+          }}
+        />
+      </header>
+
+      <div className="archive-layout">
+        <section aria-label="AI events timeline" className="timeline-column archive-timeline" id="timeline" ref={timelineRef}>
+          <div aria-busy={isFiltering || isLoadingMore} className="timeline-list" aria-live="polite">
+            {stories.length ? (
+              <>
+                {stories.map((story, index) => (
+                  <TimelineRow
+                    isActive={index === activeTimelineIndex}
+                    isExpanded={expandedId === story.id}
+                    key={story.id}
+                    onToggle={toggleExpanded}
+                    showYear={stories[index - 1]?.year !== story.year}
+                    story={story}
                   />
-                </header>
-
-                <div className="archive-layout">
-                  <section aria-label="AI events timeline" className="timeline-column archive-timeline" id="timeline" ref={timelineRef}>
-          <div className="timeline-list" aria-live="polite">
-            {filteredStories.length ? (
-                                      <>
-                            {visibleStories.map((story, index) => (
-                              <TimelineRow
-                                isActive={index === activeTimelineIndex}
-                                isExpanded={expandedId === story.id}
-                                key={story.id}
-                                onToggle={toggleExpanded}
-                                showYear={filteredStories[index - 1]?.year !== story.year}
-                                story={story}
-                              />
-                            ))}
-                            {hasMore && <div aria-hidden="true" className="timeline-sentinel" ref={sentinelRef} />}
-                                            </>
-                        ) : (
+                ))}
+                {hasMore && <div aria-hidden="true" className="timeline-sentinel" ref={sentinelRef} />}
+              </>
+            ) : loadError ? (
+              <div className="empty-state">
+                <Search size={19} />
+                <p>Couldn&rsquo;t load stories.</p>
+                <button type="button" onClick={retryLoad}>
+                  Try again
+                </button>
+              </div>
+            ) : showEmpty ? (
               <div className="empty-state">
                 <Search size={19} />
                 <p>No moments found.</p>
-                            <button type="button" onClick={clearFilters}>
-                              Clear filters
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      </section>
+                <button type="button" onClick={clearFilters}>
+                  Clear filters
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </section>
 
-                      <aside aria-label="Timeline filters" className="archive-filter-panel">
-                        <div className="filter-panel-head">
-                          <span className="filter-panel-icon">
-                            <SlidersHorizontal size={15} strokeWidth={2} />
-                          </span>
-                          <h2>Timeline filter</h2>
-                        </div>
+        <aside aria-label="Timeline filters" className="archive-filter-panel" id="archive-filter-panel" data-open={isFilterOpen}>
+          <div className="filter-panel-head">
+            <span className="filter-panel-icon">
+              <SlidersHorizontal size={15} strokeWidth={2} />
+            </span>
+            <h2>Timeline filter</h2>
+          </div>
 
-                        <div className="filter-group">
-                          <span className="filter-group-label">Period</span>
-                          <div className="date-filter" role="group" aria-label="Filter timeline by month and year">
-                            <select
-                              aria-label="Filter by year"
-                              className="date-filter-select"
-                              onChange={(event) => {
-                                setActiveYear(event.target.value);
-                                setActiveTimelineIndex(0);
-                              }}
-                              value={activeYear}
-                            >
-                              <option value="all">All years</option>
-                              {years.map((year) => (
-                                <option key={year} value={year}>
-                                  {year}
-                                </option>
-                              ))}
-                            </select>
-                            <select
-                              aria-label="Filter by month"
-                              className="date-filter-select"
-                              onChange={(event) => {
-                                setActiveMonth(event.target.value);
-                                setActiveTimelineIndex(0);
-                              }}
-                              value={activeMonth}
-                            >
-                              <option value="all">All months</option>
-                              {monthOptions.map(([value, label]) => (
-                                <option key={value} value={value}>
-                                  {label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
+          <div className="filter-group">
+            <span className="filter-group-label">Period</span>
+            <div className="date-filter" role="group" aria-label="Filter timeline by month and year">
+              <select
+                aria-label="Filter by year"
+                className="date-filter-select"
+                onChange={(event) => {
+                  setActiveYear(event.target.value);
+                  setActiveTimelineIndex(0);
+                }}
+                value={activeYear}
+              >
+                <option value="all">All years</option>
+                {facets.years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Filter by month"
+                className="date-filter-select"
+                onChange={(event) => {
+                  setActiveMonth(event.target.value);
+                  setActiveTimelineIndex(0);
+                }}
+                value={activeMonth}
+              >
+                <option value="all">All months</option>
+                {facets.months.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-                        <div className="filter-group">
-                          <label className="filter-group-label" htmlFor="archive-filter-search">
-                            Search
-                          </label>
-                          <label className="search-box archive-search">
-                            <Search size={16} />
-                            <input
-                              aria-label="Search AI timeline"
-                              id="archive-filter-search"
-                              onChange={(event) => {
-                                setSearch(event.target.value);
-                                setActiveTimelineIndex(0);
-                              }}
-                              placeholder="Search stories"
-                              value={search}
-                            />
-                            {search && (
-                              <button
-                                aria-label="Clear search"
-                                className="clear-search"
-                                onClick={() => {
-                                  setSearch("");
-                                  setActiveTimelineIndex(0);
-                                }}
-                                type="button"
-                              >
-                                <X size={14} />
-                              </button>
-                            )}
-                          </label>
-                        </div>
+          <div className="filter-group">
+            <span className="filter-group-label">Company</span>
+            <CompanySelect
+              options={facets.companies}
+              value={activeCompany}
+              onChange={(selected) => {
+                setActiveCompany(selected);
+                setActiveTimelineIndex(0);
+              }}
+            />
+          </div>
 
-                        <div className="filter-panel-foot">
-                          <p className="filter-result-count" aria-live="polite">
-                            Showing <strong>{shownStories}</strong> of {totalStories} moments
-                          </p>
-                          <button className="filter-clear-button" disabled={!hasActiveFilters} onClick={clearFilters} type="button">
-                            <FilterX size={14} />
-                            Clear filters
-                          </button>
-                        </div>
-                      </aside>
-                    </div>
-                  </main>
+          <div className="filter-group">
+            <label className="filter-group-label" htmlFor="archive-filter-search">
+              Search
+            </label>
+            <label className="search-box archive-search">
+              <Search size={16} />
+              <input
+                aria-label="Search AI timeline"
+                id="archive-filter-search"
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setActiveTimelineIndex(0);
+                }}
+                placeholder="Search stories"
+                value={search}
+              />
+              {search && (
+                <button
+                  aria-label="Clear search"
+                  className="clear-search"
+                  onClick={() => {
+                    setSearch("");
+                    setActiveTimelineIndex(0);
+                  }}
+                  type="button"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </label>
+          </div>
+
+          <div className="filter-panel-foot">
+            <p className="filter-result-count" aria-live="polite">
+              Showing <strong>{shownStories}</strong> of {totalStories} moments
+            </p>
+            <button className="filter-clear-button" disabled={!hasActiveFilters} onClick={clearFilters} type="button">
+              <FilterX size={14} />
+              Clear filters
+            </button>
+          </div>
+        </aside>
+      </div>
+    </main>
   );
 }

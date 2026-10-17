@@ -4,7 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { createPublicClient } from '@/lib/supabase/public';
 import { CreateStorySchema, UpdateStorySchema, type Story } from '@/lib/schemas/story';
 import { cacheLife, cacheTag, revalidatePath, updateTag } from 'next/cache';
+import { STORIES_TAG } from '@/lib/cache-tags';
 import { isEditor } from '@/lib/auth/editor';
+import { termPattern } from '@/lib/dossier/entities';
 
 /**
  * Fetch all published stories ordered by event_date descending.
@@ -15,7 +17,7 @@ import { isEditor } from '@/lib/auth/editor';
 export async function getPublishedStories(): Promise<Story[]> {
   'use cache';
   cacheLife('hours');
-  cacheTag('stories');
+  cacheTag(STORIES_TAG);
 
   try {
     const supabase = createPublicClient();
@@ -43,7 +45,7 @@ export async function getPublishedStories(): Promise<Story[]> {
 export async function getStoryBySlug(slug: string): Promise<Story | null> {
   'use cache';
   cacheLife('hours');
-  cacheTag('stories');
+  cacheTag(STORIES_TAG);
 
   try {
     const supabase = createPublicClient();
@@ -52,17 +54,54 @@ export async function getStoryBySlug(slug: string): Promise<Story | null> {
       .select('*')
       .eq('slug', slug)
       .eq('status', 'published')
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error(`Failed to fetch story ${slug}:`, error);
       return null;
     }
 
-    return data as Story;
+    return (data as Story | null) ?? null;
   } catch (err) {
     console.error('Error fetching story:', err);
     return null;
+  }
+}
+
+/**
+ * Published stories that mention any of the given terms (title or summary),
+ * newest first. Used by the entity hub pages for topics that don't have a
+ * long-form dossier yet, so topic chips never lead to a 404.
+ */
+export async function getStoriesByEntityTerms(terms: string[], limit = 40): Promise<Story[]> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(STORIES_TAG);
+
+  if (!terms.length) return [];
+
+  try {
+    const supabase = createPublicClient();
+    // PostgREST needs double-quoted values when the pattern contains a space.
+    const filter = terms
+      .map((term) => `title.ilike."${termPattern(term)}",summary.ilike."${termPattern(term)}"`)
+      .join(',');
+    const { data, error } = await supabase
+      .from('stories')
+      .select('*')
+      .eq('status', 'published')
+      .or(filter)
+      .order('event_date', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Failed to fetch stories by entity terms:', error);
+      return [];
+    }
+    return (data as Story[]) ?? [];
+  } catch (err) {
+    console.error('Error fetching stories by entity terms:', err);
+    return [];
   }
 }
 
@@ -76,14 +115,14 @@ export async function getStoryById(id: string): Promise<Story | null> {
       .from('stories')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error(`Failed to fetch story ${id}:`, error);
       return null;
     }
 
-    return data as Story;
+    return (data as Story | null) ?? null;
   } catch (err) {
     console.error('Error fetching story:', err);
     return null;
@@ -118,7 +157,7 @@ export async function createStory(input: unknown) {
       return { error: error.message, data: null };
     }
 
-    updateTag('stories');
+    updateTag(STORIES_TAG);
     revalidatePath('/');
     return { error: null, data: data as Story };
   } catch (err) {
@@ -156,7 +195,7 @@ export async function updateStory(id: string, input: unknown) {
       return { error: error.message, data: null };
     }
 
-    updateTag('stories');
+    updateTag(STORIES_TAG);
     revalidatePath('/');
     return { error: null, data: data as Story };
   } catch (err) {
@@ -184,7 +223,7 @@ export async function deleteStory(id: string) {
       return { error: error.message };
     }
 
-    updateTag('stories');
+    updateTag(STORIES_TAG);
     revalidatePath('/');
     return { error: null };
   } catch (err) {

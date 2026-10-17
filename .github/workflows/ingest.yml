@@ -1,7 +1,9 @@
 name: Ingest AI news (every 30 minutes)
 
-# Fires every 30 minutes and pushes the latest RSS feeds into Supabase, then revalidates
-# the timeline. No LLM, no paid tier - keeps the archive fresh on the free plan.
+# Fires every 30 minutes and pushes the latest RSS feeds into Supabase, extracts
+# article bodies, generates reader-facing summaries, then revalidates the
+# timeline. Runs on the free tier; summaries use an LLM only if the *deployment*
+# has LLM_API_KEY set (otherwise a zero-cost extractive fallback is used).
 #
 # Secrets required in GitHub -> Settings -> Secrets and variables -> Actions:
 #   CRON_SECRET              - bearer token the route checks (any long random string)
@@ -9,6 +11,10 @@ name: Ingest AI news (every 30 minutes)
 #   SUPABASE_SERVICE_ROLE_KEY - server key (bypasses RLS so the job can INSERT)
 #   INGEST_URL               - publicly reachable URL of this app, e.g.
 #                              https://<project>.vercel.app
+#
+# Note: the ingest job executes inside the deployed app, so LLM_API_KEY (if
+# used) must be set in the *host* environment (e.g. Vercel project settings),
+# not here.
 
 on:
   schedule:
@@ -42,6 +48,46 @@ jobs:
             echo "INGEST_URL is not set. Set it to your deployed app URL in Secrets."
             exit 1
           fi
+
+          echo "== Full ingest (fetch feeds + insert + enrich) =="
           curl -fsS \
             -H "Authorization: Bearer $CRON_SECRET" \
-            "$INGEST_URL/api/cron/ingest"
+            "$INGEST_URL/api/cron/ingest" | tee /tmp/ingest.json
+          echo
+
+          # Each call only enriches a bounded batch (see INGEST_ENRICH_LIMIT), so
+          # keep calling the cheap enrich-only mode until the backlog is drained.
+          remaining=$(jq -r '.remaining // 0' /tmp/ingest.json 2>/dev/null || echo 0)
+          for i in $(seq 1 12); do
+            if [ -z "$remaining" ] || [ "$remaining" = "0" ]; then
+              break
+            fi
+            echo "== Enrich pass $i (remaining: $remaining) =="
+            curl -fsS \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$INGEST_URL/api/cron/ingest?mode=enrich" | tee /tmp/ingest.json
+            echo
+            remaining=$(jq -r '.remaining // 0' /tmp/ingest.json 2>/dev/null || echo 0)
+            rate_limited=$(jq -r '.rateLimited // false' /tmp/ingest.json 2>/dev/null || echo false)
+            enriched=$(jq -r '.enriched // 0' /tmp/ingest.json 2>/dev/null || echo 0)
+            if [ "$rate_limited" = "true" ] && [ "$enriched" = "0" ]; then
+              echo "A source is throttling us (HTTP 429); stopping early to retry next run."
+              break
+            fi
+          done
+
+          # Generate reader-facing summaries (LLM when the deployment has an
+          # LLM_API_KEY, else the extractive fallback). Each call handles a
+          # bounded batch, so keep calling until the backlog is drained.
+          summary_remaining=1
+          for i in $(seq 1 12); do
+            echo "== Summarize pass $i =="
+            curl -fsS \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$INGEST_URL/api/cron/ingest?mode=summarize" | tee /tmp/ingest.json
+            echo
+            summary_remaining=$(jq -r '.summaryRemaining // 0' /tmp/ingest.json 2>/dev/null || echo 0)
+            if [ "$summary_remaining" = "0" ]; then
+              break
+            fi
+          done

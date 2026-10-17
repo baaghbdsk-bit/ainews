@@ -1,6 +1,13 @@
 # Phase 3: Editorial RSS Intake
 
-## Delivered
+> **Status: proposal — NOT implemented in this repository.**
+> The `/editor` routes, `feed_candidates` table, `editor-drafts.ts` server
+> actions, and migrations 004+ described below do not exist here. (The editor
+> *role gate* it describes is now enforced by
+> `supabase/migrations/004_editor_only_writes.sql`.) Treat the rest of this file
+> as a spec, not a changelog.
+
+## Planned
 
 - Supabase-backed RSS/Atom candidate queue with structured XML parsing.
 - Authenticated editor sign-in and sign-out at `/editor`.
