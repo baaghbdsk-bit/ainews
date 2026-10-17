@@ -23,12 +23,21 @@ export async function GET(request: NextRequest) {
   // `?mode=enrich` skips the feed fetch and only extracts article bodies, and
   // `?mode=summarize` only (re)generates reader-facing summaries, so the
   // scheduler can drain a backlog with repeated cheap calls.
+  //
+  // `?summarizeLimit=N` raises the per-call batch (bounded here) so a one-off
+  // backfill can drain faster without changing the scheduled defaults.
   const mode = request.nextUrl.searchParams.get('mode');
+  const requestedLimit = Number(request.nextUrl.searchParams.get('summarizeLimit'));
+  const summarizeLimit =
+    Number.isFinite(requestedLimit) && requestedLimit > 0
+      ? Math.min(Math.floor(requestedLimit), 500)
+      : undefined;
 
   try {
     const result = await runIngest({
       enrichOnly: mode === 'enrich',
       summarizeOnly: mode === 'summarize',
+      summarizeLimit,
     });
     return NextResponse.json({ ok: true, ...result, tag: AI_NEWS_TAG });
   } catch (err) {

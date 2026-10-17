@@ -355,7 +355,12 @@ async function summarizeStories(
     .lt('summary_attempts', SUMMARY_RETRY_LIMIT);
   queue = needsSummary ? queue.or(needsSummary) : queue.is('deck', null);
 
+  // Rows with no deck at all come first (a missing deck is a visible gap on the
+  // timeline) and then newest-first. Without an LLM key every candidate is
+  // deckless, so this ordering only matters once a key exists and there are both
+  // missing decks and extractive decks eligible for an upgrade.
   const { data, error } = await queue
+    .order('deck', { ascending: true, nullsFirst: true })
     .order('event_date', { ascending: false })
     .limit(limit);
 

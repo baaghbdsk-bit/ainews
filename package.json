@@ -11,7 +11,8 @@
     "test": "npm run test:http && npm run test:browser",
     "test:http": "node tests/http.mjs",
     "test:browser": "node tests/browser.mjs",
-    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs"
+    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "summarize:backfill": "node --env-file=.env.local scripts/backfill-summaries.mjs"
   },
   "dependencies": {
     "@extractus/article-extractor": "^9.0.1",
