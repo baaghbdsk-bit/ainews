@@ -130,13 +130,22 @@ async function main() {
     check(id, label, /public/.test(cc) && /s-maxage=/.test(cc), cc);
   }
 
-  const apiCC = (await get("/api/stories?limit=1")).headers.get("cache-control") ?? "";
+  // Vercel honors s-maxage for the edge cache but strips it from the
+  // client-facing header, so accept either the header (local) or an observed
+  // edge HIT on a repeat request (production).
+  const apiCacheProbe = await get("/api/stories?limit=1");
+  const apiCC = apiCacheProbe.headers.get("cache-control") ?? "";
+  const apiCacheRepeat = await get("/api/stories?limit=1");
+  const edgeCache = apiCacheRepeat.headers.get("x-vercel-cache") ?? "";
   const apiSMaxAge = Number(/s-maxage=(\d+)/.exec(apiCC)?.[1] ?? NaN);
+  const shortEdgeTtl = Number.isFinite(apiSMaxAge) && apiSMaxAge > 0 && apiSMaxAge <= 300;
   check(
     "H21",
     "Stories API is CDN-cached for a short window",
-    /public/.test(apiCC) && Number.isFinite(apiSMaxAge) && apiSMaxAge > 0 && apiSMaxAge <= 300,
-    apiCC || "(no cache-control)",
+    /public/.test(apiCC) &&
+      !/no-store/.test(apiCC) &&
+      (shortEdgeTtl || /HIT|STALE/.test(edgeCache)),
+    `cc="${apiCC}" x-vercel-cache="${edgeCache}" s-maxage=${Number.isFinite(apiSMaxAge) ? apiSMaxAge : "n/a"}`,
   );
 
   const cronCC = (await get("/api/cron/ingest")).headers.get("cache-control") ?? "";
