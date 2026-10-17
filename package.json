@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "npm run test:http && npm run test:browser",
     "test:http": "node tests/http.mjs",
     "test:browser": "node tests/browser.mjs",
