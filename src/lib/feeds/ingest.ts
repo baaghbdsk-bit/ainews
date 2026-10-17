@@ -2,6 +2,7 @@ import { FEEDS, loadFeed, AI_NEWS_TAG, type Story } from './fetch-ai-news';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { canonicalizeUrl } from '@/lib/slug';
+import { extractCompany } from '@/lib/story-company';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { supabaseServiceRoleKey, supabaseUrl } from '@/lib/env';
 import { extractArticle } from './extract-article';
@@ -103,7 +104,9 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     let rawStories: Story[] = [];
     for (const feed of FEEDS) {
       try {
-        rawStories = rawStories.concat(await loadFeed(feed));
+        // The cron pass always reads live XML — it must see items the cached
+        // timeline path would still serve stale.
+        rawStories = rawStories.concat(await loadFeed(feed, { fresh: true }));
       } catch (err) {
         errors.push(`Failed to load feed ${feed.name}: ${(err as Error).message}`);
       }
@@ -151,18 +154,21 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
         !existingUrls.has(canonicalizeUrl(s.source_url)) && !existingSlugs.has(s.slug),
     );
 
-    // 4. Insert only the new rows (service role bypasses RLS).
+    // 4. Insert only the new rows (service role bypasses RLS). The company
+    //    label is derived once here; enrichStories re-derives it with the body
+    //    after extraction, mirroring what read-time extraction used to do.
     const { error: insertErr } = await supabase.from('stories').insert(
       toInsert.map((s) => ({
         slug: s.slug,
         title: s.title,
         summary: s.summary,
         significance: s.significance,
+        company: extractCompany({ title: s.title, summary: s.summary, source: s.source }) ?? null,
         source: s.source,
         source_url: s.source_url,
         topic: s.topic,
         event_date: s.event_date,
-        status: 'published',
+        status: 'published' as const,
         published_at: s.published_at,
       })),
     );
@@ -220,7 +226,14 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
   };
 }
 
-type PendingRow = { id: string; source_url: string | null; enrich_attempts: number };
+type PendingRow = {
+  id: string;
+  source_url: string | null;
+  enrich_attempts: number;
+  title: string;
+  summary: string;
+  source: string;
+};
 
 async function enrichStories(
   supabase: Client,
@@ -229,7 +242,7 @@ async function enrichStories(
 ): Promise<{ enriched: number; remaining: number; rateLimited: boolean }> {
   const { data, error } = await supabase
     .from('stories')
-    .select('id, source_url, enrich_attempts')
+    .select('id, source_url, enrich_attempts, title, summary, source')
     .eq('status', 'published')
     .is('body', null)
     .lt('enrich_attempts', ENRICH_RETRY_LIMIT)
@@ -257,7 +270,18 @@ async function enrichStories(
       if (outcome.status === 'ok') {
         const { error: updateErr } = await supabase
           .from('stories')
-          .update({ body: outcome.article.body })
+          .update({
+            body: outcome.article.body,
+            // Re-derive with the freshly extracted body so the stored label
+            // matches what read-time extraction used to produce.
+            company:
+              extractCompany({
+                title: row.title,
+                summary: row.summary,
+                body: outcome.article.body,
+                source: row.source,
+              }) ?? null,
+          })
           .eq('id', row.id);
         if (updateErr) errors.push(`Failed to save body for ${row.id}: ${updateErr.message}`);
         else enriched++;

@@ -131,10 +131,11 @@ async function main() {
   }
 
   const apiCC = (await get("/api/stories?limit=1")).headers.get("cache-control") ?? "";
+  const apiSMaxAge = Number(/s-maxage=(\d+)/.exec(apiCC)?.[1] ?? NaN);
   check(
     "H21",
-    "Stories API is not CDN-cached",
-    !/s-maxage/.test(apiCC),
+    "Stories API is CDN-cached for a short window",
+    /public/.test(apiCC) && Number.isFinite(apiSMaxAge) && apiSMaxAge > 0 && apiSMaxAge <= 300,
     apiCC || "(no cache-control)",
   );
 

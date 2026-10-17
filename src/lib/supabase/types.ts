@@ -17,6 +17,7 @@ export type Database = {
           summary: string;
           significance: string;
           body: string | null;
+          company: string | null;
           enrich_attempts: number;
           deck: string | null;
           key_points: string[] | null;
@@ -43,6 +44,7 @@ export type Database = {
           summary: string;
           significance: string;
           body?: string | null;
+          company?: string | null;
           enrich_attempts?: number;
           deck?: string | null;
           key_points?: string[] | null;
@@ -69,6 +71,7 @@ export type Database = {
           summary?: string;
           significance?: string;
           body?: string | null;
+          company?: string | null;
           enrich_attempts?: number;
           deck?: string | null;
           key_points?: string[] | null;

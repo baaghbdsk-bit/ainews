@@ -6,7 +6,14 @@ import { CreateStorySchema, UpdateStorySchema, type Story } from '@/lib/schemas/
 import { cacheLife, cacheTag, revalidatePath, updateTag } from 'next/cache';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { isEditor } from '@/lib/auth/editor';
+import { extractCompany } from '@/lib/story-company';
 import { termPattern } from '@/lib/dossier/entities';
+
+// Only what the timeline projection and the sitemap actually read. Skipping
+// body/deck/brief (multi-MB on this table) keeps the public query small enough
+// to run on every cold request without dragging ~8MB out of PostgREST.
+const PUBLISHED_STORY_COLUMNS =
+  'id, slug, title, summary, significance, company, source, source_url, topic, event_date, published_at, status, updated_at';
 
 /**
  * Fetch all published stories ordered by event_date descending.
@@ -23,7 +30,7 @@ export async function getPublishedStories(): Promise<Story[]> {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('stories')
-      .select('*')
+      .select(PUBLISHED_STORY_COLUMNS)
       .eq('status', 'published')
       .order('event_date', { ascending: false });
 
@@ -145,6 +152,12 @@ export async function createStory(input: unknown) {
     const { data, error } = await supabase.from('stories').insert([
       {
         ...validatedData,
+        company:
+          extractCompany({
+            title: validatedData.title,
+            summary: validatedData.summary,
+            source: validatedData.source,
+          }) ?? null,
         created_by: user.id,
         updated_by: user.id,
         created_at: new Date().toISOString(),
@@ -193,6 +206,25 @@ export async function updateStory(id: string, input: unknown) {
     if (error) {
       console.error('Failed to update story:', error);
       return { error: error.message, data: null };
+    }
+
+    // The update returned the full row (body included — the form doesn't
+    // carry it), so re-derive company from the post-edit values and persist it
+    // only when the edit actually moved it.
+    const nextCompany =
+      extractCompany({
+        title: data.title,
+        summary: data.summary,
+        body: data.body,
+        source: data.source,
+      }) ?? null;
+    if ((data.company ?? null) !== nextCompany) {
+      const { error: companyErr } = await supabase
+        .from('stories')
+        .update({ company: nextCompany })
+        .eq('id', id);
+      if (companyErr) console.error('Failed to update company:', companyErr);
+      else data.company = nextCompany;
     }
 
     updateTag(STORIES_TAG);

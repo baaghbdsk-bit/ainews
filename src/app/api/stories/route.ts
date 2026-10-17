@@ -33,7 +33,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const page = await getTimelinePage(filters, offset, limit);
-    return Response.json(page);
+    // Edge-cache filtered windows for a minute so repeated scrolls/filters are
+    // served from the CDN instead of re-merging on a serverless instance; the
+    // stale window lets the edge refresh in the background. Errors below are
+    // never cached.
+    return Response.json(page, {
+      headers: {
+        'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+      },
+    });
   } catch (err) {
     console.error('Failed to load timeline page:', err);
     return Response.json({ error: 'Failed to load stories' }, { status: 500 });

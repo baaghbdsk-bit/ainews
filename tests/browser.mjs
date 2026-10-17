@@ -7,6 +7,10 @@
  *
  * Requires Google Chrome (override with CHROME_PATH) and puppeteer-core
  * (devDependency). Screenshots land in tests/shots/.
+ *
+ * Filtering against production can take a couple of seconds (serverless cold
+ * merge), so every wait below polls the real end-state (DOM predicate) instead
+ * of sleeping a fixed amount and hoping.
  */
 import puppeteer from "puppeteer-core";
 import fs from "node:fs";
@@ -29,6 +33,8 @@ function record(id, name, status, detail) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const WAIT_TIMEOUT = 30000;
 
 async function collectConsole(page) {
   const logs = [];
@@ -56,6 +62,54 @@ async function shownCount(page) {
     const m = el.textContent.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
     return m ? { shown: Number(m[1]), total: Number(m[2]) } : null;
   });
+}
+
+/** Poll a DOM predicate until it passes (or time out), instead of sleeping.
+ *  `predicate` runs in the page and receives `...args`. */
+async function waitUntil(page, predicate, args = [], timeout = WAIT_TIMEOUT) {
+  try {
+    await page.waitForFunction(predicate, { timeout, polling: 100 }, ...args);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Watch the page's /api/stories traffic so waits can key off "the request
+ *  that the interaction triggered has actually finished". */
+function trackApi(page) {
+  const state = { inflight: 0, done: 0 };
+  const isApi = (u) => u.includes("/api/stories");
+  page.on("request", (r) => {
+    if (isApi(r.url())) state.inflight++;
+  });
+  const settle = (r) => {
+    if (isApi(r.url())) {
+      state.inflight = Math.max(0, state.inflight - 1);
+      state.done++;
+    }
+  };
+  page.on("requestfinished", settle);
+  page.on("requestfailed", settle);
+  return state;
+}
+
+/** Wait until at least one /api/stories request started after this call has
+ *  finished, and no others are in flight for `quietMs`. */
+async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {}) {
+  const start = Date.now();
+  const baseDone = state.done;
+  let quietSince = null;
+  while (Date.now() - start < timeout) {
+    if (state.done > baseDone && state.inflight === 0) {
+      quietSince ??= Date.now();
+      if (Date.now() - quietSince >= quietMs) return true;
+    } else {
+      quietSince = null;
+    }
+    await sleep(100);
+  }
+  return false;
 }
 
 (async () => {
@@ -112,25 +166,39 @@ async function shownCount(page) {
     {
       const page = await browser.newPage();
       const logs = await collectConsole(page);
+      const api = trackApi(page);
       await gotoTimeline(page);
       const before = await shownCount(page);
       await page.click("#archive-filter-search");
       await page.type("#archive-filter-search", "anthropic", { delay: 20 });
-      await sleep(500);
-      const after = await shownCount(page);
-      const domTitles = await page.$$eval(".timeline-item .story-title-text", (els) =>
-        els.map((e) => (e.textContent || "").trim()),
-      );
       // Search matches title/summary/significance/source/topic/date (not just
       // titles), so assert the DOM renders exactly the API's first filtered page.
       const apiPage = await (await fetch(`${BASE}/api/stories?q=anthropic&offset=0&limit=60`)).json();
       const apiTitles = (apiPage.stories ?? []).map((s) => s.title.trim());
-      const titlesMatchApi =
-        domTitles.length === apiTitles.length && domTitles.every((t, i) => t === apiTitles[i]);
+      const matched = await waitUntil(
+        page,
+        (expected, prev) => {
+          const els = [...document.querySelectorAll(".timeline-item .story-title-text")];
+          const titles = els.map((e) => (e.textContent || "").trim());
+          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
+          const shown = m ? Number(m[1]) : 0;
+          if (shown >= prev || shown === 0) return false;
+          if (titles.length !== expected.length) return false;
+          return titles.every((t, i) => t === expected[i]);
+        },
+        [apiTitles, before.shown],
+      );
+      await waitForApi(api);
+      const after = await shownCount(page);
+      const domTitles = await page.$$eval(".timeline-item .story-title-text", (els) =>
+        els.map((e) => (e.textContent || "").trim()),
+      );
+      const titlesMatchApi = domTitles.length === apiTitles.length && domTitles.every((t, i) => t === apiTitles[i]);
       const domRows = domTitles.length;
-      const expectedDom = Math.min(after.shown, 60);
+      const expectedDom = apiTitles.length;
       await page.screenshot({ path: path.join(SHOTS, "t02-search-anthropic.png") });
       const ok =
+        matched &&
         after.shown < before.shown &&
         after.shown > 0 &&
         apiPage.stories?.length > 0 &&
@@ -149,6 +217,7 @@ async function shownCount(page) {
     {
       const page = await browser.newPage();
       const logs = await collectConsole(page);
+      const api = trackApi(page);
       await gotoTimeline(page);
       const before = await shownCount(page);
       await page.click(".company-select-trigger");
@@ -170,7 +239,17 @@ async function shownCount(page) {
         }
         return false;
       });
-      await sleep(500);
+      const applied = await waitUntil(
+        page,
+        (prev) => {
+          const label = document.querySelector(".company-select-trigger-label")?.textContent?.trim();
+          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
+          const shown = m ? Number(m[1]) : 0;
+          return label === "Anthropic" && shown > 0 && shown < prev && !document.querySelector(".company-select-panel");
+        },
+        [before.shown],
+      );
+      await waitForApi(api);
       const panelGone = (await page.$(".company-select-panel")) === null;
       const triggerLabel = await page.$eval(".company-select-trigger-label", (el) => el.textContent.trim());
       const after = await shownCount(page);
@@ -180,6 +259,7 @@ async function shownCount(page) {
         leftAligned &&
         widthMatch &&
         clicked &&
+        applied &&
         panelGone &&
         triggerLabel === "Anthropic" &&
         after.shown < before.shown &&
@@ -228,42 +308,47 @@ async function shownCount(page) {
     /* ---------- T05 Period selects (year, month, combined) ---------- */
     {
       const page = await browser.newPage();
+      const api = trackApi(page);
       await gotoTimeline(page);
       const all = await shownCount(page);
       await page.select('select[aria-label="Filter by year"]', "2026");
-      await sleep(400);
+      await waitForApi(api);
       const y2026 = await shownCount(page);
       const yearsVisible = await page.$$eval(".timeline-node", (els) =>
         els.map((n) => n.getAttribute("aria-label") || ""),
       );
       const all2026 = yearsVisible.length > 0 && yearsVisible.every((l) => /,\s*2026$/.test(l));
       await page.select('select[aria-label="Filter by month"]', "10");
-      await sleep(400);
+      await waitForApi(api);
       const ym = await shownCount(page);
       const monthsVisible = await page.$$eval(".timeline-node", (els) =>
         els.map((n) => n.getAttribute("aria-label") || ""),
       );
       const allOct = monthsVisible.length > 0 && monthsVisible.every((l) => /^Oct /.test(l) && /,\s*2026$/.test(l));
       await page.select('select[aria-label="Filter by month"]', "all");
-      await sleep(300);
+      await waitForApi(api);
       const yOnly = await shownCount(page);
       await page.select('select[aria-label="Filter by year"]', "all");
-      await sleep(300);
+      await waitForApi(api);
       const reset = await shownCount(page);
       await page.screenshot({ path: path.join(SHOTS, "t05-period.png") });
       const ok =
+        !!y2026 &&
         y2026.shown < all.shown &&
         y2026.shown > 0 &&
         all2026 &&
+        !!ym &&
         ym.shown <= y2026.shown &&
         allOct &&
+        !!yOnly &&
         yOnly.shown === y2026.shown &&
+        !!reset &&
         reset.shown === all.shown;
       record(
         "T05",
         "Period selects: year=2026, month=Oct, reset",
         ok ? "PASS" : "FAIL",
-        `all=${all.shown} y2026=${y2026.shown} (allRows2026=${all2026}) ym=${ym.shown} (allOct=${allOct}) yOnly=${yOnly.shown} reset=${reset.shown}`,
+        `all=${all.shown} y2026=${y2026?.shown} (allRows2026=${all2026}) ym=${ym?.shown} (allOct=${allOct}) yOnly=${yOnly?.shown} reset=${reset?.shown}`,
       );
       await page.close();
     }
@@ -271,6 +356,7 @@ async function shownCount(page) {
     /* ---------- T06 Clear filters ---------- */
     {
       const page = await browser.newPage();
+      const api = trackApi(page);
       await gotoTimeline(page);
       const baseline = await shownCount(page);
       await page.type("#archive-filter-search", "gemini");
@@ -281,17 +367,19 @@ async function shownCount(page) {
         const b = [...document.querySelectorAll(".company-select-option")].find((x) => x.textContent.trim() === "OpenAI");
         if (b) b.click();
       });
-      await sleep(500);
+      await waitForApi(api, { quietMs: 800 });
       const filtered = await shownCount(page);
       await page.click(".filter-clear-button");
-      await sleep(500);
+      await waitForApi(api);
       const afterClear = await shownCount(page);
       const searchVal = await page.$eval("#archive-filter-search", (el) => el.value);
       const yearVal = await page.$eval('select[aria-label="Filter by year"]', (el) => el.value);
       const companyLabel = await page.$eval(".company-select-trigger-label", (el) => el.textContent.trim());
       await page.screenshot({ path: path.join(SHOTS, "t06-clear.png") });
       const ok =
+        !!filtered &&
         filtered.shown < baseline.shown &&
+        !!afterClear &&
         afterClear.shown === baseline.shown &&
         searchVal === "" &&
         yearVal === "all" &&
@@ -300,7 +388,7 @@ async function shownCount(page) {
         "T06",
         "Clear filters resets search + year + company",
         ok ? "PASS" : "FAIL",
-        `baseline=${baseline.shown} filtered=${filtered.shown} afterClear=${afterClear.shown} search="${searchVal}" year=${yearVal} company="${companyLabel}"`,
+        `baseline=${baseline.shown} filtered=${filtered?.shown} afterClear=${afterClear?.shown} search="${searchVal}" year=${yearVal} company="${companyLabel}"`,
       );
       await page.close();
     }
@@ -314,7 +402,11 @@ async function shownCount(page) {
         record("T07", "Row expand/collapse", "FAIL", `only ${expanders.length} expand buttons found`);
       } else {
         await expanders[0].click();
-        await sleep(400);
+        const opened1 = await waitUntil(page, () => {
+          const open = document.querySelector(".story-detail-wrap.is-open");
+          const btn = document.querySelector(".expand-icon[aria-expanded='true']");
+          return !!open && !!btn && open.getBoundingClientRect().height > 20;
+        });
         const s1 = await page.evaluate(() => {
           const open = document.querySelector(".story-detail-wrap.is-open");
           const btn = document.querySelector(".expand-icon[aria-expanded='true']");
@@ -327,28 +419,32 @@ async function shownCount(page) {
         });
         const expanders2 = await page.$$(".expand-icon");
         await expanders2[1].click();
-        await sleep(400);
+        const switched = await waitUntil(page, () => {
+          const opens = [...document.querySelectorAll(".story-detail-wrap.is-open")];
+          return opens.length === 1 && opens[0] !== null;
+        });
         const s2 = await page.evaluate(() => {
           const opens = [...document.querySelectorAll(".story-detail-wrap.is-open")];
           return { openCount: opens.length, openId: opens[0] ? opens[0].id : null };
         });
         const openBtn = await page.$(".expand-icon[aria-expanded='true']");
-        if (openBtn) {
-          await openBtn.click();
-          await sleep(400);
-        }
+        if (openBtn) await openBtn.click();
+        const collapsed = await waitUntil(page, () => document.querySelectorAll(".story-detail-wrap.is-open").length === 0 && !document.querySelector(".expand-icon[aria-expanded='true']"));
         const s3 = await page.evaluate(() => ({
           openCount: document.querySelectorAll(".story-detail-wrap.is-open").length,
           anyExpanded: !!document.querySelector(".expand-icon[aria-expanded='true']"),
         }));
         await page.screenshot({ path: path.join(SHOTS, "t07-expand.png") });
         const ok =
+          opened1 &&
           s1.openId &&
           s1.ariaExpandedTrue &&
           s1.detailVisible &&
           s1.btnLabel &&
           s1.btnLabel.startsWith("Hide") &&
+          switched &&
           s2.openCount === 1 &&
+          collapsed &&
           s3.openCount === 0 &&
           !s3.anyExpanded;
         record(
@@ -371,12 +467,14 @@ async function shownCount(page) {
       let rows = initialRows;
       for (let i = 0; i < 8 && rows < Math.min(total, 240); i++) {
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-        await sleep(700);
+        grew = await waitUntil(
+          page,
+          (initial) => document.querySelectorAll(".timeline-item").length > initial,
+          [initialRows],
+          12000,
+        );
         rows = (await page.$$(".timeline-item")).length;
-        if (rows > initialRows) {
-          grew = true;
-          break;
-        }
+        if (grew) break;
       }
       const sentinelExists = (await page.$(".timeline-sentinel")) !== null;
       await page.screenshot({ path: path.join(SHOTS, "t08-infscroll.png") });
@@ -428,7 +526,7 @@ async function shownCount(page) {
       const logs = await collectConsole(page);
       await gotoTimeline(page);
       await page.type("#archive-filter-search", "zzqqxxnotarealterm9999", { delay: 5 });
-      await sleep(600);
+      const emptyAppeared = await waitUntil(page, () => !!document.querySelector(".empty-state"), [], 20000);
       const empty = await page.evaluate(() => {
         const es = document.querySelector(".empty-state");
         if (!es) return { present: false };
@@ -447,14 +545,12 @@ async function shownCount(page) {
           const b = [...document.querySelectorAll(".empty-state button")].find((x) => /clear/i.test(x.textContent));
           if (b) b.click();
         });
-        await sleep(500);
-        const searchAfter = await page.$eval("#archive-filter-search", (el) => el.value);
-        clearWorks = searchAfter === "";
+        clearWorks = await waitUntil(page, () => document.querySelector("#archive-filter-search")?.value === "");
       }
       await page.screenshot({ path: path.join(SHOTS, "t10-empty.png") });
       const domNestingWarnings = logs.filter((l) => /cannot be a descendant|validateDOMNesting|In HTML, <button>/i.test(l));
       const hyd = hydrationIssues(logs);
-      const status = empty.present && empty.nestedButtonCount === 0 && clearWorks && domNestingWarnings.length === 0 ? "PASS" : "FAIL";
+      const status = emptyAppeared && empty.present && empty.nestedButtonCount === 0 && clearWorks && domNestingWarnings.length === 0 ? "PASS" : "FAIL";
       record(
         "T10",
         "Empty state: no nested <button>, Clear filters resets search, no DOM-nesting warnings",
@@ -467,6 +563,7 @@ async function shownCount(page) {
     /* ---------- T11 Keyboard/a11y: company dropdown + expand toggle ---------- */
     {
       const page = await browser.newPage();
+      const api = trackApi(page);
       await gotoTimeline(page);
       await page.focus(".company-select-trigger");
       const ariaBefore = await page.$eval(".company-select-trigger", (el) => el.getAttribute("aria-expanded"));
@@ -475,35 +572,50 @@ async function shownCount(page) {
       const ariaOpen = await page.$eval(".company-select-trigger", (el) => el.getAttribute("aria-expanded"));
       const listboxRole = await page.$eval(".company-select-panel", (el) => el.getAttribute("role"));
       await page.keyboard.press("Escape");
-      await sleep(300);
+      const panelClosed = await waitUntil(page, () => !document.querySelector(".company-select-panel"));
       const panelAfterEsc = (await page.$(".company-select-panel")) === null;
       const ariaClosed = await page.$eval(".company-select-trigger", (el) => el.getAttribute("aria-expanded"));
       await page.focus(".expand-icon");
       const expBefore = await page.$eval(".expand-icon", (el) => el.getAttribute("aria-expanded"));
       await page.keyboard.press("Enter");
-      await sleep(400);
+      const expanded = await waitUntil(page, () => {
+        const btn = document.querySelector(".expand-icon");
+        return btn?.getAttribute("aria-expanded") === "true" && !!document.querySelector(".story-detail-wrap.is-open");
+      });
       const expAfter = await page.evaluate(() => ({
         expanded: document.querySelector(".expand-icon")?.getAttribute("aria-expanded"),
         open: !!document.querySelector(".story-detail-wrap.is-open"),
       }));
-      await page.focus("#archive-filter-search");
-      await page.keyboard.type("nvidia", { delay: 15 });
-      await sleep(500);
-      const searchResult = await shownCount(page);
       const baseline = await page.evaluate(() => {
         const m = document.querySelector(".filter-result-count").textContent.match(/of\s+(\d+)/);
         return m ? Number(m[1]) : 0;
       });
+      await page.focus("#archive-filter-search");
+      await page.keyboard.type("nvidia", { delay: 15 });
+      await waitForApi(api);
+      const searched = await waitUntil(
+        page,
+        (base) => {
+          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
+          const shown = m ? Number(m[1]) : 0;
+          return shown > 0 && shown < base;
+        },
+        [baseline],
+      );
+      const searchResult = await shownCount(page);
       await page.screenshot({ path: path.join(SHOTS, "t11-keyboard.png") });
       const ok =
         ariaBefore === "false" &&
         ariaOpen === "true" &&
         listboxRole === "listbox" &&
+        panelClosed &&
         panelAfterEsc &&
         ariaClosed === "false" &&
         expBefore === "false" &&
+        expanded &&
         expAfter.expanded === "true" &&
         expAfter.open &&
+        searched &&
         searchResult.shown > 0 &&
         searchResult.shown < baseline;
       record(
@@ -529,7 +641,7 @@ async function shownCount(page) {
         logs.length = 0;
         await page.goto(BASE + "/topic/anthropic", { waitUntil: "domcontentloaded", timeout: 90000 });
         await page.waitForSelector(".dossier", { timeout: 60000 });
-        await sleep(500);
+        await sleep(400);
         const tocInfo = await page.evaluate(() => {
           const tocLinks = [...document.querySelectorAll(".dossier-toc a, .dossier a[href^='#']")];
           return { tocLinkCount: tocLinks.length, firstHref: tocLinks[0] ? tocLinks[0].getAttribute("href") : null };
@@ -542,12 +654,15 @@ async function shownCount(page) {
             );
             if (a) a.click();
           }, tocInfo.firstHref);
-          await sleep(400);
-          tocWorks = await page.evaluate((h) => {
-            const id = h.replace("#", "");
-            const el = document.getElementById(id);
-            return el ? Math.abs(el.getBoundingClientRect().top) < 300 : false;
-          }, tocInfo.firstHref);
+          tocWorks = await waitUntil(
+            page,
+            (h) => {
+              const el = document.getElementById(h.replace("#", ""));
+              return el ? Math.abs(el.getBoundingClientRect().top) < 300 : false;
+            },
+            [tocInfo.firstHref],
+            10000,
+          );
         }
         const topicHyd = hydrationIssues(logs);
         await page.screenshot({ path: path.join(SHOTS, "t12-dossier.png") });
@@ -580,6 +695,52 @@ async function shownCount(page) {
         JSON.stringify(inside),
       );
       await page.close();
+    }
+
+    /* ---------- T14 Mobile compatibility matrix: no horizontal overflow,
+       filter controls reachable, tap targets >= 40px ---------- */
+    {
+      const widths = [320, 360, 390, 414, 768];
+      const problems = [];
+      const report = [];
+      for (const width of widths) {
+        const page = await browser.newPage();
+        await page.setViewport({ width, height: 844, isMobile: width < 768, hasTouch: width < 768 });
+        await gotoTimeline(page);
+        const state = await page.evaluate(() => {
+          const doc = document.documentElement;
+          const overflowPx = Math.max(doc.scrollWidth, document.body.scrollWidth) - window.innerWidth;
+          const search = document.querySelector("#archive-filter-search");
+          const trigger = document.querySelector(".archive-mobile-filter") || document.querySelector(".company-select-trigger");
+          const panel = document.querySelector(".archive-filter-panel");
+          const rect = (el) => (el ? el.getBoundingClientRect() : null);
+          const tap = (el) => {
+            const r = rect(el);
+            return r ? Math.round(Math.min(r.width, r.height)) : null;
+          };
+          const filterVisible =
+            (panel && getComputedStyle(panel).display !== "none") || !!rect(trigger);
+          return {
+            overflowPx,
+            filterVisible: !!filterVisible,
+            searchTap: tap(search),
+            triggerTap: tap(trigger),
+            searchVisible: search ? rect(search).width > 0 && rect(search).height > 0 : false,
+          };
+        });
+        await page.screenshot({ path: path.join(SHOTS, `t14-mobile-${width}.png`), fullPage: false });
+        report.push({ width, ...state });
+        if (state.overflowPx > 2) problems.push(`${width}px horizontal overflow ${state.overflowPx}px`);
+        if (!state.filterVisible) problems.push(`${width}px filters unreachable`);
+        if (state.triggerTap !== null && state.triggerTap < 40) problems.push(`${width}px trigger tap target ${state.triggerTap}px`);
+        await page.close();
+      }
+      record(
+        "T14",
+        "Mobile matrix (320–768px): no horizontal overflow, filters reachable, tap targets ≥40px",
+        problems.length === 0 ? "PASS" : "FAIL",
+        problems.length ? problems.join(" | ") : report.map((r) => `${r.width}:ok`).join(" "),
+      );
     }
   } finally {
     await browser.close();

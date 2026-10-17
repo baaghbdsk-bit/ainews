@@ -36,6 +36,12 @@ const FETCH_TIMEOUT_MS = 3000;
 // feed stall the batch (all feeds load in parallel) for long.
 const MAX_FETCH_ATTEMPTS = 2;
 const RETRY_BACKOFF_MS = 400;
+// Raw feed XML goes into the fetch Data Cache (unlike the in-memory `use cache`
+// entries, it persists across serverless instances and deploys), so timeline
+// reads never wait on 21 live upstream fetches. Stale entries refresh in the
+// background; the cron ingest bypasses the cache with `{ fresh: true }` so it
+// always reads live XML.
+const FEED_REVALIDATE_SECONDS = 300;
 // Large feeds (OpenAI, Hugging Face) carry thousands of historical entries;
 // capping high keeps 4+ years of timeline depth while staying bounded.
 const MAX_ITEMS_PER_FEED = 400;
@@ -253,7 +259,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** A single fetch attempt. Returns the body, or `null` when the response is
  *  definitive (bad status / too large / unparseable) — meaning a retry will not
  *  help. Returns `undefined` for transient failures so the caller can retry. */
-async function fetchFeedXmlOnce(url: string): Promise<string | null | undefined> {
+async function fetchFeedXmlOnce(url: string, fresh: boolean): Promise<string | null | undefined> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -261,6 +267,9 @@ async function fetchFeedXmlOnce(url: string): Promise<string | null | undefined>
       signal: controller.signal,
       redirect: 'follow',
       headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9' },
+      ...(fresh
+        ? { cache: 'no-store' as const }
+        : { next: { revalidate: FEED_REVALIDATE_SECONDS, tags: [AI_NEWS_TAG] } }),
     });
     if (!res.ok) {
       // 5xx is worth one retry; 4xx is a permanent miss.
@@ -287,9 +296,9 @@ async function fetchFeedXmlOnce(url: string): Promise<string | null | undefined>
   }
 }
 
-async function fetchFeedXml(url: string): Promise<string | null> {
+async function fetchFeedXml(url: string, fresh: boolean): Promise<string | null> {
   for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
-    const result = await fetchFeedXmlOnce(url);
+    const result = await fetchFeedXmlOnce(url, fresh);
     if (result !== undefined) return result;
     if (attempt < MAX_FETCH_ATTEMPTS) await delay(RETRY_BACKOFF_MS * attempt);
   }
@@ -297,8 +306,11 @@ async function fetchFeedXml(url: string): Promise<string | null> {
   return null;
 }
 
-export async function loadFeed(feed: FeedSource): Promise<Story[]> {
-  const xml = await fetchFeedXml(feed.url);
+export async function loadFeed(
+  feed: FeedSource,
+  options: { fresh?: boolean } = {},
+): Promise<Story[]> {
+  const xml = await fetchFeedXml(feed.url, options.fresh ?? false);
   if (!xml) return [];
 
   try {
@@ -327,7 +339,7 @@ export async function fetchAiNews(): Promise<Story[]> {
   cacheLife('minutes');
   cacheTag(AI_NEWS_TAG);
 
-  const results: Story[][] = await Promise.all(FEEDS.map(loadFeed));
+  const results: Story[][] = await Promise.all(FEEDS.map((feed) => loadFeed(feed)));
   const seen = new Set<string>();
   const merged: Story[] = [];
   for (const batch of results) {

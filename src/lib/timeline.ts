@@ -56,7 +56,6 @@ function formatStoryForDisplay(story: Story, color: string): StoryDisplay {
       extractCompany({
         title: story.title,
         summary: story.summary,
-        body: story.body,
         source: story.source,
       }),
     topic: story.topic,
