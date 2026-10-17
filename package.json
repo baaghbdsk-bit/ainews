@@ -17,6 +17,7 @@
     "@extractus/article-extractor": "^9.0.1",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
+    "@vercel/analytics": "^2.0.1",
     "fast-xml-parser": "^5.11.2",
     "lucide-react": "^1.55.0",
     "next": "16.4.0",
