@@ -12,7 +12,6 @@ import {
   Search,
   SlidersHorizontal,
   Sun,
-  UserRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -125,7 +124,7 @@ const TimelineRow = memo(function TimelineRow({
           {isActive && <span className="timeline-node-runner" />}
         </div>
         <div className="story-content">
-          <span className="story-meta">
+          <span className={`story-meta meta-${story.color}`}>
             <span className={`topic-dot dot-${story.color}`} />
             {story.topic}
           </span>
@@ -210,6 +209,13 @@ function CompanySelect({
     const spaceAbove = triggerRect.top - 10;
     setPosition(spaceBelow < panelRect.height && spaceAbove > spaceBelow ? 'up' : 'down');
   }, [isOpen]);
+
+  // Refresh always lands at the top: no scroll restoration, no carried-over filters
+  // (filters are client-only state, so a reload returns to the pristine landing page).
+  useEffect(() => {
+    history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -302,6 +308,13 @@ export function ExploreClient({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isPanelCollapsed, setPanelCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isLight) root.dataset.theme = "light";
+    else delete root.dataset.theme;
+  }, [isLight]);
 
   const [stories, setStories] = useState<StoryDisplay[]>(initialStories);
   const [matching, setMatching] = useState(matchingTotal);
@@ -622,12 +635,16 @@ export function ExploreClient({
         </label>
 
         <div className="header-actions">
-          <button aria-label="Switch to light theme" className="header-icon-button" title="Light theme" type="button">
+          <button
+            aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}
+            aria-pressed={isLight}
+            className="header-icon-button"
+            onClick={() => setIsLight((light) => !light)}
+            title={isLight ? "Dark theme" : "Light theme"}
+            type="button"
+          >
             <Sun size={17} />
           </button>
-          <span aria-hidden="true" className="header-avatar">
-            <UserRound size={16} strokeWidth={2} />
-          </span>
         </div>
 
         {/* Mobile-only header actions — the desktop theme/profile pair above is
@@ -642,16 +659,6 @@ export function ExploreClient({
             type="button"
           >
             <Menu size={18} />
-          </button>
-          <button
-            aria-expanded={isMobileMenuOpen}
-            aria-label="Open profile menu"
-            className="mobile-profile-button"
-            data-mobile-menu-trigger
-            onClick={() => setIsMobileMenuOpen((open) => !open)}
-            type="button"
-          >
-            <UserRound size={18} />
           </button>
         </div>
       </header>
@@ -673,15 +680,12 @@ export function ExploreClient({
           <button
             onClick={() => {
               setIsMobileMenuOpen(false);
-              setIsFilterOpen(true);
+              setIsLight((light) => !light);
             }}
             role="menuitem"
             type="button"
           >
-            <SlidersHorizontal size={15} /> Filter &amp; search
-          </button>
-          <button onClick={() => setIsMobileMenuOpen(false)} role="menuitem" title="Light theme" type="button">
-            <Sun size={15} /> Light theme
+            <Sun size={15} /> {isLight ? "Dark theme" : "Light theme"}
           </button>
         </div>
       )}
@@ -773,38 +777,6 @@ export function ExploreClient({
           </button>
 
           <div className={`filter-panel-body ${isPanelCollapsed ? "is-collapsed" : ""}`} id="archive-filter-body">
-          <div className="filter-group">
-            <label className="filter-group-label" htmlFor="archive-filter-search">
-              Search
-            </label>
-            <label className="search-box archive-search">
-              <Search size={16} />
-              <input
-                aria-label="Search AI timeline"
-                id="archive-filter-search"
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setActiveTimelineIndex(0);
-                }}
-                placeholder="Search stories..."
-                value={search}
-              />
-              {search && (
-                <button
-                  aria-label="Clear search"
-                  className="clear-search"
-                  onClick={() => {
-                    setSearch("");
-                    setActiveTimelineIndex(0);
-                  }}
-                  type="button"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </label>
-          </div>
-
           <div className="filter-group">
             <label className="filter-group-label" htmlFor="archive-filter-year">
               Period

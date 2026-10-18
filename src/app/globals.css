@@ -1,25 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #050810;
-  --paper-raised: #0b101a;
-  --ink: #e2e8f0;
-  --muted: #94a3b8;
-  --rule: #1e293b;
-  --green: #22d3ee;
-  --deep-green: #06b6d4;
-  --coral: #fb923c;
-  --blue: #38bdf8;
-  --violet: #c084fc;
-  --cyan: #22d3ee;
-  --amber: #fbbf24;
-  --orange: #fb923c;
+  --paper: #080A12;
+  --paper-raised: #0D101C;
+  --panel-bg: #111525;
+  --card-bg: #151B30;
+  --surface: #1A2037;
+  --ink: #F4F3FA;
+  --muted: #A3A8BF;
+  --faint: #78819C;
+  --rule: #343B55;
+  --rule-strong: #414967;
+  --rule-hover: #6D5AA8;
+  --rule-focus: #A78BFA;
+  --hover: #202641;
+  --accent: #8B5CF6;
+  --accent-2: #C084FC;
+  --highlight: #F472B6;
+  /* Distinct per-category hues (Policy / Models / Products / Research).
+     Deliberately spread across the wheel so timeline dots, date rings,
+     labels and monogram tiles read as a legend, not shades of one accent. */
+  --blue: #7AA5FF;
+  --green: #8B5CF6;
+  --deep-green: #C084FC;
+  --violet: #A78BFA;
+  --cyan: #2DD4BF;
+  --coral: #F472B6;
+  --amber: #FBBF24;
+  --orange: #FB923C;
   --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 @theme inline {
   --color-background: var(--paper);
   --color-foreground: var(--ink);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -60,14 +75,56 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 2px solid var(--deep-green);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+/* ---- Border visibility system ----
+   1px default edges via --rule / --shell-line; stronger 2nd-level edges via
+   --rule-strong / --shell-line-2; hover lifts to --rule-hover; keyboard
+   focus and active fields use --rule-focus. Light theme redefines the same
+   tokens under html[data-theme="light"] .archive-page, so both modes stay
+   in sync without duplicated selectors. */
+
+.archive-page .archive-search:focus-within,
+.archive-page .header-search:focus-within {
+  border-color: var(--shell-line-focus);
+  box-shadow: 0 0 0 3px var(--shell-accent-soft);
+}
+
+.archive-page .date-filter-select:focus,
+.archive-page .date-filter-select:focus-visible,
+.archive-page .company-select-trigger:focus-visible,
+.archive-page .company-select-trigger[data-open="true"] {
+  border-color: var(--shell-line-focus);
+  outline: 2px solid var(--shell-line-focus);
+  outline-offset: 2px;
+}
+
+.archive-page .category-chip:hover,
+.archive-page .archive-search:hover,
+.archive-page .header-search:hover,
+.archive-page .date-filter-select:hover,
+.archive-page .company-select-trigger:hover {
+  border-color: var(--shell-line-hover);
+}
+
+.archive-page .company-select-trigger[data-open="true"] {
+  box-shadow: 0 0 0 3px var(--shell-accent-soft);
+}
+
+.archive-page .header-icon-button:focus-visible,
+.archive-page .category-chip:focus-visible,
+.archive-page .active-filter-chip:focus-visible,
+.archive-page .company-select-trigger:focus-visible {
+  outline: 2px solid var(--shell-line-focus);
+  outline-offset: 2px;
 }
 
 .site-frame {
   min-height: 100vh;
   overflow: hidden;
-  background-image: radial-gradient(#344b420a 0.65px, transparent 0.65px);
+  background-image: radial-gradient(#46345a0a 0.65px, transparent 0.65px);
   background-size: 7px 7px;
 }
 
@@ -78,7 +135,7 @@ input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #070b14ed;
+  background: #1A2037ed;
 }
 
 .wordmark {
@@ -96,7 +153,7 @@ input:focus-visible {
   display: grid;
   place-items: center;
   color: var(--blue);
-  border: 1px solid #38bdf855;
+  border: 1px solid #8B5CF655;
   border-radius: 50%;
 }
 
@@ -128,7 +185,7 @@ input:focus-visible {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #64748b;
+  color: #78819C;
 }
 
 .live-dot {
@@ -136,14 +193,14 @@ input:focus-visible {
   height: 7px;
   border-radius: 50%;
   background: var(--blue);
-  box-shadow: 0 0 0 3px #38bdf840;
+  box-shadow: 0 0 0 3px #8B5CF640;
 }
 
 .topbar-link {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #475569;
+  color: #78819C;
   letter-spacing: 0.02em;
   text-transform: none;
   transition: color 160ms ease;
@@ -203,7 +260,7 @@ input:focus-visible {
   border: 1px solid transparent;
   border-radius: 5px;
   background: transparent;
-  color: #94a3b8;
+  color: #A3A8BF;
   cursor: pointer;
   text-align: left;
   transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
@@ -215,12 +272,12 @@ input:focus-visible {
 
 .topic-button:hover {
   color: var(--ink);
-  background: #1e293b80;
+  background: #343B5580;
 }
 
 .topic-button.is-active {
   border-color: var(--blue);
-  background: #1e3a8a;
+  background: #202641;
   color: var(--ink);
   box-shadow: 0 0 0 1px var(--blue);
 }
@@ -412,7 +469,7 @@ h1 em {
   bottom: 14px;
   left: 66px;
   width: 1px;
-  background: linear-gradient(to bottom, #475569, #475569 94%, transparent);
+  background: linear-gradient(to bottom, #78819C, #78819C 94%, transparent);
   content: "";
 }
 
@@ -438,7 +495,7 @@ h1 em {
   height: 8px;
   border-radius: 50%;
   background: #eaff94;
-  box-shadow: 0 0 8px 2px #38bdf840;
+  box-shadow: 0 0 8px 2px #8B5CF640;
   content: "";
   will-change: transform;
 }
@@ -631,13 +688,13 @@ h1 em {
 }
 
 .expand-icon:hover {
-  border-color: #60a5fa;
+  border-color: #C084FC;
   color: var(--blue);
 }
 
 .expand-icon.turned {
   transform: rotate(180deg);
-  background: #1e3a8a;
+  background: #202641;
   color: var(--blue);
 }
 
@@ -651,7 +708,7 @@ h1 em {
 
 .story-summary {
   margin: 0;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 13px;
   line-height: 1.7;
 }
@@ -664,7 +721,7 @@ h1 em {
 .story-overview-label {
   display: block;
   margin-bottom: 6px;
-  color: #64748b;
+  color: #78819C;
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -675,7 +732,7 @@ h1 em {
   margin: 15px 0 14px;
   padding: 11px 13px 12px;
   border-left: 2px solid var(--blue);
-  background: #0b1220;
+  background: #111525;
 }
 
 .why-it-matters span {
@@ -689,7 +746,7 @@ h1 em {
 
 .why-it-matters p {
   margin: 5px 0 0;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -717,7 +774,7 @@ h1 em {
 }
 
 .key-points li {
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -737,7 +794,7 @@ h1 em {
 }
 
 .source-link:hover {
-  color: #60a5fa;
+  color: #C084FC;
 }
 
 .empty-state {
@@ -747,7 +804,7 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  color: #64748b;
+  color: #78819C;
 }
 
 .empty-state p {
@@ -789,7 +846,7 @@ h1 em {
   padding-top: 8px;
   display: flex;
   flex-direction: column;
-  color: #64748b;
+  color: #78819C;
 }
 
 .right-rail-top {
@@ -807,7 +864,7 @@ h1 em {
   height: 28px;
   display: grid;
   place-items: center;
-  border: 1px solid #38bdf855;
+  border: 1px solid #8B5CF655;
   border-radius: 50%;
   color: var(--blue);
 }
@@ -863,14 +920,14 @@ h1 em {
 
 .stat-value span {
   margin-left: 4px;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
 }
 
 .stat-block > p {
   margin: 8px 0 0;
-  color: #64748b;
+  color: #78819C;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
   line-height: 1.6;
@@ -879,8 +936,8 @@ h1 em {
 .quote-block {
   margin-top: 20px;
   padding: 12px 14px 14px;
-  background: #0b1220;
-  border: 1px solid #1e293b;
+  background: #111525;
+  border: 1px solid #343B55;
   border-radius: 6px;
 }
 
@@ -893,7 +950,7 @@ h1 em {
 
 .quote-block p {
   margin: 4px 0 13px;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-family: var(--serif);
   font-size: 16px;
   line-height: 1.4;
@@ -1110,6 +1167,16 @@ h1 em {
   .end-marker p {
     font-size: 7px;
   }
+
+  /* Mobile-only: remove Search from filter panel (search is in header only) */
+  .archive-filter-panel .filter-group:first-child {
+    display: none !important;
+  }
+
+  /* Mobile-only: remove Category chips from filter panel (topics are in bottom nav) */
+  .archive-filter-panel .category-chips {
+    display: none !important;
+  }
 }
 
 
@@ -1128,7 +1195,7 @@ h1 em {
 /* High-contrast dark surfaces with distinct, saturated story accents. */
 .site-frame {
   background-color: var(--paper);
-  background-image: radial-gradient(#38bdf808 0.7px, transparent 0.7px);
+  background-image: radial-gradient(#8B5CF608 0.7px, transparent 0.7px);
 }
 
 .topbar {
@@ -1143,7 +1210,7 @@ h1 em {
 
 .wordmark-symbol,
 .orbit-mark {
-  border-color: #38bdf855;
+  border-color: #8B5CF655;
   color: var(--blue);
 }
 
@@ -1163,18 +1230,18 @@ h1 em {
 .rail-note,
 .snapshot-block > p,
 .right-rail-top {
-  color: #64748b;
+  color: #78819C;
 }
 
 .live-dot {
   background: var(--blue);
-  box-shadow: 0 0 0 3px #38bdf840;
+  box-shadow: 0 0 0 3px #8B5CF640;
 }
 
 .topic-button:hover,
 .topic-button.is-active {
   border-color: var(--blue);
-  background: #1e3a8a;
+  background: #202641;
   color: var(--ink);
 }
 
@@ -1215,34 +1282,34 @@ h1 em {
 }
 
 .moment-count {
-  border-color: #1e293b;
-  color: #cbd5e1;
+  border-color: #343B55;
+  color: #A3A8BF;
 }
 
 .search-box,
 .search-box input,
 .clear-search,
 .sort-indicator {
-  color: #cbd5e1;
+  color: #A3A8BF;
 }
 
 .search-box input::placeholder {
-  color: #64748b;
+  color: #78819C;
 }
 
 .clear-search:hover,
 .expand-icon.turned {
-  background: #1e3a8a;
+  background: #202641;
   color: var(--blue);
 }
 
 .timeline-list::before {
-  background: linear-gradient(to bottom, #1e293b, #1e293b 94%, transparent);
+  background: linear-gradient(to bottom, #343B55, #343B55 94%, transparent);
 }
 
 .year-rule,
 .end-marker > span {
-  background: #1e293b;
+  background: #343B55;
 }
 
 .date-day {
@@ -1254,25 +1321,25 @@ h1 em {
 }
 
 .meta-divider {
-  color: #475569;
+  color: #78819C;
 }
 
 .expand-icon {
-  border-color: #1e293b;
-  color: #94a3b8;
+  border-color: #343B55;
+  color: #A3A8BF;
 }
 
 .story-summary,
 .why-it-matters p,
 .stat-block > p,
 .quote-block p {
-  color: #94a3b8;
+  color: #A3A8BF;
 }
 
 .why-it-matters,
 .quote-block {
   border-color: var(--blue);
-  background: #0b1220;
+  background: #111525;
 }
 
 .why-it-matters span {
@@ -1281,7 +1348,7 @@ h1 em {
 
 .empty-state,
 .end-marker {
-  color: #64748b;
+  color: #78819C;
 }
 
 .empty-state button {
@@ -1326,8 +1393,8 @@ h1 em {
   overflow: clip;
   background-color: var(--paper);
   background-image:
-    radial-gradient(ellipse at 50% 0%, #38bdf80a, transparent 54%),
-    radial-gradient(#344b4208 0.65px, transparent 0.65px);
+    radial-gradient(ellipse at 50% 0%, #8B5CF60a, transparent 54%),
+    radial-gradient(#3A306008 0.65px, transparent 0.65px);
   background-size: auto, 7px 7px;
 }
 
@@ -1338,13 +1405,13 @@ h1 em {
   height: 78px;
   gap: clamp(20px, 3vw, 46px);
   padding: 0 clamp(24px, 5vw, 76px);
-  border-color: #354137cc;
-    background: #050810f2;
+  border-color: #343B55cc;
+    background: #080A12f2;
   }
 
 .archive-topbar .wordmark {
   flex: 0 0 auto;
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 25px;
   font-weight: 800;
 }
@@ -1352,10 +1419,10 @@ h1 em {
 .archive-topbar .wordmark-symbol {
   width: 38px;
   height: 38px;
-  border-color: #38bdf877;
-  background: #38bdf81a;
+  border-color: #8B5CF677;
+  background: #8B5CF61a;
   color: var(--blue);
-  box-shadow: 0 0 18px #38bdf840;
+  box-shadow: 0 0 12px #8B5CF622;
 }
 
 .archive-layout {
@@ -1386,9 +1453,9 @@ h1 em {
      clipped behind it; the panel box itself sticks below the topbar. */
   z-index: 25;
   padding: 22px 20px 20px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 10px;
-  background: #0b1220;
+  background: #111525;
   display: grid;
   gap: 20px;
 }
@@ -1410,7 +1477,7 @@ h1 em {
     gap: 8px;
     border: 1px solid var(--rule);
     border-radius: 999px;
-    background: #050810f2;
+    background: #080A12f2;
     backdrop-filter: blur(10px);
     color: var(--ink);
     font-size: 12px;
@@ -1462,8 +1529,8 @@ h1 em {
       from var(--beam-angle, 0deg),
       transparent 0deg,
       transparent 292deg,
-      #38bdf8 322deg,
-      #38bdf8 342deg,
+      #8B5CF6 322deg,
+      #8B5CF6 342deg,
       transparent 360deg
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1479,8 +1546,8 @@ h1 em {
   }
 
   @keyframes filter-pill-glow {
-    0%, 100% { box-shadow: 0 0 0 0 #38bdf800, 0 8px 28px #00000055; }
-    50% { box-shadow: 0 0 24px 0 #38bdf833, 0 8px 28px #00000055; }
+    0%, 100% { box-shadow: 0 0 0 0 #8B5CF600, 0 8px 28px #00000055; }
+    50% { box-shadow: 0 0 16px 0 #8B5CF622, 0 8px 28px #00000055; }
   }
 
   /* Open panel = task done for the trigger: steady green border, beam parked. */
@@ -1540,8 +1607,8 @@ h1 em {
     from var(--panel-beam-angle, 0deg),
     transparent 0deg,
     transparent 292deg,
-    #38bdf8 322deg,
-    #38bdf8 342deg,
+    #8B5CF6 322deg,
+    #8B5CF6 342deg,
     transparent 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1570,11 +1637,22 @@ h1 em {
     display: none;
   }
 
-  /* Desktop: filter panel stays expanded in view at all times. */
+  /* Desktop: filter panel stays expanded in view at all times.
+     With the shell zoomed to 0.85 the effective viewport offset is
+     top * 0.85; top must equal header height (74px) plus the zoomed layout
+     padding (29px * 0.85 ≈ 25px) so pinned position equals natural position —
+     zero movement while scrolling. */
+  .archive-page .archive-timeline {
+    padding-bottom: 104px;
+  }
+
+  /* The grid row reaches the page bottom (the layout has no bottom padding),
+     so the panel rests at `top` without being pushed up — and it is never
+     clipped/squeezed. */
   .archive-filter-panel {
     display: block;
     position: sticky;
-    top: 80px;
+    top: 116px;
   }
 }
 
@@ -1583,12 +1661,12 @@ h1 em {
   align-items: center;
   gap: 10px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #273128;
+  border-bottom: 1px solid #343B55;
 }
 
 .filter-panel-head h2 {
   margin: 0;
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 13px;
   font-weight: 620;
@@ -1602,9 +1680,9 @@ h1 em {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 6px;
-  background: #0f172a;
+  background: #151B30;
   color: var(--blue);
 }
 
@@ -1614,7 +1692,7 @@ h1 em {
 }
 
 .filter-group-label {
-  color: #64748b;
+  color: #78819C;
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 10px;
   font-weight: 620;
@@ -1626,7 +1704,7 @@ h1 em {
   display: grid;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #273128;
+  border-top: 1px solid #343B55;
 }
 
 .filter-result-count {
@@ -1647,10 +1725,10 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 5px;
   background: transparent;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -1662,7 +1740,7 @@ h1 em {
 
 .filter-clear-button:hover:not(:disabled) {
   border-color: var(--blue);
-  background: #1e3a8a;
+  background: #202641;
   color: var(--ink);
 }
 
@@ -1705,22 +1783,22 @@ h1 em {
   min-height: 44px;
   padding: 0 16px;
   gap: 8px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 999px;
   background: transparent;
-  color: #94a3b8;
+  color: #A3A8BF;
   white-space: nowrap;
 }
 
 .archive-topic-nav .topic-button:hover {
-  background: #1e293b;
+  background: #343B55;
   color: var(--ink);
 }
 
 .archive-topic-nav .topic-button.is-active {
   border-color: var(--blue);
   background: var(--blue);
-  color: #050810;
+  color: #080A12;
   box-shadow: 0 0 0 1px var(--blue);
 }
 
@@ -1731,25 +1809,25 @@ h1 em {
 .archive-search {
   min-width: 0;
   padding: 0 12px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 5px;
-  background: #070b14;
-  color: #cbd5e1;
+  background: #1A2037;
+  color: #A3A8BF;
 }
 
 .archive-search input {
   width: 100%;
   min-width: 0;
   height: 36px;
-  color: #e2e8f0;
+  color: #F4F3FA;
 }
 
 .archive-search input::placeholder {
-  color: #64748b;
+  color: #78819C;
 }
 
 .archive-search .clear-search:hover {
-  background: #1e293b;
+  background: #343B55;
   color: var(--blue);
 }
 
@@ -1763,22 +1841,22 @@ h1 em {
   width: 100%;
   height: 36px;
   padding: 0 28px 0 10px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 5px;
-  background: #070b14;
+  background: #1A2037;
   /* Custom chevron so the select reads the same on every OS. */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 12px;
   appearance: none;
   cursor: pointer;
 }
 
 .date-filter-select option {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #151B30;
+  color: #F4F3FA;
 }
 
 .date-filter-select:focus-visible {
@@ -1800,10 +1878,10 @@ h1 em {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 5px;
-  background: #070b14;
-  color: #e2e8f0;
+  background: #1A2037;
+  color: #F4F3FA;
   font-size: 12px;
   font-family: inherit;
   text-align: left;
@@ -1812,7 +1890,7 @@ h1 em {
 }
 
 .company-select-trigger:hover {
-  border-color: #3a463b;
+  border-color: #414967;
 }
 
 .company-select-trigger:focus-visible {
@@ -1830,7 +1908,7 @@ h1 em {
 
 .company-select-trigger svg {
   flex: 0 0 auto;
-  color: #64748b;
+  color: #78819C;
 }
 
 .company-select-panel {
@@ -1843,8 +1921,8 @@ h1 em {
   margin: 0;
   padding: 4px;
   list-style: none;
-  background: #0b1220;
-  border: 1px solid #1e293b;
+  background: #111525;
+  border: 1px solid #343B55;
   border-radius: 0 0 6px 6px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
   z-index: 30;
@@ -1864,7 +1942,7 @@ h1 em {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 13px;
   font-family: inherit;
   text-align: left;
@@ -1873,12 +1951,16 @@ h1 em {
 }
 
 .company-select-option:hover {
-  background: #1e293b;
+  background: #343B55;
+  outline: 1px solid var(--rule-hover);
+  outline-offset: -1px;
 }
 
 .company-select-option.is-selected {
-  background: #38bdf81a;
+  background: #8B5CF61a;
   color: var(--green);
+  outline: 1px solid var(--rule-focus);
+  outline-offset: -1px;
 }
 
 .archive-timeline {
@@ -1896,7 +1978,7 @@ h1 em {
   bottom: 34px;
   left: 55px;
   width: 2px;
-  background: linear-gradient(to bottom, #495847, #384536 88%, transparent);
+  background: linear-gradient(to bottom, #3A2D5C, #2E2650 88%, transparent);
 }
 
 .archive-timeline .timeline-item {
@@ -1909,9 +1991,9 @@ h1 em {
   display: flex;
   align-items: center;
   gap: 16px;
-  border: 1px solid #1e293b;
+  border: 1.5px solid #343B55;
   border-radius: 8px;
-  background: linear-gradient(90deg, #0f172a, #0b1220 70%);
+  background: linear-gradient(90deg, #151B30, #111525 70%);
   color: var(--blue);
 }
 
@@ -1925,15 +2007,15 @@ h1 em {
 
 .archive-timeline .year-rule {
   height: 2px;
-  background: linear-gradient(to right, #495847, transparent);
+  background: linear-gradient(to right, #3A2D5C, transparent);
 }
 
 .archive-timeline .story-row {
+  display: grid;
   grid-template-columns: 74px minmax(0, 1fr);
   gap: 36px;
   align-items: start;
-  padding: 17px 0 17px 18px;
-  border-bottom: 1px solid #1e293b;
+  /* Padding/frame come from the shell card layer below; this block only sets grid. */
 }
 
 .archive-timeline .timeline-node {
@@ -1946,10 +2028,10 @@ h1 em {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid currentColor;
+  border: 2px solid currentColor;
   border-radius: 50%;
-  background: #0f172a;
-  box-shadow: 0 0 0 6px #050810, 0 8px 26px #0005;
+  background: #151B30;
+  box-shadow: 0 0 0 6px #080A12, 0 8px 26px #0005;
 }
 
 .archive-timeline .date-day {
@@ -1970,9 +2052,9 @@ h1 em {
 .timeline-node-runner {
   position: absolute;
   inset: -7px;
-  border: 1px solid #38bdf855;
+  border: 1px solid #8B5CF655;
   border-radius: 50%;
-  box-shadow: 0 0 0 4px #38bdf81c, 0 0 24px #38bdf855;
+  box-shadow: 0 0 0 3px #8B5CF614, 0 0 12px #8B5CF633;
   pointer-events: none;
 }
 
@@ -1981,7 +2063,7 @@ h1 em {
 }
 
 .archive-timeline .story-meta {
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 10px;
 }
 
@@ -1991,7 +2073,7 @@ h1 em {
 }
 
 .archive-timeline .story-title {
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 19px;
   font-weight: 560;
   line-height: 1.45;
@@ -2002,12 +2084,12 @@ h1 em {
 }
 
 .archive-timeline .expand-icon {
-  border-color: #1e293b;
-  color: #94a3b8;
+  border-color: #343B55;
+  color: #A3A8BF;
 }
 
 .archive-timeline .expand-icon.turned {
-  background: #1e3a8a;
+  background: #202641;
   color: var(--blue);
 }
 
@@ -2017,12 +2099,12 @@ h1 em {
 
 .archive-timeline .story-summary,
 .archive-timeline .why-it-matters p {
-  color: #94a3b8;
+  color: #A3A8BF;
 }
 
 .archive-timeline .why-it-matters {
   border-color: var(--blue);
-  background: #0b1220;
+  background: #111525;
 }
 
 .archive-timeline .why-it-matters span,
@@ -2031,7 +2113,7 @@ h1 em {
 }
 
 .archive-timeline .key-points li {
-  color: #94a3b8;
+  color: #A3A8BF;
 }
 
 .archive-timeline .key-points span {
@@ -2043,12 +2125,12 @@ h1 em {
 }
 
 .archive-timeline .source-link:hover {
-  color: #60a5fa;
+  color: #C084FC;
 }
 
 .archive-timeline .empty-state {
   min-height: 280px;
-  color: #64748b;
+  color: #78819C;
 }
 
 .archive-timeline .empty-state button {
@@ -2133,7 +2215,7 @@ h1 em {
 }
 
 .story-article-topbar .wordmark {
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 25px;
   font-weight: 800;
 }
@@ -2141,10 +2223,10 @@ h1 em {
 .story-article-topbar .wordmark-symbol {
   width: 38px;
   height: 38px;
-  border-color: #38bdf877;
-  background: #38bdf81a;
+  border-color: #8B5CF677;
+  background: #8B5CF61a;
   color: var(--blue);
-  box-shadow: 0 0 18px #38bdf840;
+  box-shadow: 0 0 12px #8B5CF622;
 }
 
 .story-article {
@@ -2157,7 +2239,7 @@ h1 em {
   display: flex;
   align-items: center;
   gap: 17px;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 11px;
 }
 
@@ -2189,7 +2271,7 @@ h1 em {
 .story-article-summary {
   max-width: 690px;
   margin: 0;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 20px;
   line-height: 1.65;
 }
@@ -2201,13 +2283,13 @@ h1 em {
 
 .story-article-body p {
   margin: 0 0 20px;
-  color: #cbd5e1;
+  color: #A3A8BF;
   font-size: 18px;
   line-height: 1.78;
 }
 
 .story-article-body p:first-child {
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 20px;
   line-height: 1.7;
 }
@@ -2216,7 +2298,7 @@ h1 em {
 .story-article-standfirst {
   max-width: 690px;
   margin: 0 0 28px;
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 20px;
   line-height: 1.7;
 }
@@ -2227,7 +2309,7 @@ h1 em {
   margin: 32px 0 0;
   padding: 18px 20px 20px;
   border-left: 3px solid var(--story-accent);
-  background: #0f172a;
+  background: #151B30;
 }
 
 .story-article-keypoints h2 {
@@ -2247,7 +2329,7 @@ h1 em {
 }
 
 .story-article-keypoints li {
-  color: #cbd5e1;
+  color: #A3A8BF;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -2259,7 +2341,7 @@ h1 em {
 .story-article-divider {
   height: 1px;
   margin: 42px 0 36px;
-  background: #1e293b;
+  background: #343B55;
 }
 
 .story-article-divider span {
@@ -2279,7 +2361,7 @@ h1 em {
 .story-article-context p {
   max-width: 680px;
   margin: 0;
-  color: #94a3b8;
+  color: #A3A8BF;
   font-size: 16px;
   line-height: 1.75;
 }
@@ -2290,13 +2372,13 @@ h1 em {
   display: flex;
   align-items: center;
   gap: 9px;
-  border-top: 1px solid #1e293b;
-  color: #94a3b8;
+  border-top: 1px solid #343B55;
+  color: #A3A8BF;
   font-size: 11px;
 }
 
 .story-article-source strong {
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-weight: 600;
 }
 
@@ -2409,10 +2491,10 @@ h1 em {
 .dossier-topbar .wordmark-symbol {
   width: 38px;
   height: 38px;
-  border-color: #38bdf877;
-  background: #38bdf80f;
+  border-color: #8B5CF677;
+  background: #8B5CF60f;
   color: var(--blue);
-  box-shadow: 0 0 18px #38bdf830;
+  box-shadow: 0 0 12px #8B5CF61A;
 }
 
 .dossier {
@@ -2450,7 +2532,7 @@ h1 em {
 .dossier-standfirst {
   max-width: 700px;
   margin: 0;
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-family: var(--serif);
   font-size: 21px;
   line-height: 1.6;
@@ -2542,13 +2624,13 @@ h1 em {
 
 .dossier-body p {
   margin: 0 0 22px;
-  color: #cbd5e1;
+  color: #A3A8BF;
   font-size: 18px;
   line-height: 1.78;
 }
 
 .dossier-body p:first-of-type {
-  color: #e2e8f0;
+  color: #F4F3FA;
   font-size: 20px;
   line-height: 1.7;
 }
@@ -2561,7 +2643,7 @@ h1 em {
 }
 
 .dossier-list li {
-  color: #cbd5e1;
+  color: #A3A8BF;
   font-size: 17px;
   line-height: 1.65;
 }
@@ -2619,7 +2701,7 @@ h1 em {
   margin: 34px 0 40px;
   padding: 20px 22px 6px;
   border-left: 3px solid var(--blue);
-  background: #0f172a;
+  background: #151B30;
 }
 
 .dossier-keyfacts h2 {
@@ -2687,11 +2769,11 @@ h1 em {
   display: flex;
   gap: 12px;
   padding: 4px 0;
-  color: #cbd5e1;
+  color: #A3A8BF;
 }
 
 .dossier-sources li:target {
-  background: #38bdf812;
+  background: #8B5CF612;
 }
 
 .dossier-source-marker {
@@ -2717,14 +2799,14 @@ h1 em {
 }
 
 .dossier-source-meta {
-  color: #64748b;
+  color: #78819C;
   font-size: 11px;
 }
 
 .dossier-source-note,
 .dossier-disclaimer {
   margin: 22px 0 0;
-  color: #64748b;
+  color: #78819C;
   font-size: 11px;
   line-height: 1.6;
 }
@@ -2746,7 +2828,7 @@ h1 em {
 }
 
 .story-article-topics > span {
-  color: #64748b;
+  color: #78819C;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -2758,9 +2840,9 @@ h1 em {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 999px;
-  color: #cbd5e1;
+  color: #A3A8BF;
   font-size: 12px;
   font-weight: 600;
   transition: border-color 0.15s ease, color 0.15s ease;
@@ -2805,7 +2887,7 @@ h1 em {
 
 .entity-hub-list time {
   flex: 0 0 auto;
-  color: #64748b;
+  color: #78819C;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -2821,11 +2903,11 @@ h1 em {
 
 .entity-hub-list svg {
   flex: 0 0 auto;
-  color: #64748b;
+  color: #78819C;
 }
 
 .entity-hub-empty {
-  color: #64748b;
+  color: #78819C;
   font-size: 14px;
 }
 
@@ -2869,9 +2951,9 @@ h1 em {
   display: grid;
   place-items: center;
   overflow: hidden;
-  border: 1px solid #1e293b;
+  border: 1px solid #343B55;
   border-radius: 10px;
-  background: #0f172a;
+  background: #151B30;
   transition: border-color 160ms ease;
 }
 
@@ -2883,14 +2965,14 @@ h1 em {
 }
 
 .story-thumb:hover {
-  border-color: #38bdf866;
+  border-color: #8B5CF666;
 }
 
 .story-thumb-mono {
   --tone: var(--blue);
   background:
-    radial-gradient(120% 120% at 18% 12%, #38bdf81f, transparent 58%),
-    linear-gradient(150deg, #0f172a, #0b1220 72%);
+    radial-gradient(120% 120% at 18% 12%, #8B5CF61f, transparent 58%),
+    linear-gradient(150deg, #151B30, #111525 72%);
   color: var(--tone);
   font-size: 20px;
   font-weight: 700;
@@ -2921,22 +3003,24 @@ h1 em {
    ========================================================================== */
 
 .archive-page {
-  --shell-bg: #05070f;
-  --shell-surface: #0d1424;
-  --shell-surface-2: #121b2e;
-  --shell-line: #1c2740;
-  --shell-line-2: #26344f;
-  --shell-text: #eef3ff;
-  --shell-muted: #93a3c4;
-  --shell-faint: #6b7b9b;
-  --shell-accent: #5b8cff;
-  --shell-accent-2: #22d3ee;
-  --shell-accent-soft: #5b8cff2e;
+  --shell-bg: #080A12;
+  --shell-surface: #0D101C;
+  --shell-surface-2: #151B30;
+  --shell-line: #343B55;
+  --shell-line-2: #414967;
+  --shell-line-hover: #6D5AA8;
+  --shell-line-focus: #A78BFA;
+  --shell-text: #F4F3FA;
+  --shell-muted: #A3A8BF;
+  --shell-faint: #78819C;
+  --shell-accent: #8B5CF6;
+  --shell-accent-2: #C084FC;
+  --shell-accent-soft: #8B5CF62e;
   background-color: var(--shell-bg);
   background-image:
-    radial-gradient(1100px 520px at 10% -10%, #4f7cff1f, transparent 62%),
-    radial-gradient(900px 460px at 92% -14%, #22d3ee14, transparent 60%),
-    radial-gradient(#2a3a5c1f 0.7px, transparent 0.7px);
+    radial-gradient(1100px 520px at 10% -10%, #8B5CF61f, transparent 62%),
+    radial-gradient(900px 460px at 92% -14%, #C084FC14, transparent 60%),
+    radial-gradient(#3A30601f 0.7px, transparent 0.7px);
   background-size: auto, auto, 8px 8px;
   color: var(--shell-text);
 }
@@ -2946,12 +3030,12 @@ h1 em {
 .archive-topbar {
   height: 74px;
   gap: clamp(16px, 2.4vw, 40px);
-  padding: 0 clamp(18px, 2.6vw, 32px);
+  padding: 17px clamp(18px, 2.6vw, 32px) 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   border-bottom: 1px solid var(--shell-line);
-  background: #080c17e6;
+  background: #0b0d19e6;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -2964,8 +3048,9 @@ h1 em {
 
 .header-brand {
   min-width: 0;
+  align-self: center;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 16px;
 }
 
@@ -2978,10 +3063,10 @@ h1 em {
 .archive-page .wordmark-symbol {
   width: 34px;
   height: 34px;
-  border: 1px solid #5b8cff5c;
-  background: linear-gradient(140deg, #5b8cff33, #22d3ee14);
-  color: #dbe6ff;
-  box-shadow: 0 0 22px #5b8cff33;
+  border: 1px solid #8B5CF65c;
+  background: linear-gradient(140deg, #8B5CF633, #C084FC14);
+  color: #F4F3FA;
+  box-shadow: 0 0 12px #8B5CF622;
 }
 
 .header-search {
@@ -3000,7 +3085,7 @@ h1 em {
 }
 
 .header-search:focus-within {
-  border-color: var(--shell-accent);
+  border-color: var(--shell-line-focus);
   box-shadow: 0 0 0 3px var(--shell-accent-soft);
 }
 
@@ -3039,7 +3124,7 @@ h1 em {
 }
 
 .header-icon-button:hover {
-  border-color: var(--shell-line-2);
+  border-color: var(--shell-line-hover);
   background: var(--shell-surface-2);
   color: var(--shell-text);
 }
@@ -3051,15 +3136,16 @@ h1 em {
   place-items: center;
   border: 1px solid var(--shell-line-2);
   border-radius: 999px;
-  background: linear-gradient(140deg, #24365c, #16203a);
-  color: #cdd9f5;
+  background: linear-gradient(140deg, #2E2650, #1A2037);
+  color: #A3A8BF;
 }
 
 /* ---- Shell container + topic pills ---- */
 
 .archive-shell {
-  width: min(100% - 48px, 1180px);
+  width: min(100% - 48px, 1300px);
   margin: 0 auto;
+  zoom: 0.85;
 }
 
 .topic-tabs-bar {
@@ -3082,7 +3168,7 @@ h1 em {
   padding: 5px;
   border: 1px solid var(--shell-line);
   border-radius: 999px;
-  background: #0b1120b8;
+  background: #0D101Cb8;
 }
 
 .archive-topic-nav .topic-button {
@@ -3099,15 +3185,15 @@ h1 em {
 }
 
 .archive-topic-nav .topic-button:hover {
-  background: #1a2540;
+  background: #202641;
   color: var(--shell-text);
 }
 
 .archive-topic-nav .topic-button.is-active {
   border-color: transparent;
-  background: linear-gradient(120deg, #5b8cff, #7cb0ff);
-  color: #05070f;
-  box-shadow: 0 6px 20px #5b8cff45;
+  background: linear-gradient(120deg, #8B5CF6, #C084FC);
+  color: #080A12;
+  box-shadow: 0 6px 20px #8B5CF645;
 }
 
 /* ---- Two-column body ---- */
@@ -3115,8 +3201,11 @@ h1 em {
 .archive-layout {
   width: 100%;
   margin: 0;
-  padding: 22px 0 104px;
-  grid-template-columns: 250px minmax(0, 1fr);
+  /* No bottom padding: the grid row must reach the page bottom so the sticky
+     filter panel is never pushed up over the header at the end of a short
+     timeline. The breathing room lives on .archive-timeline instead. */
+  padding: 29px 0 0;
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: clamp(22px, 2.8vw, 38px);
   align-items: start;
 }
@@ -3129,7 +3218,7 @@ h1 em {
   padding: 16px 16px 18px;
   border: 1px solid var(--shell-line);
   border-radius: 16px;
-  background: linear-gradient(180deg, #0e1526f5, #0b1120f5);
+  background: linear-gradient(180deg, #111525f5, #0D101Cf5);
   box-shadow: 0 18px 44px #00000040;
 }
 
@@ -3217,11 +3306,11 @@ h1 em {
 
 .archive-page .date-filter-select:hover,
 .archive-page .company-select-trigger:hover {
-  border-color: var(--shell-line-2);
+  border-color: var(--shell-line-hover);
 }
 
 .archive-page .date-filter-select option {
-  background: #0f172a;
+  background: #151B30;
   color: var(--shell-text);
 }
 
@@ -3268,15 +3357,15 @@ h1 em {
 }
 
 .category-chip:hover {
-  border-color: var(--shell-line-2);
+  border-color: var(--shell-line-hover);
   color: var(--shell-text);
 }
 
 .category-chip.is-active {
   border-color: transparent;
-  background: linear-gradient(120deg, #5b8cff, #7cb0ff);
-  color: #05070f;
-  box-shadow: 0 6px 18px #5b8cff3d;
+  background: linear-gradient(120deg, #8B5CF6, #C084FC);
+  color: #080A12;
+  box-shadow: 0 6px 18px #8B5CF63d;
 }
 
 /* Active filters */
@@ -3310,7 +3399,7 @@ h1 em {
 
 .archive-page .filter-clear-button:hover:not(:disabled) {
   background: transparent;
-  color: #9dc0ff;
+  color: #C084FC;
   text-decoration: underline;
 }
 
@@ -3328,7 +3417,7 @@ h1 em {
   gap: 6px;
   border: 1px solid var(--shell-line-2);
   border-radius: 999px;
-  background: #16203a;
+  background: #1A2037;
   color: var(--shell-text);
   font-size: 12px;
   font-weight: 500;
@@ -3337,8 +3426,21 @@ h1 em {
 }
 
 .active-filter-chip:hover {
-  border-color: var(--shell-accent);
-  color: #cfe0ff;
+  border-color: var(--shell-line-focus);
+  color: #C084FC;
+}
+
+/* Light mode: the chip keeps its dark pill background, so force light text
+   (otherwise --shell-text goes dark-on-dark and the label vanishes). */
+html[data-theme="light"] .active-filter-chip {
+  background: #1A1530;
+  border-color: #1A1530;
+  color: #FFFFFF;
+}
+
+html[data-theme="light"] .active-filter-chip:hover {
+  border-color: #7C3AED;
+  color: #DDD6FE;
 }
 
 .active-filter-empty {
@@ -3360,12 +3462,12 @@ h1 em {
 /* ---- Timeline rows, recoloured to the shell palette ---- */
 
 .archive-timeline .timeline-list::before {
-  background: linear-gradient(to bottom, #2b3c60, #22304d 88%, transparent);
+  background: linear-gradient(to bottom, #3A2D5C, #2E2650 88%, transparent);
 }
 
 .archive-timeline .year-divider {
   border: 1px solid var(--shell-line);
-  background: linear-gradient(90deg, #101a2e, #0b1120 72%);
+  background: linear-gradient(90deg, #151B30, #0D101C 72%);
   color: var(--shell-text);
 }
 
@@ -3377,14 +3479,21 @@ h1 em {
 }
 
 .archive-timeline .year-rule {
-  background: linear-gradient(to right, #34456b, transparent);
+  background: linear-gradient(to right, #3A3360, transparent);
 }
 
 .archive-timeline .timeline-node {
-  border-color: var(--shell-line-2);
+  border: 2.5px solid currentColor;
   background: var(--shell-surface-2);
   box-shadow: 0 0 0 6px var(--shell-bg), 0 10px 26px #0000005c;
 }
+
+/* Per-category date rings keep their legend hue even inside the shell layer
+   (this block outranks the generic .node-* colours above). */
+.archive-timeline .timeline-node.node-blue { color: var(--blue); }
+.archive-timeline .timeline-node.node-violet { color: var(--violet); }
+.archive-timeline .timeline-node.node-cyan { color: var(--cyan); }
+.archive-timeline .timeline-node.node-amber { color: var(--amber); }
 
 .archive-timeline .date-day {
   color: var(--shell-text);
@@ -3394,17 +3503,68 @@ h1 em {
   color: var(--shell-faint);
 }
 
+/* ---- Timeline event cards ----
+   Each story-row is a distinct card: 2px visible border, category-tinted
+   3px left accent edge, surface lift over the page bg, gentle hover raise.
+   The vertical spine + date nodes stay as the chronology anchor; the old
+   hairline row dividers are gone (they fought with the spine). */
 .archive-timeline .story-row {
-  border-bottom: 1px solid var(--shell-line);
+  position: relative;
+  margin: 0 0 14px;
+  padding: 18px 20px;
+  border: 2px solid var(--shell-line);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--shell-surface-2), var(--shell-surface));
+  box-shadow: 0 10px 28px #00000038;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+/* Category accent edge: a 3px bar on the card's left, tinted to the story's
+   hue. Painted via ::before so border-radius clipping stays clean. */
+.archive-timeline .story-row::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--shell-line-2);
+}
+
+/* story color classes come from story.color: blue/violet/cyan/amber */
+.archive-timeline .story-row:has(.node-blue)::before { background: var(--blue); }
+.archive-timeline .story-row:has(.node-violet)::before { background: var(--violet); }
+.archive-timeline .story-row:has(.node-cyan)::before { background: var(--cyan); }
+.archive-timeline .story-row:has(.node-amber)::before { background: var(--amber); }
+
+.archive-timeline .story-row:hover {
+  border-color: var(--shell-line-hover);
+  box-shadow: 0 14px 34px #0000004d;
+  transform: translateY(-1px);
+}
+
+/* Expanded (open) card: accent-tinted border so the open state is obvious. */
+.archive-timeline .timeline-item.is-expanded .story-row {
+  border-color: var(--shell-line-focus);
+  box-shadow: 0 16px 38px #00000055, 0 0 0 3px var(--shell-accent-soft);
 }
 
 .archive-timeline .story-meta {
-  color: var(--shell-accent);
+  color: var(--shell-muted);
   font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+
+/* Per-category label + dot: the dot carries the category hue and the label
+   tints toward it so Models / Products / Research / Policy each read
+   distinctly at a glance in both themes. */
+.archive-timeline .story-meta.meta-blue { color: #7AA5FF; }
+.archive-timeline .story-meta.meta-violet { color: #A78BFA; }
+.archive-timeline .story-meta.meta-cyan { color: #2DD4BF; }
+.archive-timeline .story-meta.meta-amber { color: #FBBF24; }
 
 .archive-timeline .story-title,
 .archive-timeline .story-title-text {
@@ -3413,7 +3573,7 @@ h1 em {
 }
 
 .archive-timeline .story-title-link:hover .story-title-text {
-  color: #a9c6ff;
+  color: #C084FC;
 }
 
 .archive-timeline .story-summary,
@@ -3422,25 +3582,34 @@ h1 em {
 }
 
 .story-thumb {
-  border-color: var(--shell-line);
+  border-color: var(--shell-line-2);
+  border-width: 1.5px;
   border-radius: 12px;
   background: var(--shell-surface-2);
 }
 
 .story-thumb:hover {
-  border-color: var(--shell-line-2);
+  border-color: var(--shell-line-hover);
 }
 
 .story-thumb-mono {
   background:
-    radial-gradient(120% 120% at 18% 12%, #5b8cff26, transparent 58%),
-    linear-gradient(150deg, #16203a, #0e1626 72%);
-  color: var(--shell-text);
+    radial-gradient(120% 120% at 18% 12%, #8B5CF626, transparent 58%),
+    linear-gradient(150deg, #1A2037, #111525 72%);
+  color: var(--tone, var(--shell-text));
+  border-color: color-mix(in srgb, currentColor 55%, var(--shell-line-2));
 }
+
+/* Monogram tile per-category backlight: same hue as the dot/ring, kept faint
+   so the tile stays a neutral surface with a category-colored glow. */
+.thumb-blue { --tone: var(--blue); background: radial-gradient(120% 120% at 18% 12%, #7AA5FF2e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
+.thumb-violet { --tone: var(--violet); background: radial-gradient(120% 120% at 18% 12%, #A78BFA2e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
+.thumb-cyan { --tone: var(--cyan); background: radial-gradient(120% 120% at 18% 12%, #2DD4BF2e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
+.thumb-amber { --tone: var(--amber); background: radial-gradient(120% 120% at 18% 12%, #FBBF242e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
 
 .archive-page .archive-search .clear-search:hover,
 .archive-page .header-search .clear-search:hover {
-  background: #1a2540;
+  background: #202641;
   color: var(--shell-accent);
 }
 
@@ -3478,8 +3647,8 @@ h1 em {
   border: 1px solid var(--shell-line);
   border-radius: 20px;
   background:
-    radial-gradient(130% 170% at 86% 46%, #5b8cff21, transparent 62%),
-    linear-gradient(135deg, #0e1729, #0a1020 74%);
+    radial-gradient(130% 170% at 86% 46%, #8B5CF621, transparent 62%),
+    linear-gradient(135deg, #111525, #080A12 74%);
   box-shadow: 0 24px 60px #00000059;
 }
 
@@ -3509,7 +3678,7 @@ h1 em {
 }
 
 .hero-title-accent {
-  background: linear-gradient(96deg, #7cb0ff, #22d3ee 78%);
+  background: linear-gradient(96deg, #C084FC, #C084FC 78%);
   background-clip: text;
   color: transparent;
 }
@@ -3531,7 +3700,7 @@ h1 em {
   padding: 7px 14px;
   border: 1px solid var(--shell-line-2);
   border-radius: 999px;
-  background: #101a2ecc;
+  background: #151B30cc;
   color: var(--shell-text);
   font-size: 12px;
   font-weight: 600;
@@ -3551,7 +3720,7 @@ h1 em {
   inset: 0;
   display: block;
   border-radius: 50%;
-  background-image: radial-gradient(#6f9dff8a 1px, transparent 1.5px);
+  background-image: radial-gradient(#C084FC8a 1px, transparent 1.5px);
   background-size: 8px 8px;
   mask-image: radial-gradient(circle at 50% 50%, #000 38%, #0000 66%);
   -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 38%, #0000 66%);
@@ -3632,7 +3801,7 @@ h1 em {
   align-items: center;
   justify-content: space-around;
   border-top: 1px solid var(--rule);
-  background: #070b14ed;
+  background: #1A2037ed;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 40;
@@ -3645,7 +3814,7 @@ h1 em {
   align-items: center;
   gap: 4px;
   padding: 8px 12px;
-  color: #64748b;
+  color: #78819C;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -3726,7 +3895,7 @@ h1 em {
     padding: 6px;
     border: 1px solid var(--shell-line-2);
     border-radius: 14px;
-    background: #0b1120f7;
+    background: #0D101Cf7;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 18px 44px #00000066;
@@ -3750,7 +3919,7 @@ h1 em {
   }
 
   .mobile-menu-panel button:hover {
-    background: #16203a;
+    background: #1A2037;
   }
 
   .mobile-menu-panel button svg {
@@ -3789,7 +3958,7 @@ h1 em {
     border: 1px solid var(--rule);
     border-radius: 999px;
     background: transparent;
-    color: #94a3b8;
+    color: #A3A8BF;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
@@ -3799,15 +3968,15 @@ h1 em {
   }
 
   .archive-page .topic-chip:hover {
-    border-color: #334155;
+    border-color: #A78BFA;
     color: var(--ink);
   }
 
   .archive-page .topic-chip.is-active {
     border-color: var(--blue);
-    background: rgba(56, 189, 248, 0.1);
+    background: rgba(139, 92, 246, 0.12);
     color: var(--blue);
-    box-shadow: 0 0 14px rgba(56, 189, 248, 0.15);
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.15);
   }
 }
 
@@ -3836,4 +4005,197 @@ h1 em {
     order: -1;
     position: static;
   }
+}
+
+/* ---- Light theme (toggled by the header sun button) ---- */
+
+html[data-theme="light"] .archive-page {
+  --shell-bg: #F5F2FB;
+  --shell-surface: #ffffff;
+  --shell-surface-2: #F3EFFA;
+  --shell-line: #C9BEDB;
+  --shell-line-2: #B8A9CC;
+  --shell-line-hover: #A78BFA;
+  --shell-line-focus: #7C3AED;
+  --shell-text: #1A1530;
+  --shell-muted: #5C5578;
+  --shell-faint: #7870A0;
+  --shell-accent: #7C3AED;
+  --shell-accent-2: #A855F7;
+  --shell-accent-soft: #7C3AED26;
+  background-color: #F5F2FB;
+  background-image: none;
+}
+
+html[data-theme="light"] .site-frame,
+html[data-theme="light"] body {
+  background-color: #F5F2FB;
+  background-image: none;
+  color: #1A1530;
+}
+
+html[data-theme="light"] .archive-topbar {
+  background: #fffffff2;
+  border-bottom-color: #C9BEDB;
+  box-shadow: 0 6px 18px #1A153012;
+}
+
+html[data-theme="light"] .archive-topbar .wordmark {
+  color: #1A1530;
+}
+
+html[data-theme="light"] .archive-topbar .wordmark-symbol {
+  color: #7C3AED;
+  border-color: #7C3AED44;
+  background: #7C3AED14;
+  box-shadow: 0 0 14px #7C3AED26;
+}
+
+html[data-theme="light"] .archive-timeline .story-row {
+  border-color: #C9BEDB;
+  background: linear-gradient(180deg, #ffffff, #F3EFFA);
+  box-shadow: 0 10px 26px #1A153014;
+}
+
+html[data-theme="light"] .archive-timeline .story-row:hover {
+  border-color: #A78BFA;
+  box-shadow: 0 14px 30px #1A15301f;
+}
+
+html[data-theme="light"] .archive-timeline .timeline-item.is-expanded .story-row {
+  border-color: #7C3AED;
+  box-shadow: 0 16px 34px #1A153022, 0 0 0 3px #7C3AED26;
+}
+
+html[data-theme="light"] .archive-timeline .timeline-list::before {
+  background: linear-gradient(to bottom, #C9BEDB, #C9BEDB 88%, transparent);
+}
+
+html[data-theme="light"] .archive-timeline .timeline-node {
+  background: #ffffff;
+  box-shadow: 0 0 0 6px #F5F2FB, 0 10px 26px #1A153022;
+}
+
+html[data-theme="light"] .archive-timeline .year-divider {
+  border-color: #C9BEDB;
+  background: linear-gradient(90deg, #EDE7F8, #F5F2FB 72%);
+}
+
+html[data-theme="light"] .archive-timeline .year-rule {
+  background: linear-gradient(to right, #C9BEDB, transparent);
+}
+
+html[data-theme="light"] .hero-card {
+  border-color: #C9BEDB;
+  background:
+    radial-gradient(130% 170% at 86% 46%, #7C3AED1f, transparent 62%),
+    linear-gradient(135deg, #ffffff, #F5F2FC 74%);
+  box-shadow: 0 24px 60px #1A15300f;
+}
+
+html[data-theme="light"] .hero-count {
+  border-color: #C9BEDB;
+  background: #ffffff;
+}
+
+html[data-theme="light"] .hero-globe {
+  background-image: radial-gradient(#7C3AED66 1px, transparent 1.5px);
+}
+
+html[data-theme="light"] .hero-orbit {
+  stroke: var(--shell-accent);
+}
+
+html[data-theme="light"] .header-search {
+  background: #ffffff;
+  border-color: #C9BEDB;
+}
+
+html[data-theme="light"] .story-thumb {
+  border-color: #B8A9CC;
+  background: #F5F2FB;
+}
+
+/* Light theme: darker category hues so labels stay legible on pale surfaces. */
+html[data-theme="light"] .archive-timeline .story-meta.meta-blue { color: #2563EB; }
+html[data-theme="light"] .archive-timeline .story-meta.meta-violet { color: #7C3AED; }
+html[data-theme="light"] .archive-timeline .story-meta.meta-cyan { color: #0D9488; }
+html[data-theme="light"] .archive-timeline .story-meta.meta-amber { color: #B45309; }
+
+html[data-theme="light"] .archive-page .story-thumb-mono {
+  background:
+    radial-gradient(120% 120% at 18% 12%, #7C3AED24, transparent 58%),
+    linear-gradient(150deg, #F5F2FC, #FBF9FE 72%);
+}
+
+html[data-theme="light"] .archive-page .thumb-blue { background: radial-gradient(120% 120% at 18% 12%, #2563EB22, transparent 58%), linear-gradient(150deg, #EDE7F8, #FBF9FE 72%); }
+html[data-theme="light"] .archive-page .thumb-violet { background: radial-gradient(120% 120% at 18% 12%, #7C3AED22, transparent 58%), linear-gradient(150deg, #EDE7F8, #FBF9FE 72%); }
+html[data-theme="light"] .archive-page .thumb-cyan { background: radial-gradient(120% 120% at 18% 12%, #0D948822, transparent 58%), linear-gradient(150deg, #EDE7F8, #FBF9FE 72%); }
+html[data-theme="light"] .archive-page .thumb-amber { background: radial-gradient(120% 120% at 18% 12%, #B4530922, transparent 58%), linear-gradient(150deg, #EDE7F8, #FBF9FE 72%); }
+
+html[data-theme="light"] .mobile-bottom-nav {
+  border-color: #C9BEDB;
+  background: #fffffff2;
+}
+
+html[data-theme="light"] .archive-filter-panel {
+  background: linear-gradient(180deg, #fffffff5, #f2f5fbf5);
+  border-color: #C9BEDB;
+  box-shadow: 0 18px 44px #1A153014;
+}
+
+html[data-theme="light"] .archive-filter-panel .filter-panel-head h2 {
+  color: #1A1530;
+}
+
+html[data-theme="light"] .archive-filter-panel .filter-group-label {
+  color: #7b869c;
+}
+
+html[data-theme="light"] .archive-filter-panel .date-filter-select,
+html[data-theme="light"] .archive-filter-panel .company-select-trigger,
+html[data-theme="light"] .archive-filter-panel .archive-search {
+  background: #F5F2FB;
+  border-color: #B8A9CC;
+  color: #1A1530;
+}
+
+html[data-theme="light"] .archive-filter-panel .date-filter-select:hover,
+html[data-theme="light"] .archive-filter-panel .company-select-trigger:hover,
+html[data-theme="light"] .archive-filter-panel .archive-search:hover,
+html[data-theme="light"] .archive-filter-panel .category-chip:hover,
+html[data-theme="light"] .header-search:hover {
+  border-color: #A78BFA;
+}
+
+html[data-theme="light"] .archive-filter-panel .date-filter-select:focus,
+html[data-theme="light"] .archive-filter-panel .date-filter-select:focus-visible,
+html[data-theme="light"] .archive-filter-panel .company-select-trigger:focus-visible,
+html[data-theme="light"] .archive-filter-panel .company-select-trigger[data-open="true"],
+html[data-theme="light"] .archive-page .archive-search:focus-within,
+html[data-theme="light"] .header-search:focus-within {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px #7C3AED26;
+  outline: 2px solid #7C3AED;
+  outline-offset: 1px;
+}
+
+html[data-theme="light"] .archive-filter-panel .category-chip.is-active {
+  border-color: #7C3AED;
+}
+
+html[data-theme="light"] .archive-filter-panel .date-filter-select option {
+  background: #ffffff;
+  color: #1A1530;
+}
+
+html[data-theme="light"] .archive-filter-panel .category-chip {
+  background: #F5F2FB;
+  border-color: #C9BEDB;
+  color: #55617a;
+}
+
+html[data-theme="light"] .archive-filter-panel .category-chip.is-active {
+  background: linear-gradient(120deg, #7C3AED, #8B5CF6);
+  color: #ffffff;
 }

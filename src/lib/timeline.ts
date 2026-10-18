@@ -79,7 +79,27 @@ export async function getMergedTimeline(): Promise<StoryDisplay[]> {
   cacheLife('minutes');
   cacheTag(AI_NEWS_TAG, STORIES_TAG);
 
-  const [liveStories, dbStories] = await Promise.all([fetchAiNews(), getPublishedStories()]);
+  // Upstream latency (live RSS + PostgREST) drifts, and slow sources blow the
+  // prerender deadline (~60s) which fails local and CI builds. Race each
+  // source against a hard deadline; whatever arrives in time is used and the
+  // next cache window fills the rest.
+  const withDeadline = (promise: Promise<Story[]>, label: string): Promise<Story[]> => {
+    const DEADLINE_MS = 30000;
+    return Promise.race([
+      promise,
+      new Promise<Story[]>((resolve) => {
+        setTimeout(() => {
+          console.warn(`${label} exceeded ${DEADLINE_MS}ms during prerender, continuing without it`);
+          resolve([]);
+        }, DEADLINE_MS);
+      }),
+    ]);
+  };
+
+  const [liveStories, dbStories] = await Promise.all([
+    withDeadline(fetchAiNews(), 'fetchAiNews'),
+    withDeadline(getPublishedStories(), 'getPublishedStories'),
+  ]);
   const seedConverted = seedStories.map(convertSeedStory);
 
   const sources = [...liveStories, ...(dbStories ?? []), ...seedConverted];
