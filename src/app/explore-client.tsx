@@ -1,20 +1,18 @@
 "use client";
 
 import {
-  ArrowRight,
   ArrowUpRight,
   BookOpen,
-  BrainCircuit,
-  Check,
   ChevronDown,
-  Compass,
-  FilterX,
-  FlaskConical,
-  Landmark,
+  Cpu,
+  Home,
+  Layers,
+  Menu,
   Orbit,
   Search,
   SlidersHorizontal,
-  Sparkles,
+  Sun,
+  UserRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,11 +25,11 @@ import {
 } from "@/lib/timeline-shared";
 
 const topics = [
-  { label: "Everything", value: "all", icon: Compass },
-  { label: "Models", value: "Models", icon: BrainCircuit },
-  { label: "Products", value: "Products", icon: Sparkles },
-  { label: "Research", value: "Research", icon: FlaskConical },
-  { label: "Policy", value: "Policy", icon: Landmark },
+  { label: "Everything", value: "all" },
+  { label: "Models", value: "Models" },
+  { label: "Products", value: "Products" },
+  { label: "Research", value: "Research" },
+  { label: "Policy", value: "Policy" },
 ] as const;
 
 interface ExploreClientProps {
@@ -70,6 +68,21 @@ function isRedundantWith(a: string, b: string): boolean {
   return redundant;
 }
 
+/** Initials for a row whose story has no lead image: "Anthropic" → "AN",
+ *  "Open AI" → "OA". Keeps the row grid stable instead of collapsing. */
+function monogramOf(story: StoryDisplay): string {
+  const label = (story.company || story.source || story.title).trim();
+  const words = label.split(/[\s._/-]+/).filter(Boolean);
+  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
+  return label.slice(0, 2).toUpperCase();
+}
+
+/** Thousands separators without Intl, so the server and the browser render the
+ *  identical string and hydration never flags a mismatch. */
+function withThousands(value: number): string {
+  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 /**
  * One timeline row. Memoized so that scroll-driven state changes (the active
  * node highlight) only re-render the rows whose props actually changed instead
@@ -78,12 +91,14 @@ function isRedundantWith(a: string, b: string): boolean {
 const TimelineRow = memo(function TimelineRow({
   story,
   showYear,
+  isLatest,
   isExpanded,
   isActive,
   onToggle,
 }: {
   story: StoryDisplay;
   showYear: boolean;
+  isLatest: boolean;
   isExpanded: boolean;
   isActive: boolean;
   onToggle: (id: string) => void;
@@ -100,6 +115,7 @@ const TimelineRow = memo(function TimelineRow({
         <div className="year-divider">
           <span>{story.year}</span>
           <span className="year-rule" />
+          {isLatest && <span className="year-latest">Latest</span>}
         </div>
       )}
       <div className="story-row">
@@ -116,7 +132,6 @@ const TimelineRow = memo(function TimelineRow({
           <div className="story-title-line">
             <Link className="story-title story-title-link" href={`/story/${story.slug}`} prefetch={true} title="Read full story">
               <span className="story-title-text">{story.title}</span>
-              <ArrowRight aria-hidden="true" className="story-open-icon" size={14} />
             </Link>
             <button
               aria-controls={`story-detail-${story.id}`}
@@ -130,6 +145,7 @@ const TimelineRow = memo(function TimelineRow({
               <ChevronDown aria-hidden="true" size={17} />
             </button>
           </div>
+          {story.summary ? <p className="story-preview">{story.summary}</p> : null}
           <div className={`story-detail-wrap ${isExpanded ? "is-open" : ""}`} id={`story-detail-${story.id}`}>
             <div>
               <div className="detail-inner">
@@ -153,63 +169,24 @@ const TimelineRow = memo(function TimelineRow({
             </div>
           </div>
         </div>
+        {story.imageUrl ? (
+          <a aria-hidden="true" className="story-thumb" href={`/story/${story.slug}`} tabIndex={-1}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- og:image hosts are arbitrary, so these bypass the image optimizer */}
+            <img alt="" decoding="async" loading="lazy" referrerPolicy="no-referrer" src={story.imageUrl} />
+          </a>
+        ) : (
+          <span aria-hidden="true" className={`story-thumb story-thumb-mono thumb-${story.color}`}>
+            {monogramOf(story)}
+          </span>
+        )}
       </div>
     </article>
   );
 });
 
-type TopicTabsProps = {
-  activeTopic: string;
-  onSelect: (value: string) => void;
-};
-
-/** Topic filter rendered as a horizontal pill bar above the archive layout. */
-function TopicTabs({ activeTopic, onSelect }: TopicTabsProps) {
-  return (
-    <div className="topic-tabs-bar">
-      <div className="topic-tabs-scroll">
-        <nav aria-label="Filter timeline by topic" className="topic-nav archive-topic-nav" role="tablist">
-          {topics.map(({ label, value, icon: Icon }) => (
-            <button
-              aria-selected={activeTopic === value}
-              className={`topic-button ${activeTopic === value ? "is-active" : ""}`}
-              key={value}
-              onKeyDown={(event) => {
-                const currentIndex = topics.findIndex((topic) => topic.value === value);
-                let nextIndex = currentIndex;
-                if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (currentIndex + 1) % topics.length;
-                else if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = (currentIndex - 1 + topics.length) % topics.length;
-                else if (event.key === "Home") nextIndex = 0;
-                else if (event.key === "End") nextIndex = topics.length - 1;
-                else return;
-
-                event.preventDefault();
-                onSelect(topics[nextIndex].value);
-                event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]?.focus();
-              }}
-              onClick={() => onSelect(value)}
-              role="tab"
-              tabIndex={activeTopic === value ? 0 : -1}
-              type="button"
-            >
-              <Icon size={15} strokeWidth={1.8} />
-              <span>{label}</span>
-              {activeTopic === value && (
-                <span className="topic-active-mark">
-                  <Check size={12} />
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
-    </div>
-  );
-}
-
 /** Single-select company dropdown. The panel is absolutely positioned flush
- * against the trigger's bottom edge (`top: 100%`) so the list opens directly
- * on the field, and flips upward when there isn't room below.
+ *  against the trigger's bottom edge (`top: 100%`) so the list opens directly
+ *  on the field, and flips upward when there isn't room below.
  */
 function CompanySelect({
   options,
@@ -323,6 +300,8 @@ export function ExploreClient({
   const [activeCompany, setActiveCompany] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isPanelCollapsed, setPanelCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [stories, setStories] = useState<StoryDisplay[]>(initialStories);
   const [matching, setMatching] = useState(matchingTotal);
@@ -511,6 +490,29 @@ export function ExploreClient({
     return () => inFlight.current?.abort();
   }, []);
 
+  // Mobile menu: closes on outside click or Escape. Both the header hamburger,
+  // the header profile button and the bottom-nav profile button open it, so the
+  // outside-click guard checks the shared data attribute rather than one ref.
+  const mobileMenuPanelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (mobileMenuPanelRef.current?.contains(target)) return;
+      if (target.closest("[data-mobile-menu-trigger]")) return;
+      setIsMobileMenuOpen(false);
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsMobileMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
+
   const hasActiveFilters =
     activeTopic !== "all" || activeYear !== "all" || activeMonth !== "all" || search.trim() !== "" || activeCompany !== "all";
 
@@ -534,30 +536,185 @@ export function ExploreClient({
     fetchPage(filtersRef.current, 0, "replace");
   }, [fetchPage]);
 
+  // Smooth scroll back to the top of the timeline; used by the mobile bottom
+  // nav and the mobile menu panel so every nav item has a real destination.
+  const scrollToTimeline = useCallback(() => {
+    timelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
   const showEmpty = stories.length === 0 && !isFiltering && !loadError;
+
+  // One removable chip per applied filter, so the sidebar shows what is
+  // narrowing the timeline without opening every control.
+  const monthLabel = facets.months.find((month) => month.value === activeMonth)?.label ?? activeMonth;
+  const activeFilterChips = [
+    activeTopic !== "all" && {
+      key: "topic",
+      name: "category",
+      label: activeTopic,
+      clear: () => setActiveTopic("all"),
+    },
+    activeYear !== "all" && {
+      key: "year",
+      name: "year",
+      label: activeYear,
+      clear: () => setActiveYear("all"),
+    },
+    activeMonth !== "all" && {
+      key: "month",
+      name: "month",
+      label: monthLabel,
+      clear: () => setActiveMonth("all"),
+    },
+    activeCompany !== "all" && {
+      key: "company",
+      name: "company",
+      label: activeCompany,
+      clear: () => setActiveCompany("all"),
+    },
+    search.trim() !== "" && {
+      key: "search",
+      name: "search",
+      label: `"${search.trim()}"`,
+      clear: () => setSearch(""),
+    },
+  ].filter((chip): chip is { key: string; name: string; label: string; clear: () => void } => Boolean(chip));
 
   return (
     <main className="site-frame archive-page">
       <header className="topbar archive-topbar">
-        <Link className="wordmark" href="/" aria-label="Signal, home">
-          <span className="wordmark-symbol">
-            <Orbit size={19} strokeWidth={2.1} />
+        <div className="header-brand">
+          <Link className="wordmark" href="/" aria-label="Signal, home">
+            <span className="wordmark-symbol">
+              <Orbit size={19} strokeWidth={2.1} />
+            </span>
+            <span>
+              signal<span className="wordmark-period">.</span>
+            </span>
+          </Link>
+          <span className="header-tagline">Intelligence through time.</span>
+        </div>
+
+        <label className="header-search">
+          <Search aria-hidden="true" size={16} />
+          <input
+            aria-label="Search companies, models or stories"
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setActiveTimelineIndex(0);
+            }}
+            placeholder="Search companies, models or stories..."
+            value={search}
+          />
+          {search && (
+            <button
+              aria-label="Clear search"
+              className="clear-search"
+              onClick={() => {
+                setSearch("");
+                setActiveTimelineIndex(0);
+              }}
+              type="button"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </label>
+
+        <div className="header-actions">
+          <button aria-label="Switch to light theme" className="header-icon-button" title="Light theme" type="button">
+            <Sun size={17} />
+          </button>
+          <span aria-hidden="true" className="header-avatar">
+            <UserRound size={16} strokeWidth={2} />
           </span>
-          <span>
-            signal<span className="wordmark-period">.</span>
-          </span>
-        </Link>
-        <TopicTabs
-          activeTopic={activeTopic}
-          onSelect={(value) => {
-            setActiveTopic(value);
-            setActiveTimelineIndex(0);
-          }}
-        />
+        </div>
+
+        {/* Mobile-only header actions — the desktop theme/profile pair above is
+            hidden by CSS here, and these two icons open the quick menu instead. */}
+        <div className="mobile-header-actions">
+          <button
+            aria-expanded={isMobileMenuOpen}
+            aria-label="Open menu"
+            className="mobile-menu-button"
+            data-mobile-menu-trigger
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+            type="button"
+          >
+            <Menu size={18} />
+          </button>
+          <button
+            aria-expanded={isMobileMenuOpen}
+            aria-label="Open profile menu"
+            className="mobile-profile-button"
+            data-mobile-menu-trigger
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+            type="button"
+          >
+            <UserRound size={18} />
+          </button>
+        </div>
       </header>
 
-      <div className="archive-layout">
+      {/* Mobile quick menu — the header's secondary actions brought down into a
+          dropdown so the mobile top bar stays compact (per the mobile design). */}
+      {isMobileMenuOpen && (
+        <div aria-label="Menu" className="mobile-menu-panel" ref={mobileMenuPanelRef} role="menu">
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              scrollToTimeline();
+            }}
+            role="menuitem"
+            type="button"
+          >
+            <Layers size={15} /> Timeline
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              setIsFilterOpen(true);
+            }}
+            role="menuitem"
+            type="button"
+          >
+            <SlidersHorizontal size={15} /> Filter &amp; search
+          </button>
+          <button onClick={() => setIsMobileMenuOpen(false)} role="menuitem" title="Light theme" type="button">
+            <Sun size={15} /> Light theme
+          </button>
+        </div>
+      )}
+
+      <div className="archive-shell">
+        <div className="archive-layout">
         <section aria-label="AI events timeline" className="timeline-column archive-timeline" id="timeline" ref={timelineRef}>
+          <section aria-label="Overview" className="hero-card">
+            <div className="hero-copy">
+              <span className="hero-kicker">The AI landscape</span>
+              <h1 className="hero-title">
+                Every shift.
+                <br />
+                <span className="hero-title-accent">Every signal.</span>
+              </h1>
+              <p className="hero-lede">
+                Explore the companies, models, products and research shaping the future of AI.
+              </p>
+              <span className="hero-count">
+                <Layers aria-hidden="true" size={14} />
+                {withThousands(totalStories)} moments tracked
+              </span>
+            </div>
+            <div aria-hidden="true" className="hero-art">
+              <span className="hero-globe" />
+              <svg className="hero-orbit" viewBox="0 0 240 240">
+                <ellipse cx="120" cy="120" rx="104" ry="40" />
+                <ellipse cx="120" cy="120" rx="104" ry="76" />
+                <ellipse cx="120" cy="120" rx="76" ry="104" />
+                <ellipse cx="120" cy="120" rx="40" ry="104" />
+              </svg>
+            </div>
+          </section>
           <div aria-busy={isFiltering || isLoadingMore} className="timeline-list" aria-live="polite">
             {stories.length ? (
               <>
@@ -565,6 +722,7 @@ export function ExploreClient({
                   <TimelineRow
                     isActive={index === activeTimelineIndex}
                     isExpanded={expandedId === story.id}
+                    isLatest={index === 0}
                     key={story.id}
                     onToggle={toggleExpanded}
                     showYear={stories[index - 1]?.year !== story.year}
@@ -593,64 +751,28 @@ export function ExploreClient({
           </div>
         </section>
 
-        <aside aria-label="Timeline filters" className="archive-filter-panel" id="archive-filter-panel" data-open={isFilterOpen}>
-          <div className="filter-panel-head">
+        {/* `data-open` must be absent (not "false") when closed — every
+            `[data-open]` CSS selector would otherwise match a closed panel. */}
+        <aside aria-label="Timeline filters" className="archive-filter-panel" id="archive-filter-panel" data-open={isFilterOpen ? "true" : undefined}>
+          <button
+            aria-controls="archive-filter-body"
+            aria-expanded={!isPanelCollapsed}
+            className="filter-panel-head"
+            onClick={() => setPanelCollapsed((collapsed) => !collapsed)}
+            type="button"
+          >
             <span className="filter-panel-icon">
               <SlidersHorizontal size={15} strokeWidth={2} />
             </span>
-            <h2>Timeline filter</h2>
-          </div>
-
-          <div className="filter-group">
-            <span className="filter-group-label">Period</span>
-            <div className="date-filter" role="group" aria-label="Filter timeline by month and year">
-              <select
-                aria-label="Filter by year"
-                className="date-filter-select"
-                onChange={(event) => {
-                  setActiveYear(event.target.value);
-                  setActiveTimelineIndex(0);
-                }}
-                value={activeYear}
-              >
-                <option value="all">All years</option>
-                {facets.years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label="Filter by month"
-                className="date-filter-select"
-                onChange={(event) => {
-                  setActiveMonth(event.target.value);
-                  setActiveTimelineIndex(0);
-                }}
-                value={activeMonth}
-              >
-                <option value="all">All months</option>
-                {facets.months.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <span className="filter-group-label">Company</span>
-            <CompanySelect
-              options={facets.companies}
-              value={activeCompany}
-              onChange={(selected) => {
-                setActiveCompany(selected);
-                setActiveTimelineIndex(0);
-              }}
+            <h2>Filter &amp; Search</h2>
+            <ChevronDown
+              aria-hidden="true"
+              className={`filter-panel-chevron ${isPanelCollapsed ? "is-collapsed" : ""}`}
+              size={16}
             />
-          </div>
+          </button>
 
+          <div className={`filter-panel-body ${isPanelCollapsed ? "is-collapsed" : ""}`} id="archive-filter-body">
           <div className="filter-group">
             <label className="filter-group-label" htmlFor="archive-filter-search">
               Search
@@ -664,7 +786,7 @@ export function ExploreClient({
                   setSearch(event.target.value);
                   setActiveTimelineIndex(0);
                 }}
-                placeholder="Search stories"
+                placeholder="Search stories..."
                 value={search}
               />
               {search && (
@@ -683,17 +805,193 @@ export function ExploreClient({
             </label>
           </div>
 
+          <div className="filter-group">
+            <label className="filter-group-label" htmlFor="archive-filter-year">
+              Period
+            </label>
+            <select
+              aria-label="Filter by year"
+              className="date-filter-select"
+              id="archive-filter-year"
+              onChange={(event) => {
+                setActiveYear(event.target.value);
+                setActiveTimelineIndex(0);
+              }}
+              value={activeYear}
+            >
+              <option value="all">All years</option>
+              {facets.years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-group-label" htmlFor="archive-filter-month">
+              Month
+            </label>
+            <select
+              aria-label="Filter by month"
+              className="date-filter-select"
+              id="archive-filter-month"
+              onChange={(event) => {
+                setActiveMonth(event.target.value);
+                setActiveTimelineIndex(0);
+              }}
+              value={activeMonth}
+            >
+              <option value="all">All months</option>
+              {facets.months.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <span className="filter-group-label">Company</span>
+            <CompanySelect
+              options={facets.companies}
+              value={activeCompany}
+              onChange={(selected) => {
+                setActiveCompany(selected);
+                setActiveTimelineIndex(0);
+              }}
+            />
+          </div>
+
+          <div className="filter-group">
+            <span className="filter-group-label">Category</span>
+            <div aria-label="Filter timeline by category" className="category-chips" role="group">
+              {topics.map(({ label, value }) => (
+                <button
+                  aria-pressed={activeTopic === value}
+                  className={`category-chip ${activeTopic === value ? "is-active" : ""}`}
+                  key={value}
+                  onClick={() => {
+                    setActiveTopic(value);
+                    setActiveTimelineIndex(0);
+                  }}
+                  type="button"
+                >
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="filter-panel-foot">
+            <div className="active-filters-head">
+              <span className="filter-group-label">Active filters</span>
+              <button className="filter-clear-button" disabled={!hasActiveFilters} onClick={clearFilters} type="button">
+                Clear all
+              </button>
+            </div>
+            <div className="active-filter-chips">
+              {activeFilterChips.length ? (
+                activeFilterChips.map((chip) => (
+                  <button
+                    aria-label={`Remove ${chip.name} filter: ${chip.label}`}
+                    className="active-filter-chip"
+                    key={chip.key}
+                    onClick={chip.clear}
+                    type="button"
+                  >
+                    {chip.label}
+                    <X aria-hidden="true" size={12} />
+                  </button>
+                ))
+              ) : (
+                <span className="active-filter-empty">No filters applied</span>
+              )}
+            </div>
             <p className="filter-result-count" aria-live="polite">
-              Showing <strong>{shownStories}</strong> of {totalStories} moments
+              Showing {withThousands(shownStories)} of {withThousands(totalStories)} moments
             </p>
-            <button className="filter-clear-button" disabled={!hasActiveFilters} onClick={clearFilters} type="button">
-              <FilterX size={14} />
-              Clear filters
-            </button>
+          </div>
           </div>
         </aside>
       </div>
+      </div>
+
+{/* Mobile bottom navigation — carries the header's utility actions
+          down to the thumb zone, with topic pills replacing the
+          previous Companies / Saved / More bar. */}
+      <nav aria-label="Mobile navigation" className="mobile-bottom-nav">
+        <Link aria-current="page" className="is-active" href="/">
+          <Home aria-hidden="true" size={20} />
+          <span className="nav-label">Home</span>
+        </Link>
+        <button onClick={scrollToTimeline} type="button">
+          <Layers aria-hidden="true" size={20} />
+          <span className="nav-label">Timeline</span>
+        </button>
+        <button
+          className={activeTopic === "Models" ? "is-active" : ""}
+          onClick={() => {
+            setActiveTopic("Models");
+            setActiveTimelineIndex(0);
+            scrollToTimeline();
+          }}
+          type="button"
+        >
+          <Cpu aria-hidden="true" size={20} />
+          <span className="nav-label">Models</span>
+        </button>
+        <button
+          className={activeTopic === "Products" ? "is-active" : ""}
+          onClick={() => {
+            setActiveTopic("Products");
+            setActiveTimelineIndex(0);
+            scrollToTimeline();
+          }}
+          type="button"
+        >
+          <Cpu aria-hidden="true" size={20} />
+          <span className="nav-label">Products</span>
+        </button>
+        <button
+          className={activeTopic === "Research" ? "is-active" : ""}
+          onClick={() => {
+            setActiveTopic("Research");
+            setActiveTimelineIndex(0);
+            scrollToTimeline();
+          }}
+          type="button"
+        >
+          <Cpu aria-hidden="true" size={20} />
+          <span className="nav-label">Research</span>
+        </button>
+        <button
+          className={activeTopic === "Policy" ? "is-active" : ""}
+          onClick={() => {
+            setActiveTopic("Policy");
+            setActiveTimelineIndex(0);
+            scrollToTimeline();
+          }}
+          type="button"
+        >
+          <Cpu aria-hidden="true" size={20} />
+          <span className="nav-label">Policy</span>
+        </button>
+      </nav>
+
+      {/* Mobile filter trigger — the only entry point to the filter panel on
+          small screens; sits just above the bottom nav. */}
+      <button
+        aria-controls="archive-filter-panel"
+        aria-expanded={isFilterOpen}
+        className="archive-mobile-filter"
+        onClick={() => setIsFilterOpen((open) => !open)}
+        type="button"
+      >
+        <SlidersHorizontal aria-hidden="true" size={14} />
+        Filter &amp; search
+        {activeFilterChips.length > 0 && <span className="filter-mobile-count">{activeFilterChips.length}</span>}
+      </button>
     </main>
   );
 }

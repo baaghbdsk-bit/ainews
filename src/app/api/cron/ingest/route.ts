@@ -20,24 +20,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // `?mode=enrich` skips the feed fetch and only extracts article bodies, and
-  // `?mode=summarize` only (re)generates reader-facing summaries, so the
-  // scheduler can drain a backlog with repeated cheap calls.
+  // `?mode=enrich` skips the feed fetch and only extracts article bodies,
+  // `?mode=summarize` only (re)generates reader-facing summaries, and
+  // `?mode=images` only fills missing lead images, so the scheduler (or a
+  // one-off backfill) can drain a backlog with repeated cheap calls.
   //
-  // `?summarizeLimit=N` raises the per-call batch (bounded here) so a one-off
-  // backfill can drain faster without changing the scheduled defaults.
+  // `?summarizeLimit=N` / `?imagesLimit=N` raise the per-call batch (bounded
+  // here) so a one-off backfill can drain faster without changing the scheduled
+  // defaults.
   const mode = request.nextUrl.searchParams.get('mode');
-  const requestedLimit = Number(request.nextUrl.searchParams.get('summarizeLimit'));
+  const requestedSummarize = Number(request.nextUrl.searchParams.get('summarizeLimit'));
   const summarizeLimit =
-    Number.isFinite(requestedLimit) && requestedLimit > 0
-      ? Math.min(Math.floor(requestedLimit), 500)
+    Number.isFinite(requestedSummarize) && requestedSummarize > 0
+      ? Math.min(Math.floor(requestedSummarize), 500)
+      : undefined;
+  const requestedImages = Number(request.nextUrl.searchParams.get('imagesLimit'));
+  const imagesLimit =
+    Number.isFinite(requestedImages) && requestedImages > 0
+      ? Math.min(Math.floor(requestedImages), 500)
       : undefined;
 
   try {
     const result = await runIngest({
       enrichOnly: mode === 'enrich',
       summarizeOnly: mode === 'summarize',
+      imagesOnly: mode === 'images',
       summarizeLimit,
+      imagesLimit,
     });
     return NextResponse.json({ ok: true, ...result, tag: AI_NEWS_TAG });
   } catch (err) {

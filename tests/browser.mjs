@@ -59,8 +59,8 @@ async function gotoTimeline(page) {
 
 async function shownCount(page) {
   return page.$eval(".filter-result-count", (el) => {
-    const m = el.textContent.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
-    return m ? { shown: Number(m[1]), total: Number(m[2]) } : null;
+    const m = el.textContent.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+    return m ? { shown: Number(m[1].replace(/,/g, '')), total: Number(m[2].replace(/,/g, '')) } : null;
   });
 }
 
@@ -180,8 +180,8 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         (expected, prev) => {
           const els = [...document.querySelectorAll(".timeline-item .story-title-text")];
           const titles = els.map((e) => (e.textContent || "").trim());
-          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
-          const shown = m ? Number(m[1]) : 0;
+          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+          const shown = m ? Number(m[1].replace(/,/g, '')) : 0;
           if (shown >= prev || shown === 0) return false;
           if (titles.length !== expected.length) return false;
           return titles.every((t, i) => t === expected[i]);
@@ -243,8 +243,8 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         page,
         (prev) => {
           const label = document.querySelector(".company-select-trigger-label")?.textContent?.trim();
-          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
-          const shown = m ? Number(m[1]) : 0;
+          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+          const shown = m ? Number(m[1].replace(/,/g, '')) : 0;
           return label === "Anthropic" && shown > 0 && shown < prev && !document.querySelector(".company-select-panel");
         },
         [before.shown],
@@ -588,7 +588,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       }));
       const baseline = await page.evaluate(() => {
         const m = document.querySelector(".filter-result-count").textContent.match(/of\s+(\d+)/);
-        return m ? Number(m[1]) : 0;
+        return m ? Number(m[1].replace(/,/g, '')) : 0;
       });
       await page.focus("#archive-filter-search");
       await page.keyboard.type("nvidia", { delay: 15 });
@@ -596,8 +596,8 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       const searched = await waitUntil(
         page,
         (base) => {
-          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+(\d+)\s+of\s+(\d+)/);
-          const shown = m ? Number(m[1]) : 0;
+          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+          const shown = m ? Number(m[1].replace(/,/g, '')) : 0;
           return shown > 0 && shown < base;
         },
         [baseline],
@@ -740,6 +740,51 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         "Mobile matrix (320–768px): no horizontal overflow, filters reachable, tap targets ≥40px",
         problems.length === 0 ? "PASS" : "FAIL",
         problems.length ? problems.join(" | ") : report.map((r) => `${r.width}:ok`).join(" "),
+      );
+    }
+
+    /* ---------- T15 Row lead thumbnails ---------- */
+    {
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1280, height: 900 });
+      await gotoTimeline(page);
+      const state = await page.evaluate(() => {
+        const rows = document.querySelectorAll(".timeline-item").length;
+        const thumbs = [...document.querySelectorAll(".timeline-item .story-thumb")];
+        const imgs = [...document.querySelectorAll(".timeline-item .story-thumb img")];
+        const monos = [...document.querySelectorAll(".timeline-item .story-thumb-mono")];
+        // Tiles below the fold are lazy, so only on-screen ones should report a
+        // decoded bitmap.
+        const visible = imgs.filter((img) => {
+          const r = img.getBoundingClientRect();
+          return r.top < window.innerHeight && r.bottom > 0 && r.width > 0;
+        });
+        return {
+          rows,
+          thumbs: thumbs.length,
+          imgs: imgs.length,
+          monos: monos.length,
+          visible: visible.length,
+          loaded: visible.filter((img) => img.complete && img.naturalWidth > 0).length,
+          insecureSrc: imgs.filter((img) => !/^https:\/\//.test(img.currentSrc || img.src)).length,
+        };
+      });
+      await page.screenshot({ path: path.join(SHOTS, "t15-thumbnails.png"), fullPage: false });
+      const problems = [];
+      if (state.rows === 0) problems.push("no timeline rows");
+      if (state.thumbs !== state.rows) problems.push(`${state.thumbs} tiles for ${state.rows} rows`);
+      if (state.imgs + state.monos !== state.rows)
+        problems.push(`${state.imgs} images + ${state.monos} monograms != ${state.rows} rows`);
+      if (state.insecureSrc > 0) problems.push(`${state.insecureSrc} tiles not served over https`);
+      if (state.visible > 0 && state.loaded === 0) problems.push("no visible lead image decoded");
+      await page.close();
+      record(
+        "T15",
+        "Row lead thumbnails: one tile per row (image or monogram), https sources, on-screen images decode",
+        problems.length === 0 ? "PASS" : "FAIL",
+        problems.length
+          ? problems.join(" | ")
+          : `${state.imgs} images (${state.loaded}/${state.visible} on-screen decoded) + ${state.monos} monograms over ${state.rows} rows`,
       );
     }
   } finally {
