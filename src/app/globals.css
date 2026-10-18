@@ -3385,22 +3385,31 @@ h1 em {
 }
 
 .archive-page .filter-clear-button {
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--shell-accent);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.02em;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--shell-line-2);
+  border-radius: 10px;
+  background: var(--shell-surface-2);
+  color: var(--shell-text);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
   text-transform: none;
   cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
 }
 
 .archive-page .filter-clear-button:hover:not(:disabled) {
-  background: transparent;
-  color: #C084FC;
-  text-decoration: underline;
+  border-color: var(--shell-line-focus);
+  background: var(--shell-surface);
+  color: var(--shell-accent);
+  text-decoration: none;
+}
+
+.archive-page .filter-clear-button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .active-filter-chips {
@@ -3618,6 +3627,8 @@ html[data-theme="light"] .active-filter-chip:hover {
     width: min(100% - 36px, 760px);
   }
 
+  /* Mobile/tablet: the search field is collapsed to an icon and expands over
+     the header when tapped (see .is-mobile-search-open below). */
   .header-search {
     display: none;
   }
@@ -3841,18 +3852,68 @@ html[data-theme="light"] .active-filter-chip:hover {
 /* Mobile-only chrome — hidden on desktop, revealed inside the 1080px block. */
 .mobile-menu-button,
 .mobile-profile-button,
-.mobile-menu-panel {
+.mobile-menu-panel,
+.header-search-toggle,
+.header-search-close {
   display: none;
 }
 
-/* Hide desktop topbar actions on mobile */
+/* Mobile/tablet: the header shows the real search + theme toggle; the
+   hamburger quick-menu has been removed. */
 @media (max-width: 1080px) {
   .archive-topbar .header-actions {
+    display: flex;
+  }
+
+  .mobile-header-actions {
     display: none;
   }
 
   .mobile-bottom-nav {
     display: flex;
+  }
+
+  /* Header: brand on the left, search icon + theme toggle on the right. */
+  .archive-topbar {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .header-search-toggle {
+    display: grid;
+  }
+
+  /* Expanded search: overlays the whole header row over the brand/icons. */
+  .archive-topbar.is-mobile-search-open .header-search {
+    display: flex;
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 17px;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    z-index: 6;
+  }
+
+  .archive-topbar.is-mobile-search-open .header-brand,
+  .archive-topbar.is-mobile-search-open .header-actions,
+  .archive-topbar.is-mobile-search-open .mobile-header-actions {
+    visibility: hidden;
+  }
+
+  .archive-topbar.is-mobile-search-open .header-search-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--shell-muted);
+    cursor: pointer;
   }
 
   /* Mobile header: hamburger menu + profile on right */
