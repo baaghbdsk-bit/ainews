@@ -302,6 +302,13 @@ export function ExploreClient({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isPanelCollapsed, setPanelCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isLight) root.dataset.theme = "light";
+    else delete root.dataset.theme;
+  }, [isLight]);
 
   const [stories, setStories] = useState<StoryDisplay[]>(initialStories);
   const [matching, setMatching] = useState(matchingTotal);
@@ -622,7 +629,14 @@ export function ExploreClient({
         </label>
 
         <div className="header-actions">
-          <button aria-label="Switch to light theme" className="header-icon-button" title="Light theme" type="button">
+          <button
+            aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}
+            aria-pressed={isLight}
+            className="header-icon-button"
+            onClick={() => setIsLight((light) => !light)}
+            title={isLight ? "Dark theme" : "Light theme"}
+            type="button"
+          >
             <Sun size={17} />
           </button>
           <span aria-hidden="true" className="header-avatar">
@@ -673,15 +687,12 @@ export function ExploreClient({
           <button
             onClick={() => {
               setIsMobileMenuOpen(false);
-              setIsFilterOpen(true);
+              setIsLight((light) => !light);
             }}
             role="menuitem"
             type="button"
           >
-            <SlidersHorizontal size={15} /> Filter &amp; search
-          </button>
-          <button onClick={() => setIsMobileMenuOpen(false)} role="menuitem" title="Light theme" type="button">
-            <Sun size={15} /> Light theme
+            <Sun size={15} /> {isLight ? "Dark theme" : "Light theme"}
           </button>
         </div>
       )}

@@ -1110,6 +1110,16 @@ h1 em {
   .end-marker p {
     font-size: 7px;
   }
+
+  /* Mobile-only: remove Search from filter panel (search is in header only) */
+  .archive-filter-panel .filter-group:first-child {
+    display: none !important;
+  }
+
+  /* Mobile-only: remove Category chips from filter panel (topics are in bottom nav) */
+  .archive-filter-panel .category-chips {
+    display: none !important;
+  }
 }
 
 

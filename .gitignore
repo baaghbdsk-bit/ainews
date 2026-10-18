@@ -45,3 +45,4 @@ next-env.d.ts
 
 # Local secret copy (do not commit)
 .cron-secret.txt
+dev-out.txt
