@@ -5,9 +5,7 @@ import {
   BookOpen,
   ChevronDown,
   Cpu,
-  Home,
   Layers,
-  Menu,
   Orbit,
   Search,
   SlidersHorizontal,
@@ -307,8 +305,15 @@ export function ExploreClient({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isPanelCollapsed, setPanelCollapsed] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLight, setIsLight] = useState(false);
+  // Mobile/tablet header: the search field is collapsed to an icon and expands
+  // in place when tapped.
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (isMobileSearchOpen) searchInputRef.current?.focus();
+  }, [isMobileSearchOpen]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -503,29 +508,6 @@ export function ExploreClient({
     return () => inFlight.current?.abort();
   }, []);
 
-  // Mobile menu: closes on outside click or Escape. Both the header hamburger,
-  // the header profile button and the bottom-nav profile button open it, so the
-  // outside-click guard checks the shared data attribute rather than one ref.
-  const mobileMenuPanelRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!isMobileMenuOpen) return;
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as HTMLElement;
-      if (mobileMenuPanelRef.current?.contains(target)) return;
-      if (target.closest("[data-mobile-menu-trigger]")) return;
-      setIsMobileMenuOpen(false);
-    }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsMobileMenuOpen(false);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isMobileMenuOpen]);
-
   const hasActiveFilters =
     activeTopic !== "all" || activeYear !== "all" || activeMonth !== "all" || search.trim() !== "" || activeCompany !== "all";
 
@@ -595,7 +577,7 @@ export function ExploreClient({
 
   return (
     <main className="site-frame archive-page">
-      <header className="topbar archive-topbar">
+      <header className={`topbar archive-topbar ${isMobileSearchOpen ? "is-mobile-search-open" : ""}`}>
         <div className="header-brand">
           <Link className="wordmark" href="/" aria-label="Signal, home">
             <span className="wordmark-symbol">
@@ -617,6 +599,7 @@ export function ExploreClient({
               setActiveTimelineIndex(0);
             }}
             placeholder="Search companies, models or stories..."
+            ref={searchInputRef}
             value={search}
           />
           {search && (
@@ -632,9 +615,28 @@ export function ExploreClient({
               <X size={14} />
             </button>
           )}
+          {/* Mobile/tablet only: collapses the expanded search. */}
+          <button
+            aria-label="Close search"
+            className="header-search-close"
+            onClick={() => setIsMobileSearchOpen(false)}
+            type="button"
+          >
+            <X size={16} />
+          </button>
         </label>
 
         <div className="header-actions">
+          {/* Mobile/tablet only: the search field is hidden behind this icon. */}
+          <button
+            aria-expanded={isMobileSearchOpen}
+            aria-label="Open search"
+            className="header-icon-button header-search-toggle"
+            onClick={() => setIsMobileSearchOpen(true)}
+            type="button"
+          >
+            <Search size={18} />
+          </button>
           <button
             aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}
             aria-pressed={isLight}
@@ -647,48 +649,10 @@ export function ExploreClient({
           </button>
         </div>
 
-        {/* Mobile-only header actions — the desktop theme/profile pair above is
-            hidden by CSS here, and these two icons open the quick menu instead. */}
-        <div className="mobile-header-actions">
-          <button
-            aria-expanded={isMobileMenuOpen}
-            aria-label="Open menu"
-            className="mobile-menu-button"
-            data-mobile-menu-trigger
-            onClick={() => setIsMobileMenuOpen((open) => !open)}
-            type="button"
-          >
-            <Menu size={18} />
-          </button>
-        </div>
+        {/* Empty on desktop, hidden on mobile — kept so the desktop header's
+            grid rows are unchanged after the mobile hamburger was removed. */}
+        <div className="mobile-header-actions" />
       </header>
-
-      {/* Mobile quick menu — the header's secondary actions brought down into a
-          dropdown so the mobile top bar stays compact (per the mobile design). */}
-      {isMobileMenuOpen && (
-        <div aria-label="Menu" className="mobile-menu-panel" ref={mobileMenuPanelRef} role="menu">
-          <button
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              scrollToTimeline();
-            }}
-            role="menuitem"
-            type="button"
-          >
-            <Layers size={15} /> Timeline
-          </button>
-          <button
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              setIsLight((light) => !light);
-            }}
-            role="menuitem"
-            type="button"
-          >
-            <Sun size={15} /> {isLight ? "Dark theme" : "Light theme"}
-          </button>
-        </div>
-      )}
 
       <div className="archive-shell">
         <div className="archive-layout">
@@ -856,30 +820,9 @@ export function ExploreClient({
           </div>
 
           <div className="filter-panel-foot">
-            <div className="active-filters-head">
-              <span className="filter-group-label">Active filters</span>
-              <button className="filter-clear-button" disabled={!hasActiveFilters} onClick={clearFilters} type="button">
-                Clear all
-              </button>
-            </div>
-            <div className="active-filter-chips">
-              {activeFilterChips.length ? (
-                activeFilterChips.map((chip) => (
-                  <button
-                    aria-label={`Remove ${chip.name} filter: ${chip.label}`}
-                    className="active-filter-chip"
-                    key={chip.key}
-                    onClick={chip.clear}
-                    type="button"
-                  >
-                    {chip.label}
-                    <X aria-hidden="true" size={12} />
-                  </button>
-                ))
-              ) : (
-                <span className="active-filter-empty">No filters applied</span>
-              )}
-            </div>
+            <button className="filter-clear-button" disabled={!hasActiveFilters} onClick={clearFilters} type="button">
+              Clear filter
+            </button>
             <p className="filter-result-count" aria-live="polite">
               Showing {withThousands(shownStories)} of {withThousands(totalStories)} moments
             </p>
@@ -889,14 +832,9 @@ export function ExploreClient({
       </div>
       </div>
 
-{/* Mobile bottom navigation — carries the header's utility actions
-          down to the thumb zone, with topic pills replacing the
-          previous Companies / Saved / More bar. */}
+      {/* Mobile bottom navigation — Timeline (Home is intentionally omitted,
+          it scrolled to the same timeline) plus the topic pills. */}
       <nav aria-label="Mobile navigation" className="mobile-bottom-nav">
-        <Link aria-current="page" className="is-active" href="/">
-          <Home aria-hidden="true" size={20} />
-          <span className="nav-label">Home</span>
-        </Link>
         <button onClick={scrollToTimeline} type="button">
           <Layers aria-hidden="true" size={20} />
           <span className="nav-label">Timeline</span>
@@ -961,7 +899,7 @@ export function ExploreClient({
         type="button"
       >
         <SlidersHorizontal aria-hidden="true" size={14} />
-        Filter &amp; search
+        Filter
         {activeFilterChips.length > 0 && <span className="filter-mobile-count">{activeFilterChips.length}</span>}
       </button>
     </main>
