@@ -13,7 +13,7 @@ import { termPattern } from '@/lib/dossier/entities';
 // body/deck/brief (multi-MB on this table) keeps the public query small enough
 // to run on every cold request without dragging ~8MB out of PostgREST.
 const PUBLISHED_STORY_COLUMNS =
-  'id, slug, title, summary, significance, company, source, source_url, topic, event_date, published_at, status, updated_at';
+  'id, slug, title, summary, significance, company, image_url, source, source_url, topic, event_date, published_at, status, updated_at';
 
 /**
  * Fetch all published stories ordered by event_date descending.

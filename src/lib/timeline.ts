@@ -58,6 +58,7 @@ function formatStoryForDisplay(story: Story, color: string): StoryDisplay {
         summary: story.summary,
         source: story.source,
       }),
+    imageUrl: story.image_url ?? null,
     topic: story.topic,
     date: story.event_date,
     day: day.replace(/^0/, ''),
@@ -81,6 +82,23 @@ export async function getMergedTimeline(): Promise<StoryDisplay[]> {
   const [liveStories, dbStories] = await Promise.all([fetchAiNews(), getPublishedStories()]);
   const seedConverted = seedStories.map(convertSeedStory);
 
+  const sources = [...liveStories, ...(dbStories ?? []), ...seedConverted];
+
+  // A live feed copy wins for the text (it is the publisher's current version)
+  // but usually carries no image, while the stored row for the same story has a
+  // lead image resolved by the ingest job. Index every image up front, by URL
+  // and by (title, date), so whichever copy survives de-duplication can borrow
+  // the image instead of falling back to a monogram tile.
+  const imageByUrl = new Map<string, string>();
+  const imageByTitleDate = new Map<string, string>();
+  for (const story of sources) {
+    if (!story.image_url) continue;
+    const urlKey = canonicalizeUrl(story.source_url);
+    if (!imageByUrl.has(urlKey)) imageByUrl.set(urlKey, story.image_url);
+    const titleDate = `${story.title.trim().toLowerCase()}|${story.event_date}`;
+    if (!imageByTitleDate.has(titleDate)) imageByTitleDate.set(titleDate, story.image_url);
+  }
+
   const merged: Story[] = [];
   const seenUrls = new Set<string>();
   const seenTitleDate = new Set<string>();
@@ -90,9 +108,12 @@ export async function getMergedTimeline(): Promise<StoryDisplay[]> {
     if (seenUrls.has(urlKey) || seenTitleDate.has(titleDate)) return;
     seenUrls.add(urlKey);
     seenTitleDate.add(titleDate);
+    if (!story.image_url) {
+      story.image_url = imageByUrl.get(urlKey) ?? imageByTitleDate.get(titleDate);
+    }
     merged.push(story);
   };
-  [...liveStories, ...(dbStories ?? []), ...seedConverted].forEach(pushStory);
+  sources.forEach(pushStory);
   merged.sort((a, b) => b.event_date.localeCompare(a.event_date));
 
   return merged.map((s) => formatStoryForDisplay(s, colorForTopic(s.topic)));

@@ -18,6 +18,8 @@ export type Database = {
           significance: string;
           body: string | null;
           company: string | null;
+          image_url: string | null;
+          image_attempts: number;
           enrich_attempts: number;
           deck: string | null;
           key_points: string[] | null;
@@ -45,6 +47,8 @@ export type Database = {
           significance: string;
           body?: string | null;
           company?: string | null;
+          image_url?: string | null;
+          image_attempts?: number;
           enrich_attempts?: number;
           deck?: string | null;
           key_points?: string[] | null;
@@ -72,6 +76,8 @@ export type Database = {
           significance?: string;
           body?: string | null;
           company?: string | null;
+          image_url?: string | null;
+          image_attempts?: number;
           enrich_attempts?: number;
           deck?: string | null;
           key_points?: string[] | null;

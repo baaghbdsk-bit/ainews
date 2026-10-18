@@ -150,6 +150,59 @@ function toHttpsUrl(raw: string): string | null {
   }
 }
 
+/**
+ * The item's lead image, straight from the feed when it ships one.
+ *
+ * Covers the three shapes publishers use: `<media:content medium="image">`
+ * (with declared dimensions), `<enclosure type="image/*">`, and
+ * `<media:thumbnail>`. Declared images smaller than the timeline tile are
+ * skipped — feeds use those for tracking pixels and author avatars.
+ */
+function bestImageUrl(item: RawItem): string | null {
+  const candidates: { url: unknown; width: unknown; height: unknown }[] = [];
+
+  for (const raw of ([] as unknown[]).concat(item['media:content'] ?? [])) {
+    if (raw && typeof raw === 'object') {
+      const node = raw as Record<string, unknown>;
+      const type = textOf(node['@_type']).toLowerCase();
+      const medium = textOf(node['@_medium']).toLowerCase();
+      if (type.startsWith('image/') || medium === 'image') {
+        candidates.push({ url: node['@_url'], width: node['@_width'], height: node['@_height'] });
+      }
+    }
+  }
+
+  for (const raw of ([] as unknown[]).concat(item.enclosure ?? [])) {
+    if (raw && typeof raw === 'object') {
+      const node = raw as Record<string, unknown>;
+      if (textOf(node['@_type']).toLowerCase().startsWith('image/')) {
+        candidates.push({ url: node['@_url'], width: undefined, height: undefined });
+      }
+    }
+  }
+
+  for (const raw of ([] as unknown[]).concat(item['media:thumbnail'] ?? [])) {
+    if (raw && typeof raw === 'object') {
+      const node = raw as Record<string, unknown>;
+      candidates.push({ url: node['@_url'], width: node['@_width'], height: node['@_height'] });
+    }
+  }
+
+  const MIN_TILE_PX = 200;
+  for (const candidate of candidates) {
+    const url = toHttpsUrl(textOf(candidate.url));
+    if (!url) continue;
+    const width = Number(textOf(candidate.width));
+    const height = Number(textOf(candidate.height));
+    const declaredSmall =
+      (Number.isFinite(width) && width > 0 && width < MIN_TILE_PX) ||
+      (Number.isFinite(height) && height > 0 && height < MIN_TILE_PX);
+    if (declaredSmall) continue;
+    return url.slice(0, 1024);
+  }
+  return null;
+}
+
 function toIsoDate(raw: string): string | null {
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return null;
@@ -213,6 +266,7 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
     significance: buildSignificance(title, resolvedSummary, feed, eventDate),
     source: feed.name,
     source_url: link,
+    image_url: bestImageUrl(item),
     topic: feed.topic,
     event_date: eventDate,
     published_at: now,

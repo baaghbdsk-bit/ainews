@@ -13,6 +13,8 @@ export interface StoryDisplay {
   source: string;
   sourceUrl: string;
   company?: string;
+  /** Lead image for the row tile; absent → the row renders a monogram tile. */
+  imageUrl?: string | null;
   topic: "Models" | "Products" | "Research" | "Policy";
   date: string;
   day: string;

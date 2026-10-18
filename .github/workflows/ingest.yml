@@ -91,3 +91,20 @@ jobs:
               break
             fi
           done
+
+          # Fill lead images for rows that still have none: the feed item's own
+          # image when it has one, otherwise the source page's og:image. Each
+          # call handles a bounded batch, so keep calling until it is drained.
+          images_remaining=1
+          for i in $(seq 1 6); do
+            echo "== Images pass $i (remaining: $images_remaining) =="
+            curl -fsS \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$INGEST_URL/api/cron/ingest?mode=images&imagesLimit=40" | tee /tmp/ingest.json
+            echo
+            images_remaining=$(jq -r '.imagesRemaining // 0' /tmp/ingest.json 2>/dev/null || echo 0)
+            images_filled=$(jq -r '.imagesFilled // 0' /tmp/ingest.json 2>/dev/null || echo 0)
+            if [ "$images_remaining" = "0" ] || [ "$images_filled" = "0" ]; then
+              break
+            fi
+          done

@@ -12,7 +12,8 @@
     "test:http": "node tests/http.mjs",
     "test:browser": "node tests/browser.mjs",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
-    "summarize:backfill": "node --env-file=.env.local scripts/backfill-summaries.mjs"
+    "summarize:backfill": "node --env-file=.env.local scripts/backfill-summaries.mjs",
+    "images:backfill": "node --env-file=.env.local scripts/backfill-images.mjs"
   },
   "dependencies": {
     "@extractus/article-extractor": "^9.0.1",
@@ -27,6 +28,8 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
+    "@reticlehq/next": "^3.7.0",
+    "@reticlehq/react": "^3.7.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

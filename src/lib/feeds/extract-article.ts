@@ -36,6 +36,8 @@ export interface ExtractedArticle {
   body: string;
   /** A richer 2–3 sentence lead, better than the terse feed excerpt. */
   summary: string;
+  /** Lead image (og:image / twitter:image), absolute https, or null. */
+  imageUrl: string | null;
 }
 
 /**
@@ -96,6 +98,71 @@ function buildSummary(paragraphs: string[]): string {
 
 const hostChains = new Map<string, Promise<unknown>>();
 const hostNextAt = new Map<string, number>();
+
+// Tracking pixels, placeholder banners, and share cards that would look wrong in
+// a timeline tile.
+const IMAGE_URL_DENY = /(sprite|placeholder|1x1|pixel|spacer|blank\.(gif|png)|logo\.(svg|png)|favicon)/i;
+const MAX_IMAGE_URL_CHARS = 1024;
+
+/**
+ * Resolves an image reference from page markup to an absolute https URL.
+ * http references are upgraded to https when they point at the article's own
+ * host (mixed content would be blocked anyway); otherwise they're dropped.
+ */
+function resolveImageUrl(raw: string, base: URL): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.startsWith('data:') || IMAGE_URL_DENY.test(trimmed)) return null;
+  let url: URL;
+  try {
+    url = new URL(trimmed, base);
+  } catch {
+    return null;
+  }
+  if (url.protocol === 'http:' && url.host === base.host) url.protocol = 'https:';
+  if (url.protocol !== 'https:') return null;
+  return url.toString().slice(0, MAX_IMAGE_URL_CHARS);
+}
+
+/** Lead image from `<meta>` tags, in the order publishers prioritise them. */
+function leadImageFromHtml(html: string, base: URL): string | null {
+  const byKey = new Map<string, string>();
+  const metaRe = /<meta\b[^>]*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = metaRe.exec(html)) !== null) {
+    const tag = match[0];
+    const key = (/\b(?:property|name)\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1] ?? '').toLowerCase();
+    if (!key) continue;
+    const content = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
+    if (content && !byKey.has(key)) byKey.set(key, content);
+  }
+
+  const ordered = [
+    'og:image:secure_url',
+    'og:image:url',
+    'og:image',
+    'twitter:image',
+    'twitter:image:src',
+    'image',
+  ];
+  for (const key of ordered) {
+    const raw = byKey.get(key);
+    if (!raw) continue;
+    const resolved = resolveImageUrl(raw, base);
+    if (resolved) return resolved;
+  }
+
+  const linkMatch = /<link\b[^>]*>/gi;
+  while ((match = linkMatch.exec(html)) !== null) {
+    const tag = match[0];
+    if (!/rel\s*=\s*["']image_src["']/i.test(tag)) continue;
+    const href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1];
+    if (href) {
+      const resolved = resolveImageUrl(href, base);
+      if (resolved) return resolved;
+    }
+  }
+  return null;
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -188,5 +255,33 @@ export async function extractArticle(url: string): Promise<ExtractOutcome> {
   }
 
   const summary = buildSummary(paragraphs);
-  return { status: 'ok', article: { body, summary: summary || paragraphs[0] } };
+  const imageUrl =
+    leadImageFromHtml(fetched.html, parsed) ?? resolveImageUrl(article.image ?? '', parsed);
+  return { status: 'ok', article: { body, summary: summary || paragraphs[0], imageUrl } };
+}
+
+export type ImageOutcome =
+  | { status: 'ok'; imageUrl: string | null }
+  | { status: 'rate-limited' }
+  | { status: 'unavailable' };
+
+/**
+ * Fetches only a page's lead image, skipping the readability pass. Used to
+ * backfill tiles for rows ingested before images were captured; `ok` with a null
+ * `imageUrl` means the page genuinely has none, so callers can count an attempt
+ * instead of refetching it forever.
+ */
+export async function fetchLeadImage(url: string): Promise<ImageOutcome> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return { status: 'unavailable' };
+  }
+  if (parsed.protocol !== 'https:') return { status: 'unavailable' };
+
+  const fetched = await runOnHost(parsed.host, () => fetchHtml(parsed.toString()));
+  if (fetched.kind === 'rate-limited') return { status: 'rate-limited' };
+  if (fetched.kind !== 'ok') return { status: 'unavailable' };
+  return { status: 'ok', imageUrl: leadImageFromHtml(fetched.html, parsed) };
 }
