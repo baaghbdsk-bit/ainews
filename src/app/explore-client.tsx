@@ -10,6 +10,7 @@ import {
   Orbit,
   Search,
   SlidersHorizontal,
+  Sparkles,
   Sun,
   X,
 } from "lucide-react";
@@ -114,7 +115,7 @@ const TimelineRow = memo(function TimelineRow({
         </div>
       )}
       <div className="story-row">
-        <div aria-label={`${story.month} ${story.day}, ${story.year}`} className={`timeline-node node-${story.color}`}>
+        <div aria-label={`${story.month} ${story.day}, ${story.year}`} className={`timeline-node node-${story.color} ${isLatest ? "node-latest" : ""}`}>
           <span className="date-day">{story.day}</span>
           <span className="date-month">{story.month}</span>
           {isActive && <span className="timeline-node-runner" />}
@@ -151,8 +152,11 @@ const TimelineRow = memo(function TimelineRow({
                   </div>
                 ) : null}
                 {hasDistinctSignificance ? (
-                  <div className="why-it-matters">
-                    <span>Why it matters</span>
+                  <div className={`why-it-matters why-${story.color}`}>
+                    <div className="why-it-matters-header">
+                      <Sparkles aria-hidden="true" size={12} strokeWidth={2.2} />
+                      <span>Why it matters</span>
+                    </div>
                     <p>{story.significance}</p>
                   </div>
                 ) : null}
@@ -347,16 +351,33 @@ export function ExploreClient({
   const hasMore = visibleCount < filtered.length;
 
 
+  // Pre-calculate story counts for each category
+  const topicCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: allStories.length };
+    for (const story of allStories) {
+      counts[story.topic] = (counts[story.topic] || 0) + 1;
+    }
+    return counts;
+  }, [allStories]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isFilterOpen) {
-        setIsFilterOpen(false);
+      if (event.key === "Escape") {
+        if (isFilterOpen) setIsFilterOpen(false);
+        if (isMobileSearchOpen) setIsMobileSearchOpen(false);
+      } else if (
+        event.key === "/" &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes((document.activeElement?.tagName || "").toUpperCase())
+      ) {
+        event.preventDefault();
+        setIsMobileSearchOpen(true);
+        searchInputRef.current?.focus();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFilterOpen]);
+  }, [isFilterOpen, isMobileSearchOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -491,18 +512,23 @@ export function ExploreClient({
             ref={searchInputRef}
             value={search}
           />
-          {search && (
+          {search ? (
             <button
               aria-label="Clear search"
               className="clear-search"
               onClick={() => {
                 setSearch("");
                 setActiveTimelineIndex(0);
+                searchInputRef.current?.focus();
               }}
               type="button"
             >
               <X size={14} />
             </button>
+          ) : (
+            <kbd className="header-search-kbd" title="Press / to search">
+              /
+            </kbd>
           )}
           {/* Mobile/tablet only: collapses the expanded search. */}
           <button
@@ -704,6 +730,7 @@ export function ExploreClient({
                   type="button"
                 >
                   <span>{label}</span>
+                  <span className="category-chip-count">{topicCounts[value] ?? 0}</span>
                 </button>
               ))}
             </div>

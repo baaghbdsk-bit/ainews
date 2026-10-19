@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BookOpen, Info, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getStoryBySlug } from "@/lib/actions/stories";
 import { fetchAiNews } from "@/lib/feeds/fetch-ai-news";
@@ -210,9 +210,20 @@ function renderStoryPage(story: DisplayStory) {
       <SiteHeader
         className="story-article-topbar"
         right={
-          <Link className="topbar-link" href="/">
-            <ArrowLeft size={15} /> Back to timeline
-          </Link>
+          <div className="header-actions">
+            <Link
+              aria-label="About Signal"
+              className="header-about-link"
+              href="/about"
+              title="About Signal"
+            >
+              <Info size={16} />
+              <span className="header-about-label">About</span>
+            </Link>
+            <Link className="topbar-link" href="/">
+              <ArrowLeft size={15} /> Back to timeline
+            </Link>
+          </div>
         }
       />
 
@@ -256,8 +267,11 @@ function renderStoryPage(story: DisplayStory) {
           <span />
         </div>
 
-        <section className="story-article-context">
-          <h2>Why it matters</h2>
+        <section className={`story-article-context context-${story.color}`}>
+          <div className="story-article-context-header">
+            <Sparkles aria-hidden="true" size={16} strokeWidth={2.2} />
+            <h2>Why it matters</h2>
+          </div>
           <p>{whyItMatters || story.significance}</p>
         </section>
 
