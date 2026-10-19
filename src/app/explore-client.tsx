@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronDown,
   Cpu,
+  Info,
   Layers,
   Orbit,
   Search,
@@ -13,13 +14,14 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   PAGE_SIZE,
+  filterTimelineStories,
   type StoryDisplay,
   type TimelineFacets,
-  type TimelineFilters,
 } from "@/lib/timeline-shared";
+import { useTheme } from "@/lib/theme";
 
 const topics = [
   { label: "Everything", value: "all" },
@@ -30,12 +32,8 @@ const topics = [
 ] as const;
 
 interface ExploreClientProps {
-  /** First page, server-rendered; further pages come from /api/stories. */
-  initialStories: StoryDisplay[];
-  /** Unfiltered total across the whole merged timeline. */
-  initialTotal: number;
-  /** Stories matching the current filters (1:1 with initialStories on load). */
-  matchingTotal: number;
+  /** Every story in the merged timeline; filtering happens client-side. */
+  allStories: StoryDisplay[];
   /** Distinct years / months / companies over the full merge. */
   facets: TimelineFacets;
 }
@@ -292,9 +290,7 @@ function CompanySelect({
 }
 
 export function ExploreClient({
-  initialStories,
-  initialTotal,
-  matchingTotal,
+  allStories,
   facets,
 }: ExploreClientProps) {
   const [activeTopic, setActiveTopic] = useState<string>("all");
@@ -305,7 +301,7 @@ export function ExploreClient({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isPanelCollapsed, setPanelCollapsed] = useState(false);
-  const [isLight, setIsLight] = useState(false);
+  const [isLight, toggleTheme] = useTheme();
   // Mobile/tablet header: the search field is collapsed to an icon and expands
   // in place when tapped.
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -315,120 +311,41 @@ export function ExploreClient({
     if (isMobileSearchOpen) searchInputRef.current?.focus();
   }, [isMobileSearchOpen]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isLight) root.dataset.theme = "light";
-    else delete root.dataset.theme;
-  }, [isLight]);
-
-  const [stories, setStories] = useState<StoryDisplay[]>(initialStories);
-  const [matching, setMatching] = useState(matchingTotal);
-  const [hasMore, setHasMore] = useState(initialStories.length < matchingTotal);
-  // isFiltering: a filter/search refetch that will REPLACE the list.
-  // isLoadingMore: an infinite-scroll fetch that will APPEND to the list.
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState(false);
+  // ── Client-side filtering (instant, no server round-trip) ──────────
+  const filtered = useMemo(
+    () =>
+      filterTimelineStories(allStories, {
+        topic: activeTopic,
+        year: activeYear,
+        month: activeMonth,
+        company: activeCompany,
+        q: search.trim(),
+      }),
+    [allStories, activeTopic, activeYear, activeMonth, activeCompany, search],
+  );
 
   const [activeTimelineIndex, setActiveTimelineIndex] = useState(0);
   const timelineRef = useRef<HTMLElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Single-flight fetch: a new request always supersedes the running one, and
-  // only the request that is still current gets to touch loading state.
-  const inFlightRef = useRef<AbortController | null>(null);
+  // Progressive rendering: show PAGE_SIZE rows at a time, expand on scroll.
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // Latest filter values for fetches started from effects/observers without
-  // re-subscribing them on every keystroke.
-  const filtersRef = useRef<TimelineFilters>({});
+  // Reset the visible window on every filter change (skip the initial mount
+  // where the defaults are already correct).
+  const skipInitialReset = useRef(true);
   useEffect(() => {
-    filtersRef.current = {
-      topic: activeTopic,
-      year: activeYear,
-      month: activeMonth,
-      company: activeCompany,
-      q: search.trim(),
-    };
+    if (skipInitialReset.current) {
+      skipInitialReset.current = false;
+      return;
+    }
+    setVisibleCount(PAGE_SIZE);
+    setActiveTimelineIndex(0);
   }, [activeTopic, activeYear, activeMonth, activeCompany, search]);
 
-  const fetchPage = useCallback(
-    (filters: TimelineFilters, offset: number, mode: "replace" | "append") => {
-      inFlightRef.current?.abort();
-      const controller = new AbortController();
-      inFlightRef.current = controller;
+  const stories = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
-      // A replace cancels any pending append (and vice versa via the abort
-      // above) so the two flags can never both stick on.
-      setIsFiltering(mode === "replace");
-      setIsLoadingMore(mode === "append");
-
-      const params = new URLSearchParams();
-      if (filters.topic && filters.topic !== "all") params.set("topic", filters.topic);
-      if (filters.year && filters.year !== "all") params.set("year", filters.year);
-      if (filters.month && filters.month !== "all") params.set("month", filters.month);
-      if (filters.company && filters.company !== "all") params.set("company", filters.company);
-      if (filters.q) params.set("q", filters.q);
-      params.set("offset", String(offset));
-      params.set("limit", String(PAGE_SIZE));
-
-      (async () => {
-        try {
-          const res = await fetch(`/api/stories?${params.toString()}`, { signal: controller.signal });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = (await res.json()) as {
-            stories: StoryDisplay[];
-            total: number;
-            matching: number;
-            hasMore: boolean;
-          };
-          setStories((prev) => (mode === "append" ? [...prev, ...data.stories] : data.stories));
-          setMatching(data.matching);
-          setHasMore(data.hasMore);
-          setLoadError(false);
-        } catch (err) {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          console.error("Failed to load timeline page:", err);
-          // Keep whatever is on screen; surface the error only when the list
-          // would otherwise render empty.
-          setLoadError(true);
-        } finally {
-          if (inFlightRef.current === controller) {
-            inFlightRef.current = null;
-            setIsFiltering(false);
-            setIsLoadingMore(false);
-          }
-        }
-      })();
-    },
-    [],
-  );
-
-  // Skip the initial mount — SSR already delivered page one.
-  const skipDiscreteFetch = useRef(true);
-  const skipSearchFetch = useRef(true);
-
-  // Discrete filter changes refetch immediately (replace).
-  useEffect(() => {
-    if (skipDiscreteFetch.current) {
-      skipDiscreteFetch.current = false;
-      return;
-    }
-    setActiveTimelineIndex(0);
-    fetchPage(filtersRef.current, 0, "replace");
-  }, [activeTopic, activeYear, activeMonth, activeCompany, fetchPage]);
-
-  // Search is debounced so typing doesn't fire a request per keystroke.
-  useEffect(() => {
-    if (skipSearchFetch.current) {
-      skipSearchFetch.current = false;
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setActiveTimelineIndex(0);
-      fetchPage(filtersRef.current, 0, "replace");
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [search, fetchPage]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -464,49 +381,25 @@ export function ExploreClient({
     return () => clearInterval(throttleTimer);
   }, [activeTimelineIndex, stories.length]);
 
+  // Infinite scroll: bump the visible count when the sentinel enters view.
   useEffect(() => {
     if (!hasMore) return;
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
-    // Throttled to one appended page at a time; the sentinel only qualifies
-    // again once the list has grown and it has been pushed out of range.
-    let pending = 0;
-    const check = () => {
-      if (pending || isFiltering || isLoadingMore) return;
-      if (sentinel.getBoundingClientRect().top > window.innerHeight + 800) return;
-      pending = window.setTimeout(() => {
-        pending = 0;
-      }, 120);
-      fetchPage(filtersRef.current, stories.length, "append");
-    };
-
-    // IntersectionObserver covers the no-scroll case; the scroll/resize listeners
-    // keep the list growing where observer delivery is unavailable.
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) check();
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisibleCount((prev) => prev + PAGE_SIZE);
+        }
       },
       { rootMargin: "1200px 0px" },
     );
     observer.observe(sentinel);
-    window.addEventListener("scroll", check, { passive: true });
-    window.addEventListener("resize", check, { passive: true });
-    check();
 
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("scroll", check);
-      window.removeEventListener("resize", check);
-      if (pending) window.clearTimeout(pending);
-    };
-  }, [hasMore, stories.length, isFiltering, isLoadingMore, fetchPage]);
+    return () => observer.disconnect();
+  }, [hasMore]);
 
-  // Abort any in-flight request on unmount so state updates never land late.
-  useEffect(() => {
-    const inFlight = inFlightRef;
-    return () => inFlight.current?.abort();
-  }, []);
 
   const hasActiveFilters =
     activeTopic !== "all" || activeYear !== "all" || activeMonth !== "all" || search.trim() !== "" || activeCompany !== "all";
@@ -520,16 +413,12 @@ export function ExploreClient({
     setActiveTimelineIndex(0);
   };
 
-  const totalStories = initialTotal;
-  const shownStories = matching;
+  const totalStories = allStories.length;
+  const shownStories = filtered.length;
 
   const toggleExpanded = useCallback((id: string) => {
     setExpandedId((current) => (current === id ? null : id));
   }, []);
-
-  const retryLoad = useCallback(() => {
-    fetchPage(filtersRef.current, 0, "replace");
-  }, [fetchPage]);
 
   // Smooth scroll back to the top of the timeline; used by the mobile bottom
   // nav and the mobile menu panel so every nav item has a real destination.
@@ -537,7 +426,7 @@ export function ExploreClient({
     timelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
-  const showEmpty = stories.length === 0 && !isFiltering && !loadError;
+  const showEmpty = stories.length === 0;
 
   // One removable chip per applied filter, so the sidebar shows what is
   // narrowing the timeline without opening every control.
@@ -637,11 +526,20 @@ export function ExploreClient({
           >
             <Search size={18} />
           </button>
+          <Link
+            aria-label="About Signal"
+            className="header-about-link"
+            href="/about"
+            title="About Signal"
+          >
+            <Info size={16} />
+            <span className="header-about-label">About</span>
+          </Link>
           <button
             aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}
             aria-pressed={isLight}
             className="header-icon-button"
-            onClick={() => setIsLight((light) => !light)}
+            onClick={toggleTheme}
             title={isLight ? "Dark theme" : "Light theme"}
             type="button"
           >
@@ -683,7 +581,7 @@ export function ExploreClient({
               </svg>
             </div>
           </section>
-          <div aria-busy={isFiltering || isLoadingMore} className="timeline-list" aria-live="polite">
+          <div className="timeline-list" aria-live="polite">
             {stories.length ? (
               <>
                 {stories.map((story, index) => (
@@ -699,14 +597,6 @@ export function ExploreClient({
                 ))}
                 {hasMore && <div aria-hidden="true" className="timeline-sentinel" ref={sentinelRef} />}
               </>
-            ) : loadError ? (
-              <div className="empty-state">
-                <Search size={19} />
-                <p>Couldn&rsquo;t load stories.</p>
-                <button type="button" onClick={retryLoad}>
-                  Try again
-                </button>
-              </div>
             ) : showEmpty ? (
               <div className="empty-state">
                 <Search size={19} />
