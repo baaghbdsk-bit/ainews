@@ -1,6 +1,6 @@
-﻿import { Suspense } from "react";
-import { getMergedTimeline, getTimelinePage } from "@/lib/timeline";
-import { computeFacets, PAGE_SIZE } from "@/lib/timeline-shared";
+import { Suspense } from "react";
+import { getMergedTimeline } from "@/lib/timeline";
+import { computeFacets } from "@/lib/timeline-shared";
 import { ExploreClient } from "./explore-client";
 import { SiteHeader } from "./site-header";
 
@@ -15,22 +15,12 @@ export default function HomePage() {
 }
 
 async function Timeline() {
-  // Only the first page is server-rendered into the RSC payload — the rest of
-  // the timeline loads from /api/stories on scroll and on every filter change,
-  // so the homepage no longer serializes ~1,000 stories to the browser.
-  // getTimelinePage and getMergedTimeline share the same 'use cache' entry, so
-  // the second call is a cache read, not a refetch.
-  const [page, merged] = await Promise.all([
-    getTimelinePage({}, 0, PAGE_SIZE),
-    getMergedTimeline(),
-  ]);
+  const merged = await getMergedTimeline();
 
   return (
     <ExploreClient
       facets={computeFacets(merged)}
-      initialStories={page.stories}
-      initialTotal={page.total}
-      matchingTotal={page.matching}
+      allStories={merged}
     />
   );
 }
