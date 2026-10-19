@@ -835,7 +835,14 @@ export function ExploreClient({
       {/* Mobile bottom navigation — Timeline (Home is intentionally omitted,
           it scrolled to the same timeline) plus the topic pills. */}
       <nav aria-label="Mobile navigation" className="mobile-bottom-nav">
-        <button onClick={scrollToTimeline} type="button">
+        <button
+          className={activeTopic === "all" ? "is-active" : ""}
+          onClick={() => {
+            clearFilters();
+            scrollToTimeline();
+          }}
+          type="button"
+        >
           <Layers aria-hidden="true" size={20} />
           <span className="nav-label">Timeline</span>
         </button>
