@@ -37,7 +37,18 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL secret is not set. Add it in Settings -> Secrets and variables -> Actions."
+            echo "::error::DATABASE_URL secret is not set. Add it in Settings -> Secrets and variables -> Actions."
+            echo "::error::Use the Session pooler URI (Project Settings -> Database -> Connection string -> Session pooler)."
+            exit 1
+          fi
+          # The "Direct connection" URI resolves to the project's IPv6 address,
+          # which GitHub-hosted runners cannot reach (ENETUNREACH). The session
+          # pooler is IPv4 and works from any runner. Detect the direct URI and
+          # say so plainly instead of surfacing a socket error.
+          if echo "$DATABASE_URL" | grep -qE '@(db|[a-z0-9]+\.pooler)\.supabase\.(co|com)'; then
+            echo "::error::DATABASE_URL points at the Supabase direct connection (IPv6-only)."
+            echo "::error::GitHub runners cannot reach the project's IPv6 address."
+            echo "::error::Switch the secret to the Session pooler URI: Project Settings -> Database -> Connection string -> Session pooler."
             exit 1
           fi
           node scripts/migrate.mjs

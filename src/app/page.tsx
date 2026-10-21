@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { getMergedTimeline } from "@/lib/timeline";
 import { computeFacets } from "@/lib/timeline-shared";
 import { ExploreClient } from "./explore-client";
@@ -10,6 +11,17 @@ import { SiteHeader } from "./site-header";
  * to paint quickly.
  */
 const INITIAL_STORY_WINDOW = 30;
+
+/**
+ * The layout's relative canonical ("../") resolves to "/index" for the root
+ * route on the deployed host, so the homepage declares its own. Sub-routes
+ * still resolve correctly from the layout.
+ */
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default function HomePage() {
   // The shell paints immediately; the cached data resolves behind this boundary
