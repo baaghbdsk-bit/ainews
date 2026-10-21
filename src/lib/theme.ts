@@ -29,12 +29,12 @@ export function useTheme(): [boolean, () => void] {
     if (root.dataset.theme === "light") {
       delete root.dataset.theme;
       try {
-        localStorage.setItem("signal-theme", "dark");
+        localStorage.setItem("neubench-theme", "dark");
       } catch {}
     } else {
       root.dataset.theme = "light";
       try {
-        localStorage.setItem("signal-theme", "light");
+        localStorage.setItem("neubench-theme", "light");
       } catch {}
     }
   }, []);

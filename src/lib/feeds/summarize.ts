@@ -358,13 +358,76 @@ function coerceSummaryJson(
   return { deck: trimToLength(deck, MAX_LLM_DECK_CHARS), keyPoints, whyItMatters, brief };
 }
 
+/**
+ * Extracts high-signal bullet points (metrics, releases, numbers) from text.
+ * Runs 100% locally at zero cost.
+ */
+function extractKeyPointsFromText(paragraphs: string[], excerpt?: string): string[] {
+  const candidates: string[] = [];
+  const textPool = [...paragraphs, excerpt ?? ''].filter(Boolean);
+  const FACT_PATTERNS =
+    /\b(?:\d+(?:\.\d+)?%|\$\d+|\b\d+\s*(?:billion|million|trillion|parameters?|tokens?|context|benchmark|flops|models?)\b|achieves?|outperforms?|released?|announced?|integrates?|supports?|priced?|features?)\b/i;
+
+  for (const para of textPool) {
+    for (const sentence of splitSentences(para)) {
+      if (sentence.length >= 35 && sentence.length <= 150 && !isBoilerplate(sentence)) {
+        if (FACT_PATTERNS.test(sentence) && !candidates.some((c) => jaccard(new Set(contentWords(c)), new Set(contentWords(sentence))) > 0.6)) {
+          candidates.push(sentence);
+          if (candidates.length >= 4) return candidates;
+        }
+      }
+    }
+  }
+  return candidates;
+}
+
+/**
+ * Identifies the impact or industry significance sentence at zero cost.
+ */
+function extractWhyItMattersFromText(paragraphs: string[], fallback?: string): string | null {
+  const IMPACT_PATTERNS =
+    /\b(?:this (?:marks|enables|means|represents|signals|challenges|accelerates|paves the way)|the move (?:signals|aims to|comes as)|impact of this|significant because|key implication)\b/i;
+
+  for (const para of paragraphs) {
+    for (const sentence of splitSentences(para)) {
+      if (sentence.length >= 40 && sentence.length <= 260 && IMPACT_PATTERNS.test(sentence)) {
+        return trimToLength(sentence, 300);
+      }
+    }
+  }
+  return fallback && fallback.length >= 30 ? trimToLength(fallback, 300) : null;
+}
+
 /** Builds the zero-cost summary used when the LLM is unavailable. */
 export function extractiveSummary(input: SummaryInput): StorySummary {
   const paragraphs = input.body ? paragraphsFromBody(input.body) : [];
   const deck = buildDeck({ title: input.title, description: input.summary, paragraphs });
   const fallbackDeck =
     deck || trimToLength(normalize(input.summary ?? '') || normalize(input.significance ?? ''), 320);
-  return { deck: fallbackDeck, keyPoints: [], whyItMatters: null, brief: null, model: null, rateLimited: false, providerFailed: false };
+
+  const keyPoints = extractKeyPointsFromText(paragraphs, input.summary);
+  const whyItMatters = extractWhyItMattersFromText(paragraphs, input.significance);
+
+  // Form a readable continuous brief from high-quality paragraphs
+  const cleanParas = paragraphs
+    .filter((p) => p.length >= 60 && !isBoilerplate(p))
+    .slice(0, 4);
+
+  const brief = cleanParas.length >= 2
+    ? cleanParas.join('\n\n')
+    : input.summary
+      ? `${normalize(input.summary)}\n\n${normalize(input.significance ?? '')}`.trim()
+      : null;
+
+  return {
+    deck: fallbackDeck,
+    keyPoints,
+    whyItMatters,
+    brief,
+    model: null,
+    rateLimited: false,
+    providerFailed: false,
+  };
 }
 
 /**

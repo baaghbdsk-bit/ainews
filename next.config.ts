@@ -1,4 +1,3 @@
-import { withReticle } from '@reticlehq/next';
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -28,4 +27,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withReticle(nextConfig);
+export default nextConfig;

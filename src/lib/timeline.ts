@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { fetchAiNews, AI_NEWS_TAG } from '@/lib/feeds/fetch-ai-news';
-import { getPublishedStories } from '@/lib/actions/stories';
+import { getPublishedStoriesWithVotes, getUpvoteCounts } from '@/lib/actions/stories';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { stories as seedStories } from '@/app/stories';
 import { canonicalizeUrl, slugify } from '@/lib/slug';
@@ -11,6 +11,13 @@ import type { StoryDisplay, TimelineFilters } from '@/lib/timeline-shared';
 import { PAGE_SIZE, filterTimelineStories } from '@/lib/timeline-shared';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** A timeline row carries the vote total the server read for its slug. */
+export interface TimelineStoryDisplay extends StoryDisplay {
+  upvoteCount?: number;
+}
+
+type TimelineStory = Story & { upvote_count?: number };
 
 /** Convert seed stories to the DB-compatible Story shape. Derived from the
  *  story's own date so the page stays prerenderable — `new Date()` is unstable
@@ -40,7 +47,11 @@ function convertSeedStory(story: (typeof seedStories)[number]): Story {
 /** Project a Story down to only the fields the timeline renders, so full
  *  database rows (body, deck, key points, audit columns) never leave the
  *  server. One projection, shared by the SSR first page and the API. */
-function formatStoryForDisplay(story: Story, color: string): StoryDisplay {
+function formatStoryForDisplay(
+  story: TimelineStory,
+  color: string,
+  upvoteCount: number,
+): TimelineStoryDisplay {
   const [year, month, day] = story.event_date.split('-');
 
   return {
@@ -59,12 +70,16 @@ function formatStoryForDisplay(story: Story, color: string): StoryDisplay {
         source: story.source,
       }),
     imageUrl: story.image_url ?? null,
+    deck: story.deck ?? null,
+    keyPoints: story.key_points ?? null,
+    whyItMatters: story.why_it_matters ?? null,
     topic: story.topic,
     date: story.event_date,
     day: day.replace(/^0/, ''),
     month: MONTH_NAMES[parseInt(month, 10) - 1],
     year,
     color,
+    upvoteCount,
   };
 }
 
@@ -74,7 +89,7 @@ function formatStoryForDisplay(story: Story, color: string): StoryDisplay {
  * display shape. Cached under both feed and story tags: a feed refresh or an
  * editorial publish invalidates it.
  */
-export async function getMergedTimeline(): Promise<StoryDisplay[]> {
+export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
   'use cache';
   cacheLife('minutes');
   cacheTag(AI_NEWS_TAG, STORIES_TAG);
@@ -83,22 +98,23 @@ export async function getMergedTimeline(): Promise<StoryDisplay[]> {
   // prerender deadline (~60s) which fails local and CI builds. Race each
   // source against a hard deadline; whatever arrives in time is used and the
   // next cache window fills the rest.
-  const withDeadline = (promise: Promise<Story[]>, label: string): Promise<Story[]> => {
+  const withDeadline = <T,>(promise: Promise<T>, label: string, fallback: T): Promise<T> => {
     const DEADLINE_MS = 30000;
     return Promise.race([
       promise,
-      new Promise<Story[]>((resolve) => {
+      new Promise<T>((resolve) => {
         setTimeout(() => {
           console.warn(`${label} exceeded ${DEADLINE_MS}ms during prerender, continuing without it`);
-          resolve([]);
+          resolve(fallback);
         }, DEADLINE_MS);
       }),
     ]);
   };
 
-  const [liveStories, dbStories] = await Promise.all([
-    withDeadline(fetchAiNews(), 'fetchAiNews'),
-    withDeadline(getPublishedStories(), 'getPublishedStories'),
+  const [liveStories, dbStories, upvoteCounts] = await Promise.all([
+    withDeadline(fetchAiNews(), 'fetchAiNews', [] as Story[]),
+    withDeadline(getPublishedStoriesWithVotes(), 'getPublishedStoriesWithVotes', []),
+    withDeadline(getUpvoteCounts(), 'getUpvoteCounts', {}),
   ]);
   const seedConverted = seedStories.map(convertSeedStory);
 
@@ -136,11 +152,13 @@ export async function getMergedTimeline(): Promise<StoryDisplay[]> {
   sources.forEach(pushStory);
   merged.sort((a, b) => b.event_date.localeCompare(a.event_date));
 
-  return merged.map((s) => formatStoryForDisplay(s, colorForTopic(s.topic)));
+  return merged.map((s) =>
+    formatStoryForDisplay(s, colorForTopic(s.topic), upvoteCounts[s.slug] ?? 0),
+  );
 }
 
 export interface TimelinePage {
-  stories: StoryDisplay[];
+  stories: TimelineStoryDisplay[];
   /** Total stories across the full merged set (unfiltered). */
   total: number;
   /** Total stories matching the filters (what the count line shows). */

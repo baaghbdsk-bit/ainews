@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated agent skill packs (see .gitignore)
+    ".agents/**",
+    ".opencode/**",
+    // Agent scratch artifacts (see .gitignore)
+    "scratch/**",
   ]),
 ]);
 

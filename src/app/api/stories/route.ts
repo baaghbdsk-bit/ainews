@@ -20,12 +20,14 @@ export async function GET(request: NextRequest) {
     return Math.min(max, Math.max(min, raw));
   };
 
+  const rawQuery = params.get('q');
   const filters: TimelineFilters = {
     topic: params.get('topic') ?? undefined,
     year: params.get('year') ?? undefined,
     month: params.get('month') ?? undefined,
     company: params.get('company') ?? undefined,
-    q: params.get('q') ?? undefined,
+    // Bound the search term so an arbitrarily long URL cannot bloat the merge.
+    q: rawQuery ? rawQuery.slice(0, 200) : undefined,
   };
 
   const offset = readInt('offset', 0, 0, 1_000_000);

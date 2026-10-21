@@ -13,7 +13,7 @@ export default function NotFound() {
         }
       />
       <div className="empty-state">
-        <p>That story isn&apos;t on the timeline.</p>
+        <h1>That story isn&apos;t on the timeline.</h1>
         <Link className="filter-clear-button" href="/">
           Back to timeline
         </Link>

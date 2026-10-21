@@ -1,6 +1,7 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { runIngest } from '@/lib/feeds/ingest';
 import { AI_NEWS_TAG } from '@/lib/feeds/fetch-ai-news';
+import { bearerMatches, jsonNoStore } from '@/lib/supabase/api-guard';
 
 /**
  * Background ingest trigger. Protected by a bearer secret so only an authorised
@@ -10,14 +11,11 @@ export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret || secret === 'change-me') {
     console.error('CRON_SECRET is missing or still the placeholder; refusing to run ingest.');
-    return NextResponse.json({ error: 'Ingest not configured' }, { status: 500 });
+    return jsonNoStore({ error: 'Ingest not configured' }, { status: 500 });
   }
 
-  const auth = request.headers.get('authorization') ?? '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
-
-  if (token !== secret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!bearerMatches(request, secret)) {
+    return jsonNoStore({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // `?mode=enrich` skips the feed fetch and only extracts article bodies,
@@ -48,12 +46,9 @@ export async function GET(request: NextRequest) {
       summarizeLimit,
       imagesLimit,
     });
-    return NextResponse.json({ ok: true, ...result, tag: AI_NEWS_TAG });
+    return jsonNoStore({ ok: true, ...result, tag: AI_NEWS_TAG });
   } catch (err) {
     console.error('ingest route failed:', err);
-    return NextResponse.json(
-      { ok: false, error: (err as Error).message },
-      { status: 500 },
-    );
+    return jsonNoStore({ ok: false, error: 'Ingest failed' }, { status: 500 });
   }
 }

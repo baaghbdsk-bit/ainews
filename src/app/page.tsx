@@ -4,6 +4,13 @@ import { computeFacets } from "@/lib/timeline-shared";
 import { ExploreClient } from "./explore-client";
 import { SiteHeader } from "./site-header";
 
+/**
+ * Rows rendered into the document. The client takes over from here and pulls
+ * the rest of the merge in the background, so the document stays small enough
+ * to paint quickly.
+ */
+const INITIAL_STORY_WINDOW = 30;
+
 export default function HomePage() {
   // The shell paints immediately; the cached data resolves behind this boundary
   // instead of blocking the whole navigation.
@@ -20,7 +27,7 @@ async function Timeline() {
   return (
     <ExploreClient
       facets={computeFacets(merged)}
-      allStories={merged}
+      initialStories={merged.slice(0, INITIAL_STORY_WINDOW)}
     />
   );
 }

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, BookOpen, Info, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getStoryBySlug } from "@/lib/actions/stories";
+import { getStoryBySlug, getUpvoteCount } from "@/lib/actions/stories";
 import { fetchAiNews } from "@/lib/feeds/fetch-ai-news";
 import type { Story } from "@/lib/schemas/story";
 import { matchEntities } from "@/lib/dossier/entities";
@@ -11,13 +11,13 @@ import type { Story as SeedStory } from "../../stories";
 import { slugify } from "@/lib/slug";
 import { colorForTopic } from "@/lib/story-colors";
 import { SiteHeader } from "../../site-header";
+import { UpvoteButton, BookmarkButton, ShareButton } from "@/components/story-actions";
+import { extractStoryAnalytics } from "@/lib/story-stats";
+import { StoryStatsDashboard } from "@/components/story-stats-dashboard";
+import { extractArticle, type ExtractOutcome } from "@/lib/feeds/extract-article";
+import { extractiveSummary } from "@/lib/feeds/summarize";
 
 export const instant = false;
-
-// Block unlisted slugs on their static result instead of streaming the App
-// Shell: an unknown story returns a real 404 on the first request rather than
-// a 200 that upgrades after a background render.
-export const ensureStatic = 'navigation';
 
 type StoryPageProps = {
   params: Promise<{ storyId: string }>;
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
   }
   if (dbStory) {
     return {
-      title: `${dbStory.title} | Signal`,
+      title: `${dbStory.title} | NeuBench`,
       description: dbStory.summary,
       alternates: { canonical: `/story/${storyId}` },
       openGraph: {
@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
   const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
   if (seedStory) {
     return {
-      title: `${seedStory.title} | Signal`,
+      title: `${seedStory.title} | NeuBench`,
       description: seedStory.summary,
       alternates: { canonical: `/story/${storyId}` },
       openGraph: {
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
     const live = (await fetchAiNews()).find((s) => s.slug === storyId);
     if (live) {
       return {
-        title: `${live.title} | Signal`,
+        title: `${live.title} | NeuBench`,
         description: live.summary,
         alternates: { canonical: `/story/${storyId}` },
         openGraph: {
@@ -96,12 +96,19 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
  * Format a story for display with computed fields
  */
 type DisplayStory = (Story | SeedStory) & {
+  slug: string;
   date: string;
   day: string;
   month: string;
   year: string;
   color: string;
   sourceUrl: string;
+  imageUrl?: string | null;
+  body?: string | null;
+  deck?: string | null;
+  brief?: string | null;
+  key_points?: string[] | null;
+  why_it_matters?: string | null;
 };
 
 function formatStory(story: Story | SeedStory | null, color: string): DisplayStory | null {
@@ -127,17 +134,58 @@ function formatStory(story: Story | SeedStory | null, color: string): DisplaySto
     "Dec",
   ];
 
+  const computedSlug =
+    'slug' in story && typeof story.slug === 'string' && story.slug
+      ? story.slug
+      : slugify(story.title);
+
+  const imageUrl = 'image_url' in story && typeof story.image_url === 'string' ? story.image_url : null;
+
   return {
     ...story,
+    slug: computedSlug,
     date: dateStr,
     day: day?.replace(/^0/, "") ?? "",
     month: monthNames[(parseInt(month ?? "", 10) || 1) - 1] ?? "",
     year: year ?? "",
     color,
     sourceUrl: hasSourceUrl ? story.source_url : 'sourceUrl' in story ? story.sourceUrl : "",
+    imageUrl,
   };
 }
 
+
+async function persistEnrichedStory(
+  storyId: string,
+  body: string,
+  deck: string,
+  keyPoints: string[],
+  brief: string | null,
+  whyItMatters: string | null,
+  imageUrl: string | null,
+) {
+  try {
+    const { supabaseUrl, supabaseServiceRoleKey } = await import('@/lib/env');
+    const { createClient } = await import('@supabase/supabase-js');
+    const url = supabaseUrl();
+    const serviceKey = supabaseServiceRoleKey();
+    if (!url || !serviceKey) return;
+    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+    await admin
+      .from('stories')
+      .update({
+        body,
+        deck: deck || null,
+        key_points: keyPoints.length > 0 ? keyPoints : null,
+        brief: brief || null,
+        why_it_matters: whyItMatters || null,
+        ...(imageUrl ? { image_url: imageUrl } : {}),
+      })
+      .eq('id', storyId);
+  } catch {
+    // Non-fatal background persistence failure
+  }
+}
 
 export default async function StoryPage({ params }: StoryPageProps) {
   const { storyId } = await params;
@@ -149,37 +197,112 @@ export default async function StoryPage({ params }: StoryPageProps) {
     // During prerendering, Supabase may not be available — fall back below.
   }
 
-  // 1. Persisted / ingested story (has the extracted article body).
+  let storyToRender: DisplayStory | null = null;
+
+  // 1. Persisted / ingested story
   if (dbStory) {
-    const story = formatStory(dbStory, colorForTopic(dbStory.topic));
-    if (!story) notFound();
-    return renderStoryPage(story);
-  }
-
-  // 2. Curated seed story.
-  const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
-  if (seedStory) {
-    const story = formatStory(seedStory, colorForTopic(seedStory.topic));
-    if (!story) notFound();
-    return renderStoryPage(story);
-  }
-
-  // 3. Live feed story that hasn't been ingested yet — render it from the feed
-  //    so a fresh headline never leads to a 404.
-  try {
-    const live = (await fetchAiNews()).find((s) => s.slug === storyId);
-    if (live) {
-      const story = formatStory(live, colorForTopic(live.topic));
-      if (story) return renderStoryPage(story);
+    storyToRender = formatStory(dbStory, colorForTopic(dbStory.topic));
+  } else {
+    // 2. Curated seed story
+    const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
+    if (seedStory) {
+      storyToRender = formatStory(seedStory, colorForTopic(seedStory.topic));
+    } else {
+      // 3. Live feed story that hasn't been ingested yet
+      try {
+        const live = (await fetchAiNews()).find((s) => s.slug === storyId);
+        if (live) {
+          storyToRender = formatStory(live, colorForTopic(live.topic));
+        }
+      } catch {
+        // Ignore and fall through to not-found.
+      }
     }
-  } catch {
-    // Ignore and fall through to not-found.
   }
 
-  notFound();
+  if (!storyToRender) notFound();
+
+  let finalStory: DisplayStory = storyToRender;
+
+  const isSeedStory = seedStories.some((s) => slugify(s.title) === storyId);
+
+  // If the story doesn't have an extracted body yet, extract it on-demand from the source URL
+  const hasSubstantialBody =
+    'body' in finalStory &&
+    typeof finalStory.body === 'string' &&
+    finalStory.body.length >= 300;
+
+  if (!isSeedStory && !hasSubstantialBody && finalStory.sourceUrl) {
+    try {
+      // Race extraction against a strict 2500ms ceiling so visitor connections never hang
+      const outcome = await Promise.race([
+        extractArticle(finalStory.sourceUrl),
+        new Promise<ExtractOutcome>((resolve) =>
+          setTimeout(() => resolve({ status: 'unavailable' }), 2500)
+        ),
+      ]);
+
+      if (outcome.status === 'ok') {
+        const enriched = extractiveSummary({
+          title: finalStory.title,
+          summary: finalStory.summary,
+          body: outcome.article.body,
+          source: finalStory.source,
+          significance: finalStory.significance,
+        });
+
+        const resolvedDeck =
+          ('deck' in finalStory && typeof finalStory.deck === 'string' && finalStory.deck)
+            ? finalStory.deck
+            : enriched.deck;
+        const resolvedBrief =
+          ('brief' in finalStory && typeof finalStory.brief === 'string' && finalStory.brief)
+            ? finalStory.brief
+            : enriched.brief;
+        const resolvedKeyPoints =
+          ('key_points' in finalStory && Array.isArray(finalStory.key_points) && finalStory.key_points.length > 0)
+            ? finalStory.key_points
+            : enriched.keyPoints;
+        const resolvedWhyItMatters =
+          ('why_it_matters' in finalStory && typeof finalStory.why_it_matters === 'string')
+            ? finalStory.why_it_matters
+            : enriched.whyItMatters;
+        const resolvedImageUrl = finalStory.imageUrl || outcome.article.imageUrl;
+
+        finalStory = {
+          ...finalStory,
+          body: outcome.article.body,
+          deck: resolvedDeck,
+          brief: resolvedBrief,
+          key_points: resolvedKeyPoints,
+          why_it_matters: resolvedWhyItMatters,
+          imageUrl: resolvedImageUrl,
+        };
+
+        // Persist to Supabase so subsequent visitors load instantly from DB
+        if (dbStory?.id) {
+          persistEnrichedStory(
+            dbStory.id,
+            outcome.article.body,
+            resolvedDeck,
+            resolvedKeyPoints,
+            resolvedBrief,
+            resolvedWhyItMatters,
+            resolvedImageUrl ?? null,
+          ).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.warn('Failed on-demand article extraction:', err);
+    }
+  }
+
+  const upvoteCount = await getUpvoteCount(storyToRender.slug);
+
+  return renderStoryPage(finalStory, upvoteCount);
 }
 
-function renderStoryPage(story: DisplayStory) {
+function renderStoryPage(story: DisplayStory, upvoteCount: number) {
   const bodyText = "body" in story && typeof story.body === "string" ? story.body : null;
   const bodyParagraphs = bodyText
     ? bodyText.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean)
@@ -205,23 +328,33 @@ function renderStoryPage(story: DisplayStory) {
     : [];
   const proseParagraphs = briefParagraphs.length ? briefParagraphs : bodyParagraphs;
 
+  const totalWords = [story.title, deck, ...proseParagraphs, whyItMatters, ...(keyPoints ?? [])]
+    .filter(Boolean)
+    .join(" ")
+    .split(/\s+/)
+    .length;
+  const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 180));
+
+  const analytics = extractStoryAnalytics({
+    title: story.title,
+    summary: story.summary,
+    body: bodyText,
+    deck,
+    brief,
+    keyPoints,
+    whyItMatters,
+    topic: story.topic,
+  });
+
   return (
     <main className="site-frame archive-page story-article-page">
       <SiteHeader
         className="story-article-topbar"
         right={
           <div className="header-actions">
-            <Link
-              aria-label="About Signal"
-              className="header-about-link"
-              href="/about"
-              title="About Signal"
-            >
-              <Info size={16} />
-              <span className="header-about-label">About</span>
-            </Link>
-            <Link className="topbar-link" href="/">
-              <ArrowLeft size={15} /> Back to timeline
+            <Link className="story-back-link" href="/">
+              <ArrowLeft size={17} />
+              <span>Back to timeline</span>
             </Link>
           </div>
         }
@@ -236,25 +369,27 @@ function renderStoryPage(story: DisplayStory) {
           <time dateTime={story.date}>
             {story.month} {story.day}, {story.year}
           </time>
+          <span className="story-article-readtime">{readTimeMinutes} min read</span>
         </div>
 
         <h1>{story.title}</h1>
 
+        <div className="story-article-actions">
+          <UpvoteButton slug={story.slug} size="md" initialCount={upvoteCount} />
+          <BookmarkButton slug={story.slug} size="md" />
+          <ShareButton
+            title={story.title}
+            slug={story.slug}
+            summary={story.summary}
+            topic={story.topic}
+          />
+        </div>
+
         {deck ? <p className="story-article-standfirst">{deck}</p> : null}
 
-        {proseParagraphs.length ? (
-          <div className="story-article-body">
-            {proseParagraphs.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
-        ) : (
-          <p className="story-article-summary">{story.summary}</p>
-        )}
-
         {keyPoints.length ? (
-          <aside className="story-article-keypoints" aria-label="Key points">
-            <h2>Key points</h2>
+          <aside className="story-article-keypoints" aria-label="Key highlights">
+            <h2>Key highlights</h2>
             <ul>
               {keyPoints.map((point, index) => (
                 <li key={index}>{point}</li>
@@ -262,6 +397,9 @@ function renderStoryPage(story: DisplayStory) {
             </ul>
           </aside>
         ) : null}
+
+        {/* ── Visual Stats Grid, Capability Graph & Structured Sections ── */}
+        <StoryStatsDashboard analytics={analytics} topicColor={story.color} />
 
         <div className="story-article-divider">
           <span />
@@ -286,14 +424,25 @@ function renderStoryPage(story: DisplayStory) {
           </div>
         ) : null}
 
-        <footer className="story-article-source">
-          <BookOpen size={16} />
-          <span>
-            Source: <strong>{story.source}</strong>
-          </span>
-          <a href={story.sourceUrl} rel="noreferrer" target="_blank">
-            Read original source <ArrowUpRight size={14} />
-          </a>
+        <footer className="story-article-source" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <BookOpen size={16} />
+            <span>
+              Source: <strong>{story.source}</strong>
+            </span>
+            <a href={story.sourceUrl} rel="noreferrer" target="_blank">
+              Read original source <ArrowUpRight size={14} />
+            </a>
+          </div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <BookmarkButton slug={story.slug} size="md" />
+            <ShareButton
+              title={story.title}
+              slug={story.slug}
+              summary={story.summary}
+              topic={story.topic}
+            />
+          </div>
         </footer>
       </article>
     </main>

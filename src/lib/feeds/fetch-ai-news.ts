@@ -2,15 +2,16 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { XMLParser } from 'fast-xml-parser';
 import type { Story } from '@/lib/schemas/story';
 import { canonicalizeUrl, slugify } from '@/lib/slug';
+import { classifyStoryTopic } from './classify-topic';
 
 export type { Story };
 export type Topic = Story['topic'];
 type FeedSource = { name: string; url: string; topic: Topic };
 
 export const FEEDS: FeedSource[] = [
-  { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', topic: 'Models' },
+  { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', topic: 'Products' },
   { name: 'Google AI Blog', url: 'https://blog.google/technology/ai/rss/', topic: 'Research' },
-  { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', topic: 'Models' },
+  { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', topic: 'Products' },
   { name: 'AWS Machine Learning', url: 'https://aws.amazon.com/blogs/machine-learning/feed/', topic: 'Research' },
   { name: 'NVIDIA AI', url: 'https://blogs.nvidia.com/feed/', topic: 'Products' },
   { name: 'The Batch (DeepLearning.AI)', url: 'https://www.deeplearning.ai/the-batch/feed/', topic: 'Research' },
@@ -19,19 +20,19 @@ export const FEEDS: FeedSource[] = [
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed', topic: 'Research' },
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', topic: 'Products' },
   { name: 'The Verge AI', url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', topic: 'Products' },
-  { name: 'Anthropic News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/anthropic-news.xml', topic: 'Models' },
-  { name: 'Anthropic Research', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/anthropic-research.xml', topic: 'Models' },
-  { name: 'Claude News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/claude-news.xml', topic: 'Models' },
+  { name: 'Anthropic News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/anthropic-news.xml', topic: 'Products' },
+  { name: 'Anthropic Research', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/anthropic-research.xml', topic: 'Research' },
+  { name: 'Claude News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/claude-news.xml', topic: 'Products' },
   { name: 'AI RSS Feeds (aggregator)', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/ai-rss-feeds-news.xml', topic: 'Products' },
   { name: 'Allen AI', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/allenai-news.xml', topic: 'Research' },
-  { name: 'AISI Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/aisi-blog.xml', topic: 'Research' },
-  { name: 'CETAS Research', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cetas-research.xml', topic: 'Research' },
-  { name: 'Cohere Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cohere-blog.xml', topic: 'Models' },
-  { name: 'Mistral News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/mistral-news.xml', topic: 'Models' },
+  { name: 'AISI Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/aisi-blog.xml', topic: 'Policy' },
+  { name: 'CETAS Research', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cetas-research.xml', topic: 'Policy' },
+  { name: 'Cohere Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cohere-blog.xml', topic: 'Products' },
+  { name: 'Mistral News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/mistral-news.xml', topic: 'Products' },
   { name: 'TLDR AI', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/tldr-ai.xml', topic: 'Products' },
 ];
 
-const FETCH_TIMEOUT_MS = 3000;
+const FETCH_TIMEOUT_MS = 6000;
 // One retry absorbs transient upstream hiccups without letting a slow or dead
 // feed stall the batch (all feeds load in parallel) for long.
 const MAX_FETCH_ATTEMPTS = 2;
@@ -257,6 +258,11 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
     year: 'numeric',
   });
   const resolvedSummary = thinSummary ? `${title} — announced via ${feed.name} on ${when}.` : summary;
+  const topic = classifyStoryTopic({
+    title,
+    summary: resolvedSummary,
+    fallbackTopic: feed.topic,
+  });
 
   return {
     id: slug,
@@ -267,7 +273,7 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
     source: feed.name,
     source_url: link,
     image_url: bestImageUrl(item),
-    topic: feed.topic,
+    topic,
     event_date: eventDate,
     published_at: now,
     status: 'published',
@@ -394,15 +400,30 @@ export async function fetchAiNews(): Promise<Story[]> {
   cacheTag(AI_NEWS_TAG);
 
   const results: Story[][] = await Promise.all(FEEDS.map((feed) => loadFeed(feed)));
-  const seen = new Set<string>();
+  const seenUrls = new Set<string>();
+  const seenTitles = new Map<string, Story>();
   const merged: Story[] = [];
+
   for (const batch of results) {
     for (const story of batch) {
-      const key = story.source_url ? canonicalizeUrl(story.source_url) : '';
-      if (key && !seen.has(key)) {
-        seen.add(key);
-        merged.push(story);
+      const urlKey = story.source_url ? canonicalizeUrl(story.source_url) : '';
+      if (!urlKey || seenUrls.has(urlKey)) continue;
+      seenUrls.add(urlKey);
+
+      // Deduplicate syndicated/cross-outlet reprints of the exact same event
+      const normTitle = story.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      const titleWords = normTitle.split(' ').filter((w) => w.length > 3).slice(0, 5).sort().join(' ');
+      const titleKey = `${titleWords}|${story.event_date.slice(0, 7)}`;
+
+      const existing = seenTitles.get(titleKey);
+      if (existing) {
+        // If the new one has an image and existing does not, adopt the image
+        if (!existing.image_url && story.image_url) existing.image_url = story.image_url;
+        continue;
       }
+
+      seenTitles.set(titleKey, story);
+      merged.push(story);
     }
   }
 

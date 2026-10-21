@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nb-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#151B2E"/>
+      <stop offset="100%" stop-color="#0A0E19"/>
+    </linearGradient>
+    <linearGradient id="nb-p" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="45%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+    <linearGradient id="nb-beam" x1="9" y1="8" x2="23" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="48%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="32" height="32" rx="8" fill="url(#nb-bg)"/>
+
+  <path d="M9 8 L9 24" stroke="url(#nb-p)" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="M9 8.5 L23 23.5" stroke="url(#nb-beam)" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M23 8 L23 24" stroke="url(#nb-p)" stroke-width="2.8" stroke-linecap="round"/>
+
+  <circle cx="9" cy="8.5" r="2" fill="#22D3EE"/>
+  <circle cx="23" cy="23.5" r="2" fill="#EC4899"/>
+</svg>

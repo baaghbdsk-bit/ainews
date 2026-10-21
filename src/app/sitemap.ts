@@ -2,14 +2,24 @@ import type { MetadataRoute } from 'next';
 import { getPublishedStories } from '@/lib/actions/stories';
 import { ENTITIES } from '@/lib/dossier/entities';
 
-const BASE_URL = 'https://ainews-smel.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neubench.vercel.app';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
       changeFrequency: 'hourly',
-      priority: 1,
+      priority: 1.0,
+    },
+    {
+      url: `${BASE_URL}/benchmarks`,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/about`,
+      changeFrequency: 'monthly',
+      priority: 0.5,
     },
   ];
 

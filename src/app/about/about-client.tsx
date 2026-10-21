@@ -105,7 +105,7 @@ export function AboutClient() {
 
       <div className="about-container">
         {/* Hero Section */}
-        <section className="about-hero" aria-label="About Signal">
+        <section className="about-hero" aria-label="About NeuBench">
           <div className="about-kicker">
             <Sparkles size={13} aria-hidden="true" />
             <span>Chronological Intelligence</span>
@@ -115,13 +115,13 @@ export function AboutClient() {
             <span className="about-title-accent">artificial intelligence.</span>
           </h1>
           <p className="about-lede">
-            Signal is a living historical index and real-time radar tracking the pivotal releases,
+            NeuBench is a living historical index and real-time radar tracking the pivotal releases,
             architectural leaps, and regulatory shifts defining synthetic intelligence.
           </p>
         </section>
 
         {/* Stats Grid */}
-        <section className="about-stats-grid" aria-label="Signal at a glance">
+        <section className="about-stats-grid" aria-label="NeuBench at a glance">
           <div className="about-stat-card">
             <div className="about-stat-value">4 Pillars</div>
             <div className="about-stat-label">Systematic taxonomy</div>
@@ -145,7 +145,7 @@ export function AboutClient() {
         </section>
 
         {/* Mission & Purpose */}
-        <section className="about-section" aria-label="Why Signal exists">
+        <section className="about-section" aria-label="Why NeuBench exists">
           <div className="about-section-header">
             <span className="about-section-kicker">Our Purpose</span>
             <h2 className="about-section-title">The signal vs. noise problem</h2>
@@ -162,7 +162,7 @@ export function AboutClient() {
               </div>
               <h3 className="about-feature-title">Chronological Continuum</h3>
               <p className="about-feature-text">
-                Rather than treating news as disposable updates, Signal organizes milestones into a permanent,
+                Rather than treating news as disposable updates, NeuBench organizes milestones into a permanent,
                 browsable continuum where historical cause and effect remain clear.
               </p>
             </div>
@@ -197,7 +197,7 @@ export function AboutClient() {
             <span className="about-section-kicker">Taxonomy</span>
             <h2 className="about-section-title">Organized across four foundational pillars</h2>
             <p className="about-section-desc">
-              To cut through surface-level noise, every story in the Signal archive is categorized
+              To cut through surface-level noise, every story in the NeuBench archive is categorized
               across four distinct vectors:
             </p>
           </div>
@@ -278,7 +278,7 @@ export function AboutClient() {
         </section>
 
         {/* Connect & Contact Options */}
-        <section className="about-section" id="connect" aria-label="Connect with Signal">
+        <section className="about-section" id="connect" aria-label="Connect with NeuBench">
           <div className="about-section-header">
             <span className="about-section-kicker">Connect &amp; Collaborate</span>
             <h2 className="about-section-title">Get Connected</h2>
@@ -351,7 +351,7 @@ export function AboutClient() {
             <div className="connect-feedback-header">
               <h3 className="connect-feedback-title">Suggest a Story or Submit a Milestone</h3>
               <p className="connect-feedback-desc">
-                Know of a frontier model launch, seminal paper, or policy update that belongs on the Signal timeline?
+                Know of a frontier model launch, seminal paper, or policy update that belongs on the NeuBench timeline?
                 Submit it below for editorial review.
               </p>
             </div>
@@ -364,7 +364,7 @@ export function AboutClient() {
                     Milestone tip received!
                   </strong>
                   <span style={{ fontSize: 13, color: "var(--shell-muted)" }}>
-                    Thank you for contributing to the Signal archive. Our editorial ingestion team will review the citation.
+                    Thank you for contributing to the NeuBench archive. Our editorial ingestion team will review the citation.
                   </span>
                 </div>
               </div>

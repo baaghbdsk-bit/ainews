@@ -14,11 +14,12 @@
  */
 
 const COMPANY_LIST = [
-  // Frontier labs
+  'DeepSeek',
   'Anthropic',
   'OpenAI',
   'Google DeepMind',
   'DeepMind',
+  'Google',
   'xAI',
   'Meta',
   'Microsoft',
@@ -47,6 +48,20 @@ const COMPANY_LIST = [
   'Databricks',
   'Snowflake',
   'Palantir',
+  'Cursor',
+  'Cognition',
+  'Poolside',
+  'Decart',
+  'Runway',
+  'Midjourney',
+  'ElevenLabs',
+  'Harvey',
+  'Alibaba',
+  'Qwen',
+  'Tencent',
+  'Baidu',
+  'Sakana AI',
+  'Kyutai',
   // Regulators / public bodies
   'European Commission',
   'Council of the European Union',

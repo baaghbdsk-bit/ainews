@@ -5,6 +5,7 @@ import { canonicalizeUrl } from '@/lib/slug';
 import { extractCompany } from '@/lib/story-company';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { supabaseServiceRoleKey, supabaseUrl } from '@/lib/env';
+import { isUniqueViolation } from '@/lib/supabase/api-guard';
 import { extractArticle, fetchLeadImage } from './extract-article';
 import { summarizeArticle } from './summarize';
 import { llmEnabled } from './llm';
@@ -52,6 +53,21 @@ function sleep(ms: number): Promise<void> {
 }
 
 type Client = SupabaseClient<Database>;
+
+type StoryInsert = {
+  slug: string;
+  title: string;
+  summary: string;
+  significance: string;
+  company: string | null;
+  source: string;
+  source_url: string;
+  image_url: string | null;
+  topic: Story['topic'];
+  event_date: string;
+  status: 'published';
+  published_at: string | null;
+};
 
 /** Supabase client used only by the background job. Uses the service role, so
  *  the job can write rows (it bypasses RLS) without any browser key or user. */
@@ -159,11 +175,11 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
       if (s.image_url && s.source_url) feedImages.set(canonicalizeUrl(s.source_url), s.image_url);
     }
 
-    // 3. Skip anything already published.
+    // 3. Skip anything already stored, regardless of status, so a draft can
+    //    never be re-imported as a second published row.
     const { data: existing = [], error: queryErr } = await supabase
       .from('stories')
-      .select('source_url, slug')
-      .eq('status', 'published');
+      .select('source_url, slug');
     if (queryErr) {
       errors.push(`Failed to read existing stories: ${queryErr.message}`);
       return {
@@ -194,26 +210,34 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     // 4. Insert only the new rows (service role bypasses RLS). The company
     //    label is derived once here; enrichStories re-derives it with the body
     //    after extraction, mirroring what read-time extraction used to do.
-    const { error: insertErr } = await supabase.from('stories').insert(
-      toInsert.map((s) => ({
-        slug: s.slug,
-        title: s.title,
-        summary: s.summary,
-        significance: s.significance,
-        company: extractCompany({ title: s.title, summary: s.summary, source: s.source }) ?? null,
-        source: s.source,
-        source_url: s.source_url,
-        image_url: s.image_url ?? null,
-        topic: s.topic,
-        event_date: s.event_date,
-        status: 'published' as const,
-        published_at: s.published_at,
-      })),
-    );
-    if (insertErr) {
-      errors.push(`Insert failed: ${insertErr.message}`);
-    } else {
-      newItems = toInsert.length;
+    const rows: StoryInsert[] = toInsert.map((s) => ({
+      slug: s.slug,
+      title: s.title,
+      summary: s.summary,
+      significance: s.significance,
+      company: extractCompany({ title: s.title, summary: s.summary, source: s.source }) ?? null,
+      source: s.source,
+      source_url: s.source_url,
+      image_url: s.image_url ?? null,
+      topic: s.topic,
+      event_date: s.event_date,
+      status: 'published',
+      published_at: s.published_at ?? null,
+    }));
+
+    if (rows.length > 0) {
+      const { error: insertErr } = await supabase.from('stories').insert(rows);
+      if (!insertErr) {
+        newItems = rows.length;
+      } else if (isUniqueViolation(insertErr)) {
+        // One duplicate slug/URL must not discard the rest of the batch: retry
+        // row by row and treat each conflict as an already-present story.
+        const perRow = await insertStoriesIndividually(supabase, rows);
+        newItems = perRow.inserted;
+        errors.push(...perRow.errors);
+      } else {
+        errors.push(`Insert failed: ${insertErr.message}`);
+      }
     }
   }
 
@@ -284,6 +308,32 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     rateLimited,
     errors,
   };
+}
+
+/**
+ * Per-row fallback for a batch that hit a unique conflict. Returning the count
+ * instead of throwing keeps one duplicate from failing an otherwise good run.
+ */
+async function insertStoriesIndividually(
+  supabase: Client,
+  rows: StoryInsert[],
+): Promise<{ inserted: number; errors: string[] }> {
+  let inserted = 0;
+  const errors: string[] = [];
+
+  for (const row of rows) {
+    const { error } = await supabase.from('stories').insert(row);
+    if (!error) {
+      inserted++;
+    } else if (isUniqueViolation(error)) {
+      // Already imported by a concurrent run or a duplicate feed item.
+      continue;
+    } else {
+      errors.push(`Insert failed for ${row.slug}: ${error.message}`);
+    }
+  }
+
+  return { inserted, errors };
 }
 
 type PendingRow = {

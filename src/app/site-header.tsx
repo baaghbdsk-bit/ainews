@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Orbit } from "lucide-react";
+import { NeuBenchLogo } from "@/components/neubench-logo";
 
 /**
  * The site header shell, shared by the timeline, the article page, the loading
- * skeleton, the error boundary, and the 404 page so the wordmark (ring + orbit
- * mark + "signal.") renders identically everywhere and hydration never shifts
+ * skeleton, the error boundary, and the 404 page so the wordmark (ring + pulse
+ * emblem + "neubench.") renders identically everywhere and hydration never shifts
  * the layout. Extra content (topic tabs, back links) slots in around it.
  */
 export function SiteHeader({
@@ -18,12 +18,14 @@ export function SiteHeader({
 }) {
   return (
     <header className={`topbar archive-topbar${className ? ` ${className}` : ""}`}>
-      <Link className="wordmark" href="/" aria-label="Signal, home">
+      <Link className="wordmark" href="/" aria-label="NeuBench — The Pulse of AI, home">
         <span className="wordmark-symbol" aria-hidden="true">
-          <Orbit size={19} strokeWidth={2.1} />
+          <NeuBenchLogo size={22} />
         </span>
-        <span>
-          signal<span className="wordmark-period">.</span>
+        <span className="wordmark-text">
+          <span className="wordmark-neu">Neu</span>
+          <span className="wordmark-bench">Bench</span>
+          <span className="wordmark-dot" aria-hidden="true" />
         </span>
       </Link>
       {children}

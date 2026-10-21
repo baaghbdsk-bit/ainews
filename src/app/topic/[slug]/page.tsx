@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
     const dossier = await getDossierBySlug(slug);
     if (dossier) {
       return {
-        title: `${dossier.title} | Signal`,
+        title: `${dossier.title} | NeuBench`,
         description: dossier.subtitle || undefined,
         alternates: { canonical: `/topic/${slug}` },
       };
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
   const entity = findEntity(slug);
   if (!entity) notFound();
   return {
-    title: `${entity.label} | Signal`,
+    title: `${entity.label} | NeuBench`,
     description: entity.about,
     alternates: { canonical: `/topic/${slug}` },
   };

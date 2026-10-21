@@ -2,18 +2,22 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createPublicClient } from '@/lib/supabase/public';
+import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import { CreateStorySchema, UpdateStorySchema, type Story } from '@/lib/schemas/story';
+import { ZodError } from 'zod';
 import { cacheLife, cacheTag, revalidatePath, updateTag } from 'next/cache';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { isEditor } from '@/lib/auth/editor';
 import { extractCompany } from '@/lib/story-company';
 import { termPattern } from '@/lib/dossier/entities';
+import { isMissingSchemaError } from '@/lib/supabase/api-guard';
+import { supabaseAnonKey, supabaseUrl } from '@/lib/env';
 
 // Only what the timeline projection and the sitemap actually read. Skipping
-// body/deck/brief (multi-MB on this table) keeps the public query small enough
-// to run on every cold request without dragging ~8MB out of PostgREST.
+// body/brief (multi-MB on this table) keeps the public query fast while including
+// lightweight editorial decks and takeaways.
 const PUBLISHED_STORY_COLUMNS =
-  'id, slug, title, summary, significance, company, image_url, source, source_url, topic, event_date, published_at, status, updated_at';
+  'id, slug, title, summary, significance, deck, key_points, why_it_matters, company, image_url, source, source_url, topic, event_date, published_at, status, updated_at';
 
 /**
  * Fetch all published stories ordered by event_date descending.
@@ -44,6 +48,67 @@ export async function getPublishedStories(): Promise<Story[]> {
     console.error('Error fetching published stories:', err);
     return [];
   }
+}
+
+type StoryWithVotes = Story & { upvote_count: number };
+
+interface VoteCountRow {
+  story_slug: string;
+  upvote_count: number;
+}
+
+const voteCountsClient = (): SupabaseClient =>
+  createSupabaseClient(supabaseUrl(), supabaseAnonKey());
+
+/**
+ * Current upvote totals per story slug, read from the aggregate vote table.
+ * A missing table degrades to an empty map instead of failing the page.
+ */
+export async function getUpvoteCounts(): Promise<Record<string, number>> {
+  'use cache';
+  cacheLife('minutes');
+
+  const counts: Record<string, number> = {};
+
+  try {
+    const { data, error } = await voteCountsClient()
+      .from('story_vote_counts')
+      .select('story_slug, upvote_count');
+
+    if (error) {
+      if (!isMissingSchemaError(error)) {
+        console.error('Failed to fetch upvote counts:', error);
+      }
+      return counts;
+    }
+
+    for (const row of (data ?? []) as VoteCountRow[]) {
+      counts[row.story_slug] = row.upvote_count;
+    }
+  } catch (err) {
+    console.error('Error fetching upvote counts:', err);
+  }
+
+  return counts;
+}
+
+/** The upvote total for one story. Zero when the story has never been voted on. */
+export async function getUpvoteCount(slug: string): Promise<number> {
+  'use cache';
+  cacheLife('minutes');
+
+  const counts = await getUpvoteCounts();
+  return counts[slug] ?? 0;
+}
+
+/** The published stories with their current upvote total attached. */
+export async function getPublishedStoriesWithVotes(): Promise<StoryWithVotes[]> {
+  const [stories, counts] = await Promise.all([getPublishedStories(), getUpvoteCounts()]);
+
+  return stories.map((story) => ({
+    ...story,
+    upvote_count: counts[story.slug] ?? 0,
+  }));
 }
 
 /**
@@ -167,15 +232,18 @@ export async function createStory(input: unknown) {
 
     if (error) {
       console.error('Failed to create story:', error);
-      return { error: error.message, data: null };
+      return { error: 'Failed to create story', data: null };
     }
 
     updateTag(STORIES_TAG);
     revalidatePath('/');
     return { error: null, data: data as Story };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return { error: message, data: null };
+    if (err instanceof ZodError) {
+      return { error: err.issues[0]?.message ?? 'Invalid story data', data: null };
+    }
+    console.error('Error creating story:', err);
+    return { error: 'Failed to create story', data: null };
   }
 }
 
@@ -205,7 +273,7 @@ export async function updateStory(id: string, input: unknown) {
 
     if (error) {
       console.error('Failed to update story:', error);
-      return { error: error.message, data: null };
+      return { error: 'Failed to update story', data: null };
     }
 
     // The update returned the full row (body included — the form doesn't
@@ -231,8 +299,11 @@ export async function updateStory(id: string, input: unknown) {
     revalidatePath('/');
     return { error: null, data: data as Story };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return { error: message, data: null };
+    if (err instanceof ZodError) {
+      return { error: err.issues[0]?.message ?? 'Invalid story data', data: null };
+    }
+    console.error('Error updating story:', err);
+    return { error: 'Failed to update story', data: null };
   }
 }
 
@@ -252,14 +323,14 @@ export async function deleteStory(id: string) {
 
     if (error) {
       console.error('Failed to delete story:', error);
-      return { error: error.message };
+      return { error: 'Failed to delete story' };
     }
 
     updateTag(STORIES_TAG);
     revalidatePath('/');
     return { error: null };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return { error: message };
+    console.error('Error deleting story:', err);
+    return { error: 'Failed to delete story' };
   }
 }

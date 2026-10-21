@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neubench.vercel.app';
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -9,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/'],
       },
     ],
-    sitemap: 'https://ainews-smel.vercel.app/sitemap.xml',
+    sitemap: `${BASE_URL}/sitemap.xml`,
   };
 }

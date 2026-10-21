@@ -10,6 +10,15 @@
  */
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 
+/**
+ * The canonical origin the app advertises. Kept in step with
+ * `src/app/layout.tsx` (siteUrl) so a domain change does not silently turn
+ * the metadata checks below into failures against a dead host.
+ */
+const SITE_ORIGIN = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://neubench.vercel.app"
+).replace(/\/$/, "");
+
 const results = [];
 
 function record(id, name, ok, detail = "") {
@@ -19,6 +28,25 @@ function record(id, name, ok, detail = "") {
 
 function check(id, name, ok, detail) {
   record(id, name, !!ok, detail);
+}
+
+/**
+ * Next.js forces `Cache-Control: no-store` on HTML responses in development and
+ * ignores the `headers()` block in next.config.ts, so the CDN-cache checks
+ * below only mean something against a production build. Detect the dev server
+ * and report those checks as skipped instead of failed.
+ */
+function isDevServer(html) {
+  return (
+    html.includes("browser_dev_hmr-client") ||
+    html.includes("webpack-hmr") ||
+    html.includes("hot-reloader")
+  );
+}
+
+function skip(id, name, reason) {
+  results.push({ id, name, ok: true, detail: reason, skipped: true });
+  console.log(`[SKIP] ${id} ${name} — ${reason}`);
 }
 
 async function get(path, init) {
@@ -61,10 +89,10 @@ async function main() {
     check(
       "H05",
       "Story page has self-referencing canonical",
-      storyCanonical === `https://ainews-smel.vercel.app/story/${liveSlug}`,
+      storyCanonical === `${SITE_ORIGIN}/story/${liveSlug}`,
       storyCanonical,
     );
-    check("H06", "Story page has <h1>", /<h1>/.test(story.text), "");
+    check("H06", "Story page has <h1>", /<h1[\s>]/.test(story.text), "");
   }
 
   const story404 = await get("/story/qa-definitely-missing-story-zzz");
@@ -82,7 +110,7 @@ async function main() {
   check(
     "H10",
     "Topic page has self-referencing canonical",
-    topicCanonical === "https://ainews-smel.vercel.app/topic/anthropic",
+    topicCanonical === `${SITE_ORIGIN}/topic/anthropic`,
     topicCanonical,
   );
 
@@ -100,7 +128,7 @@ async function main() {
   check(
     "H13",
     "Homepage has canonical",
-    homeCanonical.startsWith("https://ainews-smel.vercel.app"),
+    homeCanonical.startsWith(SITE_ORIGIN),
     homeCanonical,
   );
 
@@ -120,6 +148,7 @@ async function main() {
   check("H17", "sitemap has > 500 URLs", sitemapUrls > 500, `urls=${sitemapUrls}`);
 
   /* ---------- Caching headers ---------- */
+  const devServer = isDevServer(home.text);
   for (const [id, label, path] of [
     ["H18", "Homepage Cache-Control is CDN-public", "/"],
     ["H19", "Story Cache-Control is CDN-public", `/story/${liveSlug ?? "x"}`],
@@ -127,6 +156,10 @@ async function main() {
   ]) {
     if (!liveSlug && id === "H19") continue;
     const cc = (await get(path)).headers.get("cache-control") ?? "";
+    if (devServer) {
+      skip(id, label, "dev server forces no-store; run against `npm run build && npm start` to enforce");
+      continue;
+    }
     check(id, label, /public/.test(cc) && /s-maxage=/.test(cc), cc);
   }
 

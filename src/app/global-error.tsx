@@ -25,7 +25,7 @@ export default function GlobalError({
         }}
       >
         <div role="alert" style={{ textAlign: "center", padding: 24 }}>
-          <p>signal. hit an unexpected error.</p>
+          <p>NeuBench. hit an unexpected error.</p>
           {error.digest ? (
             <p style={{ opacity: 0.6, fontSize: 12 }}>Reference: {error.digest}</p>
           ) : null}

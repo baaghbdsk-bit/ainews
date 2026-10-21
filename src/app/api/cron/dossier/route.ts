@@ -1,8 +1,9 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { ENTITIES, findEntity } from '@/lib/dossier/entities';
 import { buildDossier, saveDossier } from '@/lib/dossier/generate';
 import { DOSSIERS_TAG, dossierTag } from '@/lib/cache-tags';
+import { bearerMatches, jsonNoStore } from '@/lib/supabase/api-guard';
 
 /**
  * Dossier generation trigger. Protected by the same bearer secret as ingest so
@@ -17,19 +18,16 @@ export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret || secret === 'change-me') {
     console.error('CRON_SECRET is missing or still the placeholder; refusing to generate a dossier.');
-    return NextResponse.json({ error: 'Dossier generation not configured' }, { status: 500 });
+    return jsonNoStore({ error: 'Dossier generation not configured' }, { status: 500 });
   }
 
-  const auth = request.headers.get('authorization') ?? '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
-
-  if (token !== secret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!bearerMatches(request, secret)) {
+    return jsonNoStore({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const slug = request.nextUrl.searchParams.get('slug');
   if (!slug) {
-    return NextResponse.json({
+    return jsonNoStore({
       ok: false,
       error: 'Missing ?slug',
       entities: ENTITIES.map((entity) => entity.slug),
@@ -38,7 +36,7 @@ export async function GET(request: NextRequest) {
 
   const entity = findEntity(slug);
   if (!entity) {
-    return NextResponse.json({
+    return jsonNoStore({
       ok: false,
       error: `Unknown entity: ${slug}`,
       entities: ENTITIES.map((item) => item.slug),
@@ -49,19 +47,20 @@ export async function GET(request: NextRequest) {
     const outcome = await buildDossier(entity);
 
     if (outcome.status !== 'ok') {
-      return NextResponse.json({ ok: false, slug, status: outcome.status }, { status: 200 });
+      return jsonNoStore({ ok: false, slug, status: outcome.status });
     }
 
     const saved = await saveDossier(entity, outcome.content, outcome.storyIds, outcome.model);
     if (saved.error) {
-      return NextResponse.json({ ok: false, slug, error: saved.error }, { status: 500 });
+      console.error(`Failed to save dossier ${entity.slug}:`, saved.error);
+      return jsonNoStore({ ok: false, slug, error: 'Failed to save dossier' }, { status: 500 });
     }
 
     revalidateTag(dossierTag(entity.slug), 'max');
     revalidateTag(DOSSIERS_TAG, 'max');
     revalidatePath(`/topic/${entity.slug}`);
 
-    return NextResponse.json({
+    return jsonNoStore({
       ok: true,
       slug: entity.slug,
       model: outcome.model,
@@ -71,6 +70,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error('dossier route failed:', err);
-    return NextResponse.json({ ok: false, error: (err as Error).message }, { status: 500 });
+    return jsonNoStore({ ok: false, error: 'Dossier generation failed' }, { status: 500 });
   }
 }

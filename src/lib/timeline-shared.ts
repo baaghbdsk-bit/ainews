@@ -15,6 +15,9 @@ export interface StoryDisplay {
   company?: string;
   /** Lead image for the row tile; absent → the row renders a monogram tile. */
   imageUrl?: string | null;
+  deck?: string | null;
+  keyPoints?: string[] | null;
+  whyItMatters?: string | null;
   topic: "Models" | "Products" | "Research" | "Policy";
   date: string;
   day: string;
@@ -27,6 +30,15 @@ export interface TimelineFacets {
   years: string[];
   months: { value: string; label: string }[];
   companies: string[];
+  /**
+   * Exact per-topic totals for the whole merged corpus, computed on the
+   * server. The client streams the corpus in the background, so counting the
+   * rows it happens to hold would publish a different (wrong) number for every
+   * category until the last page landed.
+   */
+  topicCounts: Record<string, number>;
+  /** Exact size of the merged corpus, for the same reason as `topicCounts`. */
+  total: number;
 }
 
 export interface TimelineFilters {
@@ -90,5 +102,12 @@ export function computeFacets(all: StoryDisplay[]): TimelineFacets {
     new Set(all.map((s) => s.company).filter((c): c is string => Boolean(c))),
   ).sort((a, b) => a.localeCompare(b));
 
-  return { years, months, companies };
+  // Exact corpus totals, so the category badges and the story counter show the
+  // real numbers on first paint instead of the rows loaded so far.
+  const topicCounts: Record<string, number> = { all: all.length };
+  for (const story of all) {
+    topicCounts[story.topic] = (topicCounts[story.topic] ?? 0) + 1;
+  }
+
+  return { years, months, companies, topicCounts, total: all.length };
 }

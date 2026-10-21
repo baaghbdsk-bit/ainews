@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Signal — The AI Timeline";
+export const alt = "NeuBench";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -46,7 +46,7 @@ export default function OpengraphImage() {
             />
           </div>
           <div style={{ display: "flex", fontSize: 108, fontWeight: 800, letterSpacing: -2 }}>
-            signal
+            NeuBench
             <div style={{ color: "#F472B6" }}>.</div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function OpengraphImage() {
             fontWeight: 600,
           }}
         >
-          THE AI TIMELINE
+          THE PULSE OF AI
         </div>
         <div
           style={{
