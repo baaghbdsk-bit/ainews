@@ -1,0 +1,231 @@
+/* sidebar-definitive — extracted from src/app/globals.css (order preserved) */
+/* ============ DEFINITIVE COLLAPSIBLE SIDEBAR RULES ============ */
+/* Shell container with exact 0.75 zoom and 20px edge margin */
+.archive-shell {
+  width: calc(100% - 40px) !important;
+  max-width: 1780px !important;
+  margin: 0 auto !important;
+  zoom: 0.75 !important;
+}
+
+@media (min-width: 1081px) {
+  .archive-layout {
+    display: grid !important;
+    grid-template-columns: 290px minmax(0, 1fr) !important;
+    gap: 44px !important;
+    align-items: stretch !important;
+    padding-top: 14px !important;
+    padding-bottom: 80px !important;
+    margin: 0 !important;
+    transition: grid-template-columns 280ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  }
+
+  .archive-layout.sidebar-collapsed {
+    grid-template-columns: 68px minmax(0, 1fr) !important;
+    gap: 44px !important;
+  }
+
+  .timeline-column {
+    min-width: 0 !important;
+    padding-right: 20px !important;
+  }
+}
+
+.archive-sidebar {
+  order: 1 !important;
+  width: 290px !important;
+  max-width: 290px !important;
+  height: 100% !important;
+  align-self: stretch !important;
+  position: relative !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  z-index: 25 !important;
+  transition: width 280ms cubic-bezier(0.2, 0.8, 0.2, 1), max-width 280ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.archive-sidebar.is-collapsed {
+  width: 68px !important;
+  max-width: 68px !important;
+  min-width: 68px !important;
+}
+
+/* ZERO MOVEMENT STICKY SIDEBAR:
+   Header is 60px unzoomed. At zoom 0.75, header is 60 / 0.75 = 80px in zoomed space.
+   .archive-layout has padding-top: 14px.
+   Natural resting position = 80px + 14px = 94px.
+   With sticky top = 94px, natural resting position == sticky top position.
+   Result: ZERO upward movement when user starts scrolling! */
+.sidebar-sticky-wrapper {
+  position: sticky !important;
+  top: 94px !important;
+  margin-top: 0 !important;
+  align-self: start !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 7px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 10px !important;
+  background: rgba(13, 16, 28, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  overflow: hidden !important;
+  transition: width 280ms cubic-bezier(0.2, 0.8, 0.2, 1), padding 280ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.archive-sidebar.is-collapsed .sidebar-sticky-wrapper {
+  width: 68px !important;
+  max-width: 68px !important;
+  padding: 12px 6px !important;
+  align-items: center !important;
+}
+
+/* Sidebar Top Bar: Navigation Title on Left, Toggle Button on Far Right */
+.sidebar-top-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 2px 4px 10px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-bottom: 4px !important;
+}
+
+.sidebar-top-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em !important;
+  color: #F8FAFC !important;
+  white-space: nowrap !important;
+}
+
+.sidebar-collapse-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94A3B8 !important;
+  cursor: pointer !important;
+  margin-left: auto !important;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  flex-shrink: 0 !important;
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Collapsed Top Bar: Center the button */
+.archive-sidebar.is-collapsed .sidebar-top-bar {
+  justify-content: center !important;
+  padding: 0 0 10px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.archive-sidebar.is-collapsed .sidebar-top-title {
+  display: none !important;
+}
+
+.archive-sidebar.is-collapsed .sidebar-collapse-btn {
+  margin: 0 auto !important;
+}
+
+/* Hide labels, text & badges when collapsed */
+.archive-sidebar.is-collapsed .sidebar-group-label,
+.archive-sidebar.is-collapsed .sidebar-nav-label,
+.archive-sidebar.is-collapsed .sidebar-badge-pill,
+.archive-sidebar.is-collapsed .nav-live-dot,
+.archive-sidebar.is-collapsed .sidebar-nav-info {
+  display: none !important;
+}
+
+/* Items in collapsed mode: clean centered squares */
+.archive-sidebar.is-collapsed .sidebar-nav-item {
+  width: 44px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  position: relative !important;
+}
+
+.archive-sidebar.is-collapsed .sidebar-nav-icon {
+  margin: 0 auto !important;
+}
+
+/* Elegant dark tooltip replacing default browser white box */
+.archive-sidebar.is-collapsed .sidebar-nav-item::after {
+  content: attr(data-label);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.92);
+  background: #0B0F19;
+  color: #F8FAFC;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.75);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms cubic-bezier(0.16, 1, 0.3, 1), visibility 160ms ease;
+  z-index: 1000;
+}
+
+.archive-sidebar.is-collapsed .sidebar-nav-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+}
+
+/* Light Theme Definitives */
+html[data-theme="light"] .sidebar-sticky-wrapper {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .sidebar-top-bar {
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .sidebar-top-title {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .sidebar-collapse-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #64748B !important;
+}
+
+html[data-theme="light"] .sidebar-collapse-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .archive-sidebar.is-collapsed .sidebar-nav-item::after {
+  background: #FFFFFF;
+  color: #0F172A;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.15);
+}
+
+

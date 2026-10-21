@@ -515,6 +515,9 @@ function buildRecords(models, benchlm, benchlmModels) {
       };
     }
 
+    // Snapshot-time label. The service layer derives the effective generation
+    // from releaseDate at read time (generationFor in service.ts), so this
+    // value is only a hint for readers of the generated file.
     const generation =
       Date.now() - Date.parse(releaseDate) <= 180 * 86_400_000 ? 'current' : 'previous';
 

@@ -1,0 +1,87 @@
+/* badges — extracted from src/app/globals.css (order preserved) */
+/* ============ TRENDING & SAVED RECORD BADGES ============ */
+/* Story Saved Indicator Badge */
+.story-saved-pill {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  height: 22px !important;
+  padding: 0 9px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+  color: #34D399 !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important;
+  letter-spacing: 0.02em !important;
+}
+
+.story-saved-pill svg {
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  width: 11px !important;
+  height: 11px !important;
+}
+
+.story-saved-pill span {
+  display: inline !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+html[data-theme="light"] .story-saved-pill {
+  background: #D1FAE5 !important;
+  border-color: #6EE7B7 !important;
+  color: #065F46 !important;
+}
+
+/* Trending Rank Badge: Flame icon & clean text */
+.trending-rank-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.trending-rank-badge.rank-1 {
+  background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%) !important;
+  color: #1A1202 !important;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
+  border: 1px solid #FDE68A !important;
+}
+
+.trending-rank-badge.rank-2 {
+  background: linear-gradient(135deg, #F1F5F9 0%, #94A3B8 100%) !important;
+  color: #0F172A !important;
+  box-shadow: 0 0 12px rgba(226, 232, 240, 0.4) !important;
+  border: 1px solid #FFFFFF !important;
+}
+
+.trending-rank-badge.rank-3 {
+  background: linear-gradient(135deg, #FB923C 0%, #C2410C 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 12px rgba(251, 146, 60, 0.45) !important;
+  border: 1px solid #FDBA74 !important;
+}
+
+.trending-rank-badge.rank-other {
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #FBBF24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15) !important;
+}
+
+

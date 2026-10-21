@@ -1,0 +1,346 @@
+/* what-happened — extracted from src/app/globals.css (order preserved) */
+/* -------------------------------------------------------------
+ * WHAT HAPPENED TODAY — PLAIN ENGLISH EXECUTIVE BRIEFING
+ * ----------------------------------------------------------- */
+.digest-today-briefing-card {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 30px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 160% at 90% 10%, rgba(168, 85, 247, 0.14), transparent 60%),
+    radial-gradient(100% 140% at 10% 90%, rgba(139, 92, 246, 0.1), transparent 65%),
+    linear-gradient(145deg, rgba(21, 16, 36, 0.95), rgba(12, 9, 23, 0.98));
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.today-briefing-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.today-briefing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #D8B4FE;
+}
+
+.today-briefing-title {
+  margin: 0;
+  font-size: clamp(20px, 2.5vw, 25px);
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1.25;
+}
+
+.today-title-sub {
+  color: #C084FC;
+  font-weight: 700;
+}
+
+.today-briefing-subtitle {
+  margin: 0;
+  font-size: 13.5px;
+  color: #94A3B8;
+  line-height: 1.55;
+  max-width: 75ch;
+}
+
+.today-briefing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.today-briefing-item {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  position: relative;
+}
+
+.briefing-item-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 28px;
+  flex-shrink: 0;
+  padding-top: 10px;
+}
+
+.briefing-step-num {
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  color: #A855F7;
+  background: rgba(168, 85, 247, 0.16);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+  font-variant-numeric: tabular-nums;
+}
+
+.briefing-step-line {
+  flex: 1;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0.05) 100%);
+  margin-top: 8px;
+  border-radius: 1px;
+}
+
+.briefing-item-card {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 180ms ease;
+}
+
+.briefing-item-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transform: translateX(2px);
+}
+
+.briefing-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.briefing-company-pill {
+  font-size: 11px;
+  font-weight: 750;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F1F5F9;
+}
+
+.briefing-topic-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.briefing-topic-pill.topic-models {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #D8B4FE;
+}
+
+.briefing-topic-pill.topic-products {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7DD3FC;
+}
+
+.briefing-topic-pill.topic-research {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #6EE7B7;
+}
+
+.briefing-topic-pill.topic-policy {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #FCD34D;
+}
+
+.briefing-date-pill {
+  font-size: 11px;
+  color: #71717A;
+  margin-left: auto;
+}
+
+.briefing-item-title-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.briefing-item-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+  color: #F8FAFC;
+  line-height: 1.35;
+  transition: color 140ms ease;
+}
+
+.briefing-item-title-link:hover .briefing-item-title {
+  color: #C084FC;
+}
+
+.briefing-link-icon {
+  color: #71717A;
+  flex-shrink: 0;
+  transition: all 140ms ease;
+}
+
+.briefing-item-title-link:hover .briefing-link-icon {
+  color: #C084FC;
+  transform: translateX(3px);
+}
+
+.briefing-item-summary {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #CBD5E1;
+}
+
+.briefing-takeaway-box {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(168, 85, 247, 0.08);
+  border-left: 3px solid #A855F7;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.briefing-takeaway-box .takeaway-label {
+  font-weight: 750;
+  color: #D8B4FE;
+  flex-shrink: 0;
+}
+
+.briefing-takeaway-box .takeaway-text {
+  color: #E2E8F0;
+}
+
+.briefing-keypoints-list {
+  margin: 2px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.briefing-keypoints-list li {
+  font-size: 12px;
+  color: #94A3B8;
+  line-height: 1.5;
+}
+
+.briefing-keypoints-list li::marker {
+  color: #A855F7;
+}
+
+/* Light Mode Support for What Happened Today */
+html[data-theme="light"] .digest-today-briefing-card {
+  background: linear-gradient(145deg, #FFFFFF, #FAF5FF) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.08) !important;
+}
+
+html[data-theme="light"] .today-briefing-title {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .today-title-sub {
+  color: #7C3AED !important;
+}
+
+html[data-theme="light"] .today-briefing-subtitle {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .briefing-item-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .briefing-item-card:hover {
+  border-color: #C4B5FD !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.1) !important;
+}
+
+html[data-theme="light"] .briefing-item-title {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .briefing-item-title-link:hover .briefing-item-title {
+  color: #7C3AED !important;
+}
+
+html[data-theme="light"] .briefing-item-summary {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .briefing-company-pill {
+  background: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+html[data-theme="light"] .briefing-takeaway-box {
+  background: #F5F3FF !important;
+  border-left-color: #7C3AED !important;
+}
+
+html[data-theme="light"] .briefing-takeaway-box .takeaway-label {
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .briefing-takeaway-box .takeaway-text {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .briefing-keypoints-list li {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .digest-metric-chip {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .digest-metric-chip .metric-chip-val {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .digest-metric-chip .metric-chip-lbl {
+  color: #64748B !important;
+}
+
+html[data-theme="light"] .digest-metric-chip.chip-highlight {
+  background: #EDE9FE !important;
+  border-color: #DDD6FE !important;
+}
+
+html[data-theme="light"] .digest-metric-chip.chip-highlight .metric-chip-val {
+  color: #6D28D9 !important;
+}
+
+

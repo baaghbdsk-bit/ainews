@@ -14,16 +14,71 @@ export interface ModelQueryFilter {
   isOpenWeights?: boolean;
 }
 
-export interface FreshnessAuditSummary {
+export interface FreshnessAuditSummary extends CatalogueAudit {
+  /** Whole days between the newest model in the catalogue and today. */
+  catalogueAgeDays: number;
+  /** True once the catalogue is older than the staleness budget. */
+  stale: boolean;
+}
+
+/**
+ * Catalogue coverage, derived entirely from the data. Deterministic, so it is
+ * safe to call during a client render.
+ */
+export interface CatalogueAudit {
   totalModels: number;
   currentGenCount: number;
-  historicalBaselineCount: number;
+  previousGenCount: number;
   openWeightsCount: number;
   totalBenchmarkScores: number;
   officialEvaluationCount: number;
   independentEvaluationCount: number;
+  /** Snapshot date recorded in the catalogue file. A claim, not a measurement. */
   lastAuditedDate: string;
+  /**
+   * Release date of the newest model the catalogue contains. This is the
+   * honest freshness signal: it is derived from the data, so it cannot go
+   * stale without the data itself changing.
+   */
+  newestModelReleaseDate: string;
   coveredProviders: string[];
+}
+
+/** How long a model stays in the "current" generation after release. */
+export const CURRENT_GENERATION_DAYS = 180;
+
+/** How old the catalogue may get before the audit reports it as stale. */
+export const CATALOGUE_STALENESS_DAYS = 30;
+
+const MS_PER_DAY = 86_400_000;
+
+/**
+ * The instant the catalogue snapshot was taken, taken from the data itself.
+ *
+ * Used as the reference point for the generation split so the result is
+ * derived from the data rather than frozen per model, and so client and
+ * server renders agree. Using `Date.now()` here would make the value differ
+ * between the server render and hydration, and would make the page
+ * unprerenderable.
+ */
+export function catalogueAsOf(): string {
+  return (
+    AI_MODELS_DATA.map((m) => m.lastAuditedDate).sort((a, b) => b.localeCompare(a))[0] ?? 'unknown'
+  );
+}
+
+/**
+ * Derive a model's generation from its release date, measured against the
+ * catalogue's own snapshot instant. A label written per model at snapshot
+ * time can only be right on the day it was written; this stays correct and
+ * stays deterministic.
+ */
+export function generationFor(model: AIModelRecord): ModelGeneration {
+  const reference = Date.parse(catalogueAsOf());
+  const released = Date.parse(model.specs.releaseDate);
+  if (!Number.isFinite(released) || !Number.isFinite(reference)) return 'previous';
+  const ageDays = (reference - released) / MS_PER_DAY;
+  return ageDays <= CURRENT_GENERATION_DAYS ? 'current' : 'previous';
 }
 
 function parseFullDate(value: string): number | null {
@@ -174,9 +229,10 @@ export function getAvailableModels(filter?: ModelQueryFilter): AIModelRecord[] {
 
   if (!filter) return list;
 
-  // Filter by generation
+  // Filter by generation — derived from the release date, so the split stays
+  // correct without regenerating the catalogue.
   if (filter.generation && filter.generation !== 'all') {
-    list = list.filter((m) => m.specs.generation === filter.generation);
+    list = list.filter((m) => generationFor(m) === filter.generation);
   }
 
   // Filter by provider/developer
@@ -233,22 +289,27 @@ export function getBenchmarkDefinitions(): Record<string, BenchmarkDefinition> {
 }
 
 /**
- * Generates an audit summary of model coverage, score distributions, and freshness.
+ * Catalogue coverage and score distributions. Derived only from the data, so
+ * the result is identical on the server and the client.
  */
-export function getFreshnessAuditSummary(): FreshnessAuditSummary {
+export function getCatalogueAudit(): CatalogueAudit {
   let totalBenchmarkScores = 0;
   let officialEvaluationCount = 0;
   let independentEvaluationCount = 0;
   let currentGenCount = 0;
-  let historicalBaselineCount = 0;
+  let previousGenCount = 0;
   let openWeightsCount = 0;
+  let newestRelease = 0;
   const providersSet = new Set<string>();
 
   for (const model of AI_MODELS_DATA) {
     providersSet.add(model.developer);
-    if (model.specs.generation === 'current') currentGenCount++;
-    if (model.specs.generation === 'historical-baseline') historicalBaselineCount++;
+    if (generationFor(model) === 'current') currentGenCount++;
+    else previousGenCount++;
     if (model.specs.isOpenWeights) openWeightsCount++;
+
+    const released = Date.parse(model.specs.releaseDate);
+    if (Number.isFinite(released) && released > newestRelease) newestRelease = released;
 
     for (const score of Object.values(model.benchmarks)) {
       totalBenchmarkScores++;
@@ -260,13 +321,38 @@ export function getFreshnessAuditSummary(): FreshnessAuditSummary {
   return {
     totalModels: AI_MODELS_DATA.length,
     currentGenCount,
-    historicalBaselineCount,
+    previousGenCount,
     openWeightsCount,
     totalBenchmarkScores,
     officialEvaluationCount,
     independentEvaluationCount,
-    lastAuditedDate:
-      AI_MODELS_DATA.map((m) => m.lastAuditedDate).sort((a, b) => b.localeCompare(a))[0] ?? 'unknown',
+    lastAuditedDate: catalogueAsOf(),
+    newestModelReleaseDate: newestRelease
+      ? new Date(newestRelease).toISOString().slice(0, 10)
+      : 'unknown',
     coveredProviders: Array.from(providersSet),
+  };
+}
+
+/**
+ * Catalogue coverage plus how old the data is.
+ *
+ * Reads the clock, so it must not be called during a client render: the value
+ * would differ between the server render and hydration, and Next.js refuses
+ * to prerender a page whose output depends on the current time. Client code
+ * should use `getCatalogueAudit()` for the data-derived parts and measure the
+ * age after mount.
+ */
+export function getFreshnessAuditSummary(): FreshnessAuditSummary {
+  const audit = getCatalogueAudit();
+  const newest = Date.parse(audit.newestModelReleaseDate);
+  const catalogueAgeDays = Number.isFinite(newest)
+    ? Math.max(0, Math.floor((Date.now() - newest) / MS_PER_DAY))
+    : Number.POSITIVE_INFINITY;
+
+  return {
+    ...audit,
+    catalogueAgeDays: Number.isFinite(catalogueAgeDays) ? catalogueAgeDays : -1,
+    stale: catalogueAgeDays > CATALOGUE_STALENESS_DAYS,
   };
 }

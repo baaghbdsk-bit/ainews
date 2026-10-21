@@ -29,6 +29,9 @@ import { ModelRadarGraph } from './benchmarks/model-radar-graph';
 import { ModelQuadrantChart } from './benchmarks/model-quadrant-chart';
 import { BenchmarkGridCard } from './benchmarks/benchmark-grid-card';
 import { BenchmarkSpecsTable } from './benchmarks/benchmark-specs-table';
+import { CatalogueFreshness } from './benchmarks/catalogue-freshness';
+import type { CatalogueFreshnessAudit } from './benchmarks/catalogue-freshness';
+import { getCatalogueAudit } from '@/lib/benchmarks/service';
 import { HeroBenchmarksArt } from './hero-arts';
 
 type ViewMode = 'grid' | 'radar' | 'quadrant' | 'specs';
@@ -106,9 +109,22 @@ const LAB_FILTERS = [
 interface ModelBenchmarksComparatorProps {
   initialView?: ViewMode;
   embedded?: boolean;
+  /**
+   * Catalogue freshness. Supplied by the server, which is the only place
+   * that may read the clock: a value derived from Date.now() during a client
+   * render would disagree with the server render and break prerendering.
+   */
+  audit?: CatalogueFreshnessAudit;
 }
 
-export function ModelBenchmarksComparator({ initialView, embedded = false }: ModelBenchmarksComparatorProps = {}) {
+export function ModelBenchmarksComparator({
+  initialView,
+  embedded = false,
+  audit,
+}: ModelBenchmarksComparatorProps = {}) {
+  // Deterministic fallback for the embedded (client-only) mount, which has no
+  // server pass-through.
+  const freshness: CatalogueFreshnessAudit = audit ?? getCatalogueAudit();
   const [selectedModelIds, setSelectedModelIds] = useState<string[]>(() =>
     topIds('aa-intelligence')
   );
@@ -776,6 +792,8 @@ export function ModelBenchmarksComparator({ initialView, embedded = false }: Mod
               All {AI_MODELS_DATA.length} frontier model benchmarks independently audited against published technical reports and LMSYS leaderboards.
             </span>
           </div>
+
+          <CatalogueFreshness audit={freshness} />
 
           <a href="/api/benchmarks" target="_blank" rel="noreferrer" className="audit-api-btn">
             <span>Verified JSON Telemetry</span>

@@ -1,0 +1,80 @@
+/* base — extracted from src/app/globals.css (order preserved) */
+
+:root {
+  --paper: #080A12;
+  --paper-raised: #0D101C;
+  --panel-bg: #111525;
+  --card-bg: #151B30;
+  --surface: #1A2037;
+  --ink: #F4F3FA;
+  --muted: #A3A8BF;
+  --faint: #78819C;
+  --rule: #343B55;
+  --rule-strong: #414967;
+  --rule-hover: #6D5AA8;
+  --rule-focus: #A78BFA;
+  --hover: #202641;
+  --accent: #8B5CF6;
+  --accent-2: #C084FC;
+  --highlight: #F472B6;
+  /* Distinct per-category hues (Policy / Models / Products / Research).
+     Deliberately spread across the wheel so timeline dots, date rings,
+     labels and monogram tiles read as a legend, not shades of one accent. */
+  --blue: #7AA5FF;
+  --green: #8B5CF6;
+  --deep-green: #C084FC;
+  --violet: #A78BFA;
+  --cyan: #2DD4BF;
+  --coral: #F472B6;
+  --amber: #FBBF24;
+  --orange: #FB923C;
+  --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--paper);
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

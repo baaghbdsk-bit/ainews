@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { SiteHeader } from '@/app/site-header';
 import { ModelBenchmarksComparator } from '@/components/model-benchmarks-comparator';
+import { getCatalogueAudit, getFreshnessAuditSummary } from '@/lib/benchmarks/service';
 import './benchmarks.css';
 
 export const metadata: Metadata = {
@@ -33,7 +34,10 @@ async function BenchmarksView({ searchParams }: { searchParams?: BenchmarksSearc
       ? params.view
       : undefined;
 
-  return <ModelBenchmarksComparator initialView={initialView} />;
+  // Read the clock here, inside the streamed part of the route. The page
+  // shell is prerendered, and a Date.now() there would make the output
+  // unstable and fail the build.
+  return <ModelBenchmarksComparator initialView={initialView} audit={getFreshnessAuditSummary()} />;
 }
 
 export default function BenchmarksPage({
@@ -41,6 +45,10 @@ export default function BenchmarksPage({
 }: {
   searchParams?: BenchmarksSearchParams;
 }) {
+  // The static shell gets the deterministic audit (no age); the streamed view
+  // below measures the age on the server.
+  const shellAudit = getCatalogueAudit();
+
   return (
     <main className="site-frame archive-page benchmarks-page">
       <SiteHeader
@@ -55,7 +63,7 @@ export default function BenchmarksPage({
         }
       />
 
-      <Suspense fallback={<ModelBenchmarksComparator />}>
+      <Suspense fallback={<ModelBenchmarksComparator audit={shellAudit} />}>
         <BenchmarksView searchParams={searchParams} />
       </Suspense>
     </main>

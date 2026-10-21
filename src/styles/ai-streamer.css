@@ -1,0 +1,552 @@
+/* ai-streamer — extracted from src/app/globals.css (order preserved) */
+/* -------------------------------------------------------------
+ * AI EXECUTIVE TELEPROMPTER & STREAMER CARD
+ * ----------------------------------------------------------- */
+.digest-today-briefing-card.is-collapsed {
+  padding: 0 !important;
+  gap: 0 !important;
+  cursor: pointer;
+  border-color: rgba(168, 85, 247, 0.32);
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.digest-today-briefing-card.is-collapsed:hover {
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.2);
+  transform: translateY(-1px);
+}
+
+
+.today-briefing-toggle-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+
+.today-briefing-toggle-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  gap: 16px;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  border-radius: 18px;
+}
+
+.digest-today-briefing-card.is-expanded .today-briefing-toggle-strip {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 24px 14px;
+}
+
+.briefing-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.briefing-ai-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.16);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #D8B4FE;
+  font-size: 10.5px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ai-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #A855F7;
+  box-shadow: 0 0 8px #A855F7;
+  animation: wordmark-pulse 2s ease-in-out infinite;
+}
+
+.briefing-toggle-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.briefing-teaser-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #A7F3D0;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
+.briefing-toggle-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.briefing-cta-text {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: #C084FC;
+  transition: color 140ms ease;
+}
+
+.today-briefing-toggle-strip:hover .briefing-cta-text {
+  color: #E9D5FF;
+}
+
+.briefing-chevron-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.18);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #E9D5FF;
+  display: grid;
+  place-items: center;
+  transition: all 140ms ease;
+}
+
+.today-briefing-toggle-strip:hover .briefing-chevron-btn {
+  background: rgba(168, 85, 247, 0.32);
+  transform: scale(1.08);
+}
+
+.today-briefing-expanded-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 24px 24px;
+  animation: filter-popover-appear 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Stream Toolbar */
+.briefing-stream-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stream-stepper-indicators {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stream-counter-label {
+  font-size: 12px;
+  color: #94A3B8;
+  font-variant-numeric: tabular-nums;
+}
+
+.stream-counter-label strong {
+  color: #F8FAFC;
+  font-weight: 750;
+}
+
+.stream-progress-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stream-dot-btn {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 180ms ease;
+}
+
+.stream-dot-btn:hover {
+  background: rgba(168, 85, 247, 0.6);
+  transform: scale(1.25);
+}
+
+.stream-dot-btn.is-active {
+  background: #A855F7;
+  box-shadow: 0 0 8px #A855F7;
+  transform: scale(1.35);
+}
+
+.stream-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stream-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #E2E8F0;
+  font-size: 11.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 140ms ease;
+
+  white-space: nowrap;
+  flex-shrink: 0;}
+
+.stream-control-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #FFFFFF;
+}
+
+.stream-control-btn.is-playing {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #D8B4FE;
+}
+
+.toolbar-view-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.view-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 140ms ease;
+
+  white-space: nowrap;
+  flex-shrink: 0;}
+
+.view-mode-btn:hover {
+  color: #F8FAFC;
+}
+
+.view-mode-btn.is-active {
+  background: rgba(168, 85, 247, 0.25);
+  color: #E9D5FF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Stream Mode: Spotlight Single Card */
+.briefing-stream-single-card {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: streamCardFadeIn 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes streamCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stream-card-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.stream-badge-num {
+  font-size: 11px;
+  font-weight: 850;
+  color: #D8B4FE;
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.stream-card-title-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.stream-card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1.35;
+  transition: color 140ms ease;
+}
+
+.stream-card-title-link:hover .stream-card-title {
+  color: #C084FC;
+}
+
+.stream-card-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #E2E8F0;
+}
+
+.stream-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stream-deepdive-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #C084FC;
+  text-decoration: none;
+  transition: all 140ms ease;
+}
+
+.stream-deepdive-link:hover {
+  color: #E9D5FF;
+  transform: translateX(3px);
+}
+
+.stream-timer-bar-wrap {
+  width: 90px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.stream-timer-bar {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #A855F7, #38BDF8);
+  border-radius: 2px;
+  animation: streamTimerProgress 6s linear infinite;
+}
+
+@keyframes streamTimerProgress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Light Theme overrides for AI Streamer & Today Briefing */
+html[data-theme="light"] .digest-today-briefing-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 4px 20px -2px rgba(124, 58, 237, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .digest-today-briefing-card.is-collapsed {
+  background: #FFFFFF !important;
+  border-color: rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.07) !important;
+}
+
+html[data-theme="light"] .digest-today-briefing-card.is-collapsed:hover {
+  border-color: #7C3AED !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.14) !important;
+}
+
+html[data-theme="light"] .digest-today-briefing-card.is-expanded .today-briefing-toggle-strip {
+  border-bottom: 1px solid #F1F5F9 !important;
+}
+
+html[data-theme="light"] .today-briefing-toggle-title {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .today-title-accent {
+  color: #7C3AED !important;
+}
+
+html[data-theme="light"] .briefing-ai-pill {
+  background: #F3E8FF !important;
+  border-color: #D8B4FE !important;
+  color: #7E22CE !important;
+}
+
+html[data-theme="light"] .briefing-teaser-badge {
+  background: #ECFDF5 !important;
+  border-color: #A7F3D0 !important;
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .briefing-cta-text {
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .today-briefing-toggle-strip:hover .briefing-cta-text {
+  color: #5B21B6 !important;
+}
+
+html[data-theme="light"] .briefing-chevron-btn {
+  background: #EDE9FE !important;
+  border-color: #C4B5FD !important;
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .today-briefing-toggle-strip:hover .briefing-chevron-btn {
+  background: #DDD6FE !important;
+  border-color: #A78BFA !important;
+  color: #5B21B6 !important;
+}
+
+/* Stream Toolbar */
+html[data-theme="light"] .briefing-stream-toolbar {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .stream-counter-label {
+  color: #64748B !important;
+}
+
+html[data-theme="light"] .stream-counter-label strong {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .stream-dot-btn {
+  background: #CBD5E1 !important;
+}
+
+html[data-theme="light"] .stream-dot-btn:hover {
+  background: #A855F7 !important;
+}
+
+html[data-theme="light"] .stream-dot-btn.is-active {
+  background: #7C3AED !important;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.4) !important;
+}
+
+html[data-theme="light"] .stream-control-btn {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .stream-control-btn:hover {
+  background: #F5F3FF !important;
+  border-color: #C4B5FD !important;
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .stream-control-btn.is-playing {
+  background: #EDE9FE !important;
+  border-color: #DDD6FE !important;
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .toolbar-view-mode-toggle {
+  background: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .view-mode-btn {
+  color: #64748B !important;
+}
+
+html[data-theme="light"] .view-mode-btn:hover {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .view-mode-btn.is-active {
+  background: #FFFFFF !important;
+  color: #6D28D9 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Stream Single Card */
+html[data-theme="light"] .briefing-stream-single-card {
+  background: #FFFFFF !important;
+  border-color: rgba(139, 92, 246, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.08) !important;
+}
+
+html[data-theme="light"] .stream-badge-num {
+  background: #EDE9FE !important;
+  border-color: #DDD6FE !important;
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .stream-card-title {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .stream-card-title-link:hover .stream-card-title {
+  color: #7C3AED !important;
+}
+
+html[data-theme="light"] .stream-card-summary {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .stream-card-footer {
+  border-top-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .stream-deepdive-link {
+  color: #6D28D9 !important;
+}
+
+html[data-theme="light"] .stream-deepdive-link:hover {
+  color: #5B21B6 !important;
+}
+
+html[data-theme="light"] .stream-timer-bar-wrap {
+  background: #E2E8F0 !important;
+}

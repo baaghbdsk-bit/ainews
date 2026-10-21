@@ -1893,6 +1893,22 @@ html[data-theme="light"] {
   border-color: var(--bench-violet);
 }
 
+/* Catalogue freshness: a fact derived from the data, not a stored label. */
+.audit-freshness {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--bench-bg);
+  border: 1px solid var(--bench-line);
+  color: var(--bench-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .benchmarks-footer-nav {
   display: flex;
   justify-content: center;
@@ -3052,6 +3068,11 @@ html[data-theme="light"] .bench-picker-chip:hover {
 
   .audit-left {
     align-items: flex-start;
+  }
+
+  .audit-freshness {
+    width: 100%;
+    justify-content: center;
   }
 
   .audit-api-btn {

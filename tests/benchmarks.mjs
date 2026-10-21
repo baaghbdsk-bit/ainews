@@ -2,7 +2,8 @@
  * AI Model Benchmark System & Integrity Test Suite
  *
  * Verifies:
- * 1. Catalogue window (nothing older than mid-2025).
+ * 1. Catalogue window (nothing older than mid-2025) and freshness (the
+ *    catalogue is not older than the staleness budget).
  * 2. Deduplication & alias resolution.
  * 3. Official vs Independent source attribution.
  * 4. Empirical score bounds (percentages 0-100%, ELO 500-2000).
@@ -38,9 +39,8 @@ register(`data:text/javascript,${encodeURIComponent(EXTENSION_RESOLVER)}`);
 const { AI_MODELS_DATA, BENCHMARK_DEFINITIONS } = await import(
   '../src/lib/benchmarks/data.ts'
 );
-const { getAvailableModels, getModelById, validateModelRecord } = await import(
-  '../src/lib/benchmarks/service.ts'
-);
+const { getAvailableModels, getModelById, validateModelRecord, generationFor, getFreshnessAuditSummary, CATALOGUE_STALENESS_DAYS } =
+  await import('../src/lib/benchmarks/service.ts');
 
 const WINDOW_START = '2025-07-01';
 const SNAPSHOT_DATE = '2026-10-20';
@@ -101,11 +101,21 @@ assert(
   `Found: ${AI_MODELS_DATA.length} models`
 );
 
-const currentGenCount = AI_MODELS_DATA.filter((m) => m.specs.generation === 'current').length;
+// Generation is derived from the release date at read time, so the split
+// tracks reality instead of whatever the snapshot recorded.
+const currentGenCount = AI_MODELS_DATA.filter((m) => generationFor(m) === 'current').length;
 assert(
   currentGenCount > 0 && currentGenCount < AI_MODELS_DATA.length,
   'Generation tiers are split between current and previous',
   `current: ${currentGenCount}, previous: ${AI_MODELS_DATA.length - currentGenCount}`
+);
+
+assert(
+  AI_MODELS_DATA.every(
+    (m) => m.specs.generation === 'current' || m.specs.generation === 'previous'
+  ),
+  'No model carries a retired generation label',
+  ''
 );
 
 const openWeightsCount = AI_MODELS_DATA.filter((m) => m.specs.isOpenWeights).length;
@@ -113,6 +123,34 @@ assert(openWeightsCount >= 20, 'Open-weights coverage is substantial', `Found: $
 
 const developers = new Set(AI_MODELS_DATA.map((m) => m.developer));
 assert(developers.size >= 15, 'Catalogue spans many developers', `Found: ${developers.size}`);
+
+// -----------------------------------------------------------------
+// 1b. Freshness — the catalogue must not quietly rot
+// -----------------------------------------------------------------
+// Every other test in this file checks that the catalogue is internally
+// consistent. Those all keep passing while the list goes stale, because a
+// self-consistent snapshot of last month is still self-consistent. This one
+// measures age, so a catalogue that stops being refreshed fails CI.
+const audit = getFreshnessAuditSummary();
+const newestRelease = AI_MODELS_DATA.reduce(
+  (newest, m) => (m.specs.releaseDate > newest ? m.specs.releaseDate : newest),
+  ''
+);
+assert(
+  newestRelease > '',
+  'Catalogue exposes a newest model release date',
+  `newest: ${newestRelease}`
+);
+assert(
+  audit.catalogueAgeDays >= 0 && audit.catalogueAgeDays <= CATALOGUE_STALENESS_DAYS,
+  `Catalogue is no older than ${CATALOGUE_STALENESS_DAYS} days`,
+  `age: ${audit.catalogueAgeDays}d (newest model ${newestRelease})`
+);
+assert(
+  audit.stale === (audit.catalogueAgeDays > CATALOGUE_STALENESS_DAYS),
+  'Staleness flag agrees with the measured age',
+  `stale=${audit.stale} age=${audit.catalogueAgeDays}d`
+);
 
 // -----------------------------------------------------------------
 // 2. Duplicates & Alias Resolution
@@ -435,15 +473,17 @@ assert(
 
 const currentList = getAvailableModels({ generation: 'current' });
 assert(
-  currentList.length === currentGenCount && currentList.every((m) => m.specs.generation === 'current'),
+  currentList.length === currentGenCount && currentList.every((m) => generationFor(m) === 'current'),
   'Generation filter "current" matches the audit count',
   `Count: ${currentList.length}`
 );
 
+const previousList = getAvailableModels({ generation: 'previous' });
 assert(
-  getAvailableModels({ generation: 'historical-baseline' }).length === 0,
-  'No historical-baseline records remain',
-  ''
+  previousList.length === AI_MODELS_DATA.length - currentGenCount &&
+    previousList.every((m) => generationFor(m) === 'previous'),
+  'Generation filter "previous" matches the audit count',
+  `Count: ${previousList.length}`
 );
 
 // -----------------------------------------------------------------

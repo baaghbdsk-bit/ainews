@@ -12,6 +12,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import type { AIModelRecord } from '@/lib/benchmarks/types';
+import { generationFor } from '@/lib/benchmarks/service';
 
 interface BenchmarkSpecsTableProps {
   selectedModels: AIModelRecord[];
@@ -64,9 +65,7 @@ export function BenchmarkSpecsTable({ selectedModels }: BenchmarkSpecsTableProps
               <td key={m.id} className="table-td-val text-xs">
                 <span className="table-td-strong">{m.specs.releaseDate}</span>
                 <span className="table-td-sub">
-                  {m.specs.generation === 'historical-baseline'
-                    ? 'Historical Baseline'
-                    : 'Current Generation'}
+                  {generationFor(m) === 'current' ? 'Current Generation' : 'Previous Generation'}
                 </span>
               </td>
             ))}

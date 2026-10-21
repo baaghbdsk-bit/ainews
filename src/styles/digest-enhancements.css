@@ -1,0 +1,403 @@
+/* digest-enhancements — extracted from src/app/globals.css (order preserved) */
+/* ============ DAILY DIGEST ENHANCEMENTS (FULL WIDTH & 2x2 THEMES) ============ */
+.daily-digest-dossier {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 36px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 16px 0 60px !important;
+  box-sizing: border-box !important;
+}
+
+/* 1. Header Strip */
+.digest-view-header-strip {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 16px 24px !important;
+  border-radius: 16px !important;
+  background: rgba(18, 20, 36, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 2. Executive Overview Hero Card */
+.digest-executive-summary-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 38px 40px 34px !important;
+  border-radius: 20px !important;
+}
+
+.digest-executive-summary-card .executive-title {
+  margin: 0 0 14px !important;
+  font-size: clamp(24px, 2.5vw, 32px) !important;
+  font-weight: 750 !important;
+  line-height: 1.25 !important;
+  color: #F8FAFC !important;
+}
+
+.digest-executive-summary-card .executive-lede {
+  margin: 0 0 28px !important;
+  font-size: 15.5px !important;
+  line-height: 1.7 !important;
+  color: #94A3B8 !important;
+  max-width: 100% !important;
+}
+
+.digest-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding-top: 24px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+@media (max-width: 900px) {
+  .digest-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 500px) {
+  .digest-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.digest-stat-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 18px 20px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-sizing: border-box !important;
+}
+
+.digest-stat-item .stat-label {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #94A3B8 !important;
+}
+
+.digest-stat-item .stat-num {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+/* 3. Section Headers */
+.digest-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 22px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.digest-section-heading {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.digest-section-heading .section-badge {
+  align-self: flex-start !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  background: rgba(168, 85, 247, 0.15) !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+  color: #DDD6FE !important;
+}
+
+.digest-section-title {
+  margin: 0 !important;
+  font-size: 24px !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.015em !important;
+  color: #F8FAFC !important;
+  line-height: 1.3 !important;
+}
+
+.digest-section-subtitle {
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+  color: #94A3B8 !important;
+  max-width: 100% !important;
+}
+
+/* 4. Emerging Themes & Patterns — STRICT 2 x 2 GRID */
+.digest-themes-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  .digest-themes-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.digest-theme-card {
+  padding: 26px 28px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(145deg, rgba(26, 21, 46, 0.85), rgba(15, 12, 28, 0.9)) !important;
+  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  min-height: 170px !important;
+  box-sizing: border-box !important;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease !important;
+}
+
+.digest-theme-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.18) !important;
+}
+
+.theme-card-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+
+.theme-card-tag {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(168, 85, 247, 0.18) !important;
+  color: #E9D5FF !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+}
+
+.theme-card-signals {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #C084FC !important;
+}
+
+.theme-card-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.theme-card-title-row h4 {
+  margin: 0 !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #F8FAFC !important;
+  line-height: 1.35 !important;
+}
+
+.theme-card-desc {
+  margin: 0 !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  color: #CBD5E1 !important;
+}
+
+/* 5. Key Developments by Pillar Grid */
+.digest-pillars-breakdown-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 860px) {
+  .digest-pillars-breakdown-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.digest-pillar-box {
+  padding: 26px 28px !important;
+  border-radius: 16px !important;
+  background: rgba(18, 20, 36, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22) !important;
+  transition: transform 180ms ease, border-color 180ms ease !important;
+}
+
+.digest-pillar-box:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.digest-pillar-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.pillar-header-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.pillar-header-left h4 {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #F8FAFC !important;
+}
+
+.pillar-count-badge {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #CBD5E1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.digest-pillar-stories {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.digest-story-link-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  text-decoration: none !important;
+  transition: all 140ms ease !important;
+}
+
+.digest-story-link-item:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+  transform: translateX(3px) !important;
+}
+
+.digest-story-title {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #E2E8F0 !important;
+  line-height: 1.4 !important;
+}
+
+.digest-story-company {
+  font-size: 11.5px !important;
+  color: #A78BFA !important;
+  font-weight: 600 !important;
+}
+
+/* Light theme support */
+html[data-theme="light"] .digest-view-header-strip {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .digest-executive-summary-card {
+  background:
+    radial-gradient(120% 160% at 90% 10%, rgba(168, 85, 247, 0.08), transparent 60%),
+    linear-gradient(145deg, #FFFFFF, #FAF5FF) !important;
+  border-color: #DDD6FE !important;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.06) !important;
+}
+
+html[data-theme="light"] .digest-executive-summary-card .executive-title,
+html[data-theme="light"] .digest-section-title,
+html[data-theme="light"] .theme-card-title-row h4,
+html[data-theme="light"] .pillar-header-left h4,
+html[data-theme="light"] .digest-story-title {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .digest-executive-summary-card .executive-lede,
+html[data-theme="light"] .digest-section-subtitle,
+html[data-theme="light"] .theme-card-desc {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .digest-stat-item {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .digest-stat-item .stat-num {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .digest-theme-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .digest-theme-card:hover {
+  border-color: #C084FC !important;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.12) !important;
+}
+
+html[data-theme="light"] .theme-card-tag {
+  background: #FAF5FF !important;
+  border-color: #DDD6FE !important;
+  color: #7C3AED !important;
+}
+
+html[data-theme="light"] .digest-pillar-box {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .digest-pillar-header {
+  border-bottom-color: #F1F5F9 !important;
+}
+
+html[data-theme="light"] .pillar-count-badge {
+  background: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .digest-story-link-item {
+  background: #F8FAFC !important;
+  border-color: #F1F5F9 !important;
+}
+
+html[data-theme="light"] .digest-story-link-item:hover {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+

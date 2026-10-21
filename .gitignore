@@ -57,6 +57,13 @@ tests/_*
 # Agent scratch artifacts
 /scratch/
 
+# CSS restructure baseline snapshots (build artifacts, not sources).
+# Must stay ignored: Tailwind's Oxide scanner auto-detects sources from the
+# project root and honours .gitignore. An unignored .orig snapshot here is
+# scanned as raw text, so class-like words inside CSS comments leak into the
+# utility candidate set and emit phantom rules.
+.baseline-css/
+
 # Scratch test and inspection scripts
 tests/capture-*.mjs
 tests/test-*.mjs

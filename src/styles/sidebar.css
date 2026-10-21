@@ -1,0 +1,393 @@
+/* sidebar — extracted from src/app/globals.css (order preserved) */
+/* ==========================================================================
+   Left Navigation Sidebar
+   ========================================================================== */
+
+.archive-sidebar {
+  order: 1;
+  width: 100%;
+  height: 100%;
+  align-self: stretch;
+  position: relative;
+  z-index: 25;
+}
+
+.sidebar-sticky-wrapper {
+  position: sticky;
+  top: 76px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  background: rgba(13, 16, 28, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.sidebar-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.sidebar-top-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--shell-muted, #94a3b8);
+}
+
+.sidebar-collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05);
+}
+
+.archive-sidebar.is-collapsed .sidebar-sticky-wrapper {
+  padding: 10px 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.archive-sidebar.is-collapsed .sidebar-top-bar {
+  justify-content: center;
+  padding: 2px 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.archive-sidebar.is-collapsed .sidebar-top-title {
+  display: none !important;
+}
+
+.archive-sidebar.is-collapsed .sidebar-group-label,
+.archive-sidebar.is-collapsed .sidebar-nav-label,
+.archive-sidebar.is-collapsed .sidebar-badge-pill,
+.archive-sidebar.is-collapsed .nav-live-dot,
+.archive-sidebar.is-collapsed .sidebar-nav-info {
+  display: none !important;
+}
+
+.archive-sidebar.is-collapsed .sidebar-nav-item {
+  justify-content: center;
+  padding: 7px 0;
+  width: 44px;
+  height: 38px;
+  margin: 0 auto;
+}
+
+.archive-sidebar.is-collapsed .sidebar-nav-icon {
+  margin: 0 auto;
+}
+
+.sidebar-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-group-label {
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--shell-muted, #94a3b8);
+  padding-left: 8px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6.5px 10px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94A3B8;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: left;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+}
+
+.sidebar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #F8FAFC;
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(1px);
+}
+
+.sidebar-nav-item.is-active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.22) 0%, rgba(99, 102, 241, 0.14) 100%);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #FFFFFF;
+  box-shadow: 0 3px 14px -3px rgba(139, 92, 246, 0.35);
+}
+
+.sidebar-nav-item.item-digest.is-active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(139, 92, 246, 0.12) 100%);
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(168, 85, 247, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-trending.is-active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(239, 68, 68, 0.12) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 3px 14px -3px rgba(245, 158, 11, 0.3);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-latest.is-active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(79, 70, 229, 0.12) 100%);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(99, 102, 241, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-latest.is-active .sidebar-nav-icon {
+  background: rgba(99, 102, 241, 0.25);
+  color: #A5B4FC;
+}
+
+.sidebar-nav-item.item-saved.is-active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.12) 100%);
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(16, 185, 129, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-models.is-active {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.22) 0%, rgba(139, 92, 246, 0.12) 100%);
+  border-color: rgba(167, 139, 250, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(167, 139, 250, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-products.is-active {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.22) 0%, rgba(13, 148, 136, 0.12) 100%);
+  border-color: rgba(45, 212, 191, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(45, 212, 191, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-research.is-active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.22) 0%, rgba(245, 158, 11, 0.12) 100%);
+  border-color: rgba(251, 191, 36, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(251, 191, 36, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-policy.is-active {
+  background: linear-gradient(135deg, rgba(122, 165, 255, 0.22) 0%, rgba(59, 130, 246, 0.12) 100%);
+  border-color: rgba(122, 165, 255, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(122, 165, 255, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-feedback.is-active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(56, 189, 248, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-benchmarks.is-active {
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(219, 39, 119, 0.12) 100%);
+  border-color: rgba(244, 114, 182, 0.45);
+  box-shadow: 0 3px 14px -3px rgba(244, 114, 182, 0.35);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.item-benchmarks.is-active .sidebar-nav-icon {
+  background: rgba(244, 114, 182, 0.25);
+  color: #F472B6;
+}
+
+.sidebar-nav-icon {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+  color: inherit;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.sidebar-nav-item:hover .sidebar-nav-icon {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.04);
+}
+
+.sidebar-nav-item.is-active .sidebar-nav-icon {
+  background: rgba(139, 92, 246, 0.25);
+  color: #DDD6FE;
+}
+
+.sidebar-nav-item.item-models.is-active .sidebar-nav-icon {
+  background: rgba(167, 139, 250, 0.25);
+  color: #A78BFA;
+}
+
+.sidebar-nav-item.item-products.is-active .sidebar-nav-icon {
+  background: rgba(45, 212, 191, 0.25);
+  color: #2DD4BF;
+}
+
+.sidebar-nav-item.item-research.is-active .sidebar-nav-icon {
+  background: rgba(251, 191, 36, 0.25);
+  color: #FBBF24;
+}
+
+.sidebar-nav-item.item-policy.is-active .sidebar-nav-icon {
+  background: rgba(122, 165, 255, 0.25);
+  color: #7AA5FF;
+}
+
+.sidebar-nav-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-nav-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.sidebar-nav-sub {
+  font-size: 10px;
+  color: var(--shell-muted, #94a3b8);
+  line-height: 1.15;
+}
+
+.sidebar-badge-pill {
+  font-size: 9.5px;
+  font-weight: 750;
+  padding: 1px 6px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-left: auto;
+}
+
+.sidebar-badge-pill.pill-digest {
+  background: rgba(168, 85, 247, 0.2);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.38);
+}
+
+.sidebar-badge-pill.pill-hot {
+  background: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.sidebar-badge-pill.pill-count {
+  background: rgba(139, 92, 246, 0.25);
+  color: #C4B5FD;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.sidebar-badge-pill.pill-models {
+  background: rgba(167, 139, 250, 0.16);
+  color: #A78BFA;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+}
+
+.sidebar-badge-pill.pill-products {
+  background: rgba(45, 212, 191, 0.16);
+  color: #2DD4BF;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+}
+
+.sidebar-badge-pill.pill-research {
+  background: rgba(251, 191, 36, 0.16);
+  color: #FBBF24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.sidebar-badge-pill.pill-policy {
+  background: rgba(122, 165, 255, 0.16);
+  color: #7AA5FF;
+  border: 1px solid rgba(122, 165, 255, 0.35);
+}
+
+.sidebar-badge-pill.pill-benchmarks {
+  background: rgba(139, 92, 246, 0.18);
+  color: #C084FC;
+  border: 1px solid rgba(139, 92, 246, 0.38);
+}
+
+.sidebar-badge-pill.pill-feedback {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.08) 75%, transparent 100%);
+  margin: 3px 4px;
+}
+
+html[data-theme="light"] .sidebar-sticky-wrapper {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .sidebar-nav-item {
+  color: #64748B;
+}
+
+html[data-theme="light"] .sidebar-nav-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #0F172A;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .sidebar-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.08) 25%, rgba(0, 0, 0, 0.08) 75%, transparent 100%);
+}
+
+

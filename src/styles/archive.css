@@ -1,0 +1,1015 @@
+/* archive — extracted from src/app/globals.css (order preserved) */
+/* High-contrast dark surfaces with distinct, saturated story accents. */
+.site-frame {
+  background-color: var(--paper);
+  background-image: radial-gradient(#8B5CF608 0.7px, transparent 0.7px);
+}
+
+.topbar {
+  border-color: var(--rule);
+}
+
+.wordmark,
+.headline-row h1,
+.story-title {
+  color: var(--ink);
+}
+
+.wordmark-symbol,
+.orbit-mark {
+  border-color: #8B5CF655;
+  color: var(--blue);
+}
+
+.wordmark-period,
+.topbar-link:hover,
+.story-title-link:hover,
+.source-link:hover {
+  color: var(--coral);
+}
+
+.topbar-center,
+.topbar-link,
+.topic-button,
+.story-meta,
+.sort-indicator,
+.intro-copy,
+.rail-note,
+.snapshot-block > p,
+.right-rail-top {
+  color: #78819C;
+}
+
+.live-dot {
+  background: var(--blue);
+  box-shadow: 0 0 0 3px #8B5CF640;
+}
+
+.topic-button:hover,
+.topic-button.is-active {
+  border-color: var(--blue);
+  background: #202641;
+  color: var(--ink);
+}
+
+.topic-active-mark,
+.rail-note-icon,
+.snapshot-block > p em,
+.window-years,
+.stat-value,
+.source-link {
+  color: var(--blue);
+}
+
+.rail-section-label,
+.rail-bottom,
+.section-kicker,
+.moment-count small,
+.date-month,
+.year-divider,
+.snapshot-label,
+.quote-credit,
+.right-rail-footer {
+  color: #96a493;
+}
+
+.rail-note,
+.right-rail-top,
+.snapshot-block,
+.timeline-tools {
+  border-color: var(--rule);
+}
+
+.headline-row h1 {
+  color: #f8fafc;
+}
+
+h1 em {
+  color: var(--blue);
+}
+
+.moment-count {
+  border-color: #343B55;
+  color: #A3A8BF;
+}
+
+.search-box,
+.search-box input,
+.clear-search,
+.sort-indicator {
+  color: #A3A8BF;
+}
+
+.search-box input::placeholder {
+  color: #78819C;
+}
+
+.clear-search:hover,
+.expand-icon.turned {
+  background: #202641;
+  color: var(--blue);
+}
+
+.timeline-list::before {
+  background: linear-gradient(to bottom, #343B55, #343B55 94%, transparent);
+}
+
+.year-rule,
+.end-marker > span {
+  background: #343B55;
+}
+
+.date-day {
+  color: #f8fafc;
+}
+
+.story-title {
+  color: #f8fafc;
+}
+
+.meta-divider {
+  color: #78819C;
+}
+
+.expand-icon {
+  border-color: #343B55;
+  color: #A3A8BF;
+}
+
+.story-summary,
+.why-it-matters p,
+.stat-block > p,
+.quote-block p {
+  color: #A3A8BF;
+}
+
+.why-it-matters,
+.quote-block {
+  border-color: var(--blue);
+  background: #111525;
+}
+
+.why-it-matters span {
+  color: var(--blue);
+}
+
+.empty-state,
+.end-marker {
+  color: #78819C;
+}
+
+.empty-state button {
+  color: var(--blue);
+}
+
+.quote-mark {
+  color: var(--coral);
+}
+
+.footer-spark {
+  color: var(--orange);
+}
+
+.headline-row h1 {
+  color: #f8fafc;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 58px;
+  font-weight: 680;
+  line-height: 1.02;
+}
+
+.headline-accent {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 5px;
+  color: var(--green);
+}
+
+.headline-accent::after {
+  position: absolute;
+  bottom: 0;
+  left: 1px;
+  width: 34px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--coral);
+  content: "";
+}
+
+.archive-page {
+  overflow: clip;
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 50% 0%, #8B5CF60a, transparent 54%),
+    radial-gradient(#3A306008 0.65px, transparent 0.65px);
+  background-size: auto, 7px 7px;
+}
+
+.archive-topbar {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  height: 60px;
+  gap: 16px;
+  padding: 0 20px;
+  border-color: #343B55cc;
+    background: #080A12f2;
+  }
+
+.archive-topbar .wordmark {
+  flex: 0 0 auto;
+  color: #F4F3FA;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.archive-topbar .wordmark-symbol {
+  width: 38px;
+  height: 38px;
+  border-color: #8B5CF677;
+  background: #8B5CF61a;
+  color: var(--blue);
+  box-shadow: 0 0 12px #8B5CF622;
+}
+
+.archive-layout {
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 0 100px;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+
+/* Panel first (left column); timeline second (right column). */
+.archive-filter-panel {
+  order: 1;
+}
+
+.archive-timeline {
+  order: 2;
+}
+
+.archive-filter-panel {
+  position: sticky;
+  /* Panel's natural position at scroll 0 is 112px (78px topbar + 34px layout padding);
+     sticking at the same offset keeps it from drifting while scrolling. */
+  top: 112px;
+  /* Above the sticky topbar (z 20) so a dropdown that flips upward is never
+     clipped behind it; the panel box itself sticks below the topbar. */
+  z-index: 25;
+  padding: 22px 20px 20px;
+  border: 1px solid #343B55;
+  border-radius: 10px;
+  background: #111525;
+  display: grid;
+  gap: 20px;
+}
+
+/* Mobile filter trigger — the only entry point to the period/search panel on
+   small screens. Hidden on desktop, where the filter panel stays in view. */
+@media (max-width: 1080px) {
+  .archive-mobile-filter {
+    position: fixed;
+    left: 50%;
+    /* Sits above the mobile bottom nav (68px) rather than at the screen edge. */
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 30;
+    min-height: 44px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: #080A12f2;
+    backdrop-filter: blur(10px);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease;
+  }
+
+  .archive-mobile-filter:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .filter-mobile-count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--blue);
+    color: var(--paper);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  /* Glittering border beam on the filter trigger: a bright segment travels the
+     pill edge so the entry point to filters reads as alive, not static. Uses a
+     registered angle so the sweep interpolates; older engines show a static arc. */
+  @property --beam-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .archive-mobile-filter {
+    isolation: isolate;
+    animation: filter-pill-glow 4.2s ease-in-out infinite;
+  }
+
+  .archive-mobile-filter::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--beam-angle, 0deg),
+      transparent 0deg,
+      transparent 292deg,
+      #8B5CF6 322deg,
+      #8B5CF6 342deg,
+      transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: filter-beam-rotate 5.5s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes filter-beam-rotate {
+    to { --beam-angle: 360deg; }
+  }
+
+  @keyframes filter-pill-glow {
+    0%, 100% { box-shadow: 0 0 0 0 #8B5CF600, 0 8px 28px #00000055; }
+    50% { box-shadow: 0 0 16px 0 #8B5CF622, 0 8px 28px #00000055; }
+  }
+
+  /* Open panel = task done for the trigger: steady green border, beam parked. */
+  .archive-mobile-filter[aria-expanded="true"] {
+    border-color: var(--green);
+    color: var(--green);
+    animation: none;
+  }
+
+  .archive-mobile-filter[aria-expanded="true"]::before {
+    opacity: 0;
+    transition: opacity 240ms ease;
+  }
+
+  /* Mobile: the panel is hidden by default and opens once the trigger is
+     activated. The trigger is fixed-position, so it stays visible even while
+     the panel itself is display: none. */
+  .archive-filter-panel {
+    display: none;
+  }
+
+  .archive-filter-panel[data-open] {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .archive-mobile-filter { animation: none; }
+    .archive-mobile-filter::before { display: none; }
+  }
+}
+
+/* Glittering edge beam on the filter panel border: a bright segment travels
+   the panel's top edge so the filter surface reads as alive on every screen size. */
+@property --panel-beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.archive-filter-panel {
+  isolation: isolate;
+  /* No `position` here: the earlier `position: sticky` must win. Sticky is
+     already a positioned scheme, so `.archive-filter-panel::before` anchors
+     to the panel without re-declaring relative here. */
+}
+
+.archive-filter-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 10px 10px 0 0;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--panel-beam-angle, 0deg),
+    transparent 0deg,
+    transparent 292deg,
+    #8B5CF6 322deg,
+    #8B5CF6 342deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: filter-panel-beam-rotate 5.5s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes filter-panel-beam-rotate {
+  to { --panel-beam-angle: 360deg; }
+}
+
+.archive-filter-panel[data-open]::before {
+  animation-duration: 2.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-filter-panel::before { display: none; }
+}
+
+@media (min-width: 1081px) {
+  .archive-mobile-filter {
+    display: none;
+  }
+
+  /* Desktop: filter panel stays expanded in view at all times.
+     With the shell zoomed to 0.85 the effective viewport offset is
+     top * 0.85; top must equal header height (74px) plus the zoomed layout
+     padding (29px * 0.85 ≈ 25px) so pinned position equals natural position —
+     zero movement while scrolling. */
+  .archive-page .archive-timeline {
+    padding-bottom: 104px;
+  }
+
+  /* The grid row reaches the page bottom (the layout has no bottom padding),
+     so the panel rests at `top` without being pushed up — and it is never
+     clipped/squeezed. */
+  .archive-filter-panel {
+    display: block;
+    position: sticky;
+    top: 116px;
+  }
+}
+
+.filter-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #343B55;
+}
+
+.filter-panel-head h2 {
+  margin: 0;
+  color: #F4F3FA;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 13px;
+  font-weight: 620;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.filter-panel-icon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #343B55;
+  border-radius: 6px;
+  background: #151B30;
+  color: var(--blue);
+}
+
+.filter-group {
+  display: grid;
+  gap: 10px;
+}
+
+.filter-group-label {
+  color: #78819C;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 10px;
+  font-weight: 620;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.filter-panel-foot {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #343B55;
+}
+
+.filter-result-count {
+  margin: 0;
+  color: #93a08f;
+  font-size: 11px;
+}
+
+.filter-result-count strong {
+  color: var(--green);
+  font-weight: 650;
+}
+
+.filter-clear-button {
+  min-height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #343B55;
+  border-radius: 5px;
+  background: transparent;
+  color: #A3A8BF;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.filter-clear-button:hover:not(:disabled) {
+  border-color: var(--blue);
+  background: #202641;
+  color: var(--ink);
+}
+
+.filter-clear-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ---- Topic tabs: pill bar pinned next to the wordmark in the header ---- */
+
+.topic-tabs-bar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.topic-tabs-scroll {
+  width: 100%;
+  max-width: 760px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.topic-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.archive-topic-nav {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  min-width: 100%;
+  justify-content: center;
+  padding: 4px;
+}
+
+.archive-topic-nav .topic-button {
+  min-height: 44px;
+  padding: 0 16px;
+  gap: 8px;
+  border: 1px solid #343B55;
+  border-radius: 999px;
+  background: transparent;
+  color: #A3A8BF;
+  white-space: nowrap;
+}
+
+.archive-topic-nav .topic-button:hover {
+  background: #343B55;
+  color: var(--ink);
+}
+
+.archive-topic-nav .topic-button.is-active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #080A12;
+  box-shadow: 0 0 0 1px var(--blue);
+}
+
+.archive-topic-nav .topic-active-mark {
+  color: var(--blue);
+}
+
+.archive-search {
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid #343B55;
+  border-radius: 5px;
+  background: #1A2037;
+  color: #A3A8BF;
+}
+
+.archive-search input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  color: #F4F3FA;
+}
+
+.archive-search input::placeholder {
+  color: #78819C;
+}
+
+.archive-search .clear-search:hover {
+  background: #343B55;
+  color: var(--blue);
+}
+
+.date-filter {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.date-filter-select {
+  width: 100%;
+  height: 36px;
+  padding: 0 28px 0 10px;
+  border: 1px solid #343B55;
+  border-radius: 5px;
+  background: #1A2037;
+  /* Custom chevron so the select reads the same on every OS. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  color: #F4F3FA;
+  font-size: 12px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.date-filter-select option {
+  background: #151B30;
+  color: #F4F3FA;
+}
+
+.date-filter-select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* Single-select company dropdown — same look as the native filter selects,
+   but the panel is anchored flush against the field (top: 100%, no gap). */
+.company-select {
+  position: relative;
+}
+
+.company-select-trigger {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #343B55;
+  border-radius: 5px;
+  background: #1A2037;
+  color: #F4F3FA;
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease;
+}
+
+.company-select-trigger:hover {
+  border-color: #414967;
+}
+
+.company-select-trigger:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.company-select-trigger-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.company-select-trigger svg {
+  flex: 0 0 auto;
+  color: #78819C;
+}
+
+.company-select-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: min(260px, 45vh);
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: #111525;
+  border: 1px solid #343B55;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+  z-index: 30;
+}
+
+/* Flip upward when the field sits near the bottom of the viewport. */
+.company-select-panel.panel-open-up {
+  top: auto;
+  bottom: 100%;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 -14px 28px rgba(0, 0, 0, 0.45);
+}
+
+.company-select-option {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #F4F3FA;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.company-select-option:hover {
+  background: #343B55;
+  outline: 1px solid var(--rule-hover);
+  outline-offset: -1px;
+}
+
+.company-select-option.is-selected {
+  background: #8B5CF61a;
+  color: var(--green);
+  outline: 1px solid var(--rule-focus);
+  outline-offset: -1px;
+}
+
+.archive-timeline {
+  width: 100%;
+  margin: 0;
+  padding: 0 0 24px;
+}
+
+.archive-timeline .timeline-list {
+  padding-top: 0;
+}
+
+.archive-timeline .timeline-list::before {
+  top: 27px;
+  bottom: 34px;
+  left: 55px;
+  width: 2px;
+  background: linear-gradient(to bottom, #3A2D5C, #2E2650 88%, transparent);
+}
+
+.archive-timeline .timeline-item {
+  position: relative;
+}
+
+.archive-timeline .year-divider {
+  margin: 44px 0 14px;
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1.5px solid #343B55;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #151B30, #111525 70%);
+  color: var(--blue);
+}
+
+.archive-timeline .year-divider span:first-child {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.archive-timeline .year-rule {
+  height: 2px;
+  background: linear-gradient(to right, #3A2D5C, transparent);
+}
+
+.archive-timeline .story-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 36px;
+  align-items: start;
+  /* Padding/frame come from the shell card layer below; this block only sets grid. */
+}
+
+.archive-timeline .timeline-node {
+  position: relative;
+  z-index: 2;
+  width: 74px;
+  height: 74px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: #151B30;
+  box-shadow: 0 0 0 6px #080A12, 0 8px 26px #0005;
+}
+
+.archive-timeline .date-day {
+  color: #f1f5e9;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 24px;
+  font-weight: 680;
+  line-height: 1;
+}
+
+.archive-timeline .date-month {
+  margin-top: 5px;
+  color: #aab6a4;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.timeline-node-runner {
+  position: absolute;
+  inset: -7px;
+  border: 1px solid #8B5CF655;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #8B5CF614, 0 0 12px #8B5CF633;
+  pointer-events: none;
+}
+
+.archive-timeline .story-content {
+  padding-top: 8px;
+}
+
+.archive-timeline .story-meta {
+  color: #A3A8BF;
+  font-size: 10px;
+}
+
+.archive-timeline .story-title-line {
+  margin-top: 9px;
+  align-items: center;
+}
+
+.archive-timeline .story-title {
+  color: #F4F3FA;
+  font-size: 17.5px;
+  font-weight: 560;
+  line-height: 1.45;
+}
+
+.archive-timeline .story-title-link:hover {
+  color: var(--blue);
+}
+
+.archive-timeline .expand-icon {
+  border-color: #343B55;
+  color: #A3A8BF;
+}
+
+.archive-timeline .expand-icon.turned {
+  background: #202641;
+  color: var(--blue);
+}
+
+.archive-timeline .detail-inner {
+  padding: 16px 42px 0 0;
+}
+
+.archive-timeline .story-summary,
+.archive-timeline .why-it-matters p {
+  color: #A3A8BF;
+}
+
+.archive-timeline .why-it-matters {
+  border-color: var(--blue);
+  background: #111525;
+}
+
+.archive-timeline .why-it-matters span,
+.archive-timeline .source-link {
+  color: var(--blue);
+}
+
+.archive-timeline .key-points li {
+  color: #A3A8BF;
+}
+
+.archive-timeline .key-points span {
+  color: var(--blue);
+}
+
+.archive-timeline .key-points li::marker {
+  color: var(--blue);
+}
+
+.archive-timeline .source-link:hover {
+  color: #C084FC;
+}
+
+.archive-timeline .empty-state {
+  min-height: 280px;
+  color: #78819C;
+}
+
+.archive-timeline .empty-state button {
+  color: var(--blue);
+}
+
+@media (max-width: 1080px) {
+  .archive-topbar {
+    height: auto;
+    min-height: 78px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .topic-tabs-bar {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+
+  .topic-tabs-scroll {
+    max-width: none;
+  }
+
+  .archive-topic-nav {
+    justify-content: flex-start;
+  }
+
+  .archive-layout {
+    width: min(100% - 52px, 760px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 26px;
+    /* Room for the fixed bottom nav (68px) + filter pill (44px) + gap. */
+    padding-bottom: 148px;
+  }
+
+  .archive-filter-panel {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .archive-topbar {
+    height: auto;
+    min-height: 66px;
+    padding: max(10px, env(safe-area-inset-top)) 18px;
+    justify-content: center;
+  }
+
+  .topic-tabs-bar {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    margin-top: 6px;
+  }
+
+  .archive-layout {
+    width: min(100% - 32px, 620px);
+    gap: 22px;
+    padding-top: 20px;
+  }
+
+  .archive-filter-panel {
+    padding: 18px 16px 16px;
+  }
+
+  .date-filter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

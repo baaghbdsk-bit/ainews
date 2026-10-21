@@ -9,7 +9,7 @@ import {
 import type { ModelCapability, ModelGeneration } from '@/lib/benchmarks/types';
 import { zodDetails } from '@/lib/supabase/api-guard';
 
-const GENERATIONS = ['current', 'previous', 'historical-baseline', 'all'] as const;
+const GENERATIONS = ['current', 'previous', 'all'] as const;
 const CAPABILITIES = [
   'Reasoning',
   'Coding',

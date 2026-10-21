@@ -1,0 +1,416 @@
+/* feedback-enhancements — extracted from src/app/globals.css (order preserved) */
+/* ============ FEEDBACK & CONNECT ENHANCEMENTS (FULL WIDTH & LEGIBLE TEXT) ============ */
+/* 1. Full width layout taking complete available space */
+.feedback-connect-dossier {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 32px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 16px 0 60px !important;
+  box-sizing: border-box !important;
+}
+
+.feedback-connect-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  align-items: stretch !important;
+}
+
+@media (max-width: 1024px) {
+  .feedback-connect-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+/* 2. Spacious console & channel cards */
+.feedback-console-card,
+.connect-channels-card {
+  padding: 32px 34px !important;
+  border-radius: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.console-head {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-bottom: 24px !important;
+}
+
+.console-title {
+  margin: 0 !important;
+  font-size: 24px !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.015em !important;
+  color: #F8FAFC !important;
+  line-height: 1.3 !important;
+}
+
+.console-subtitle {
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+  color: #94A3B8 !important;
+  max-width: none !important;
+}
+
+/* 3. Form elements: spacious and readable */
+.feedback-full-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 22px !important;
+  flex: 1 !important;
+}
+
+.form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.form-label {
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #CBD5E1 !important;
+}
+
+/* Category Selection Chips */
+.category-chips-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+@media (max-width: 600px) {
+  .category-chips-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.category-chip-btn {
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  gap: 4px !important;
+  transition: all 160ms ease !important;
+}
+
+.category-chip-title {
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  color: #F8FAFC !important;
+}
+
+.category-chip-btn.is-selected .category-chip-title {
+  color: #38BDF8 !important;
+}
+
+.category-chip-desc {
+  font-size: 12.5px !important;
+  color: #94A3B8 !important;
+  line-height: 1.45 !important;
+}
+
+/* Textarea with comfortable height and readable font */
+.feedback-textarea-large {
+  min-height: 130px !important;
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  border-radius: 12px !important;
+  background: rgba(8, 12, 22, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
+  box-sizing: border-box !important;
+}
+
+.feedback-textarea-large:focus {
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18) !important;
+}
+
+/* Optional reply email field */
+.feedback-input-email {
+  width: 100% !important;
+  padding: 12px 14px !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  border-radius: 12px !important;
+  background: rgba(8, 12, 22, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
+  box-sizing: border-box !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease !important;
+}
+
+.feedback-input-email::placeholder {
+  color: #64748B !important;
+}
+
+.feedback-input-email:focus {
+  outline: none !important;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18) !important;
+}
+
+.form-label-optional {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-weight: 500 !important;
+  color: #64748B !important;
+}
+
+.form-hint {
+  font-size: 12px !important;
+  color: #64748B !important;
+  line-height: 1.45 !important;
+}
+
+.textarea-footer {
+  font-size: 12.5px !important;
+  color: #94A3B8 !important;
+  padding: 2px 4px 0 !important;
+}
+
+/* Submit Button */
+.feedback-submit-btn-large {
+  padding: 14px 22px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35) !important;
+}
+
+/* 4. Connect Channels List: Clear, readable links */
+.channels-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  flex: 1 !important;
+}
+
+.channel-card-link {
+  padding: 16px 18px !important;
+  border-radius: 14px !important;
+  gap: 16px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.channel-card-link:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  transform: translateX(3px) !important;
+}
+.channel-card-link.channel-github {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(255, 255, 255, 0.02)) !important;
+  border-color: rgba(203, 213, 225, 0.22) !important;
+}
+.channel-card-link.channel-github .channel-icon-wrap {
+  background: rgba(226, 232, 240, 0.12) !important;
+  color: #E2E8F0 !important;
+}
+.channel-card-link.channel-github:hover {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.16), rgba(255, 255, 255, 0.05)) !important;
+  border-color: rgba(203, 213, 225, 0.42) !important;
+}
+.channel-card-link.channel-instagram {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(244, 63, 94, 0.06)) !important;
+  border-color: rgba(236, 72, 153, 0.32) !important;
+}
+.channel-card-link.channel-instagram:hover {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 63, 94, 0.1)) !important;
+  border-color: rgba(236, 72, 153, 0.55) !important;
+}
+.channel-card-link.channel-rss {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(251, 191, 36, 0.05)) !important;
+  border-color: rgba(245, 158, 11, 0.32) !important;
+}
+.channel-card-link.channel-rss:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.09)) !important;
+  border-color: rgba(245, 158, 11, 0.55) !important;
+}
+.channel-card-link.channel-api {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(99, 102, 241, 0.05)) !important;
+  border-color: rgba(56, 189, 248, 0.32) !important;
+}
+.channel-card-link.channel-api .channel-icon-wrap {
+  background: rgba(56, 189, 248, 0.14) !important;
+  color: #7DD3FC !important;
+}
+.channel-card-link.channel-api:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.1)) !important;
+  border-color: rgba(56, 189, 248, 0.55) !important;
+}
+.channel-card-link.channel-email {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(56, 189, 248, 0.05)) !important;
+  border-color: rgba(139, 92, 246, 0.32) !important;
+}
+.channel-card-link.channel-email .channel-icon-wrap {
+  background: rgba(139, 92, 246, 0.14) !important;
+  color: #C4B5FD !important;
+}
+.channel-card-link.channel-email:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(56, 189, 248, 0.1)) !important;
+  border-color: rgba(139, 92, 246, 0.55) !important;
+}
+
+.channel-icon-wrap {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.channel-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #F8FAFC !important;
+}
+
+.channel-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+  border-radius: 999px !important;
+}
+
+.channel-desc {
+  font-size: 14px !important;
+  color: #94A3B8 !important;
+  line-height: 1.6 !important;
+  margin-top: 2px !important;
+}
+
+/* Manifesto Box */
+.community-manifesto-box {
+  margin-top: 20px !important;
+  padding: 18px 20px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  gap: 12px !important;
+}
+
+.community-manifesto-box strong {
+  color: #F8FAFC !important;
+  font-weight: 650 !important;
+}
+
+/* Success Card */
+.feedback-success-card {
+  padding: 44px 24px !important;
+  gap: 16px !important;
+}
+
+.feedback-success-card h4 {
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  color: #F8FAFC !important;
+}
+
+.feedback-success-card p {
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+  color: #94A3B8 !important;
+}
+
+/* Light Theme overrides for Feedback & Connect */
+html[data-theme="light"] .feedback-console-card {
+  background: linear-gradient(145deg, #FFFFFF, #F0F9FF) !important;
+  border-color: #BAE6FD !important;
+  box-shadow: 0 8px 28px rgba(56, 189, 248, 0.08) !important;
+}
+
+html[data-theme="light"] .connect-channels-card {
+  background: linear-gradient(145deg, #FFFFFF, #F8FAFC) !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .console-title,
+html[data-theme="light"] .category-chip-title,
+html[data-theme="light"] .channel-title,
+html[data-theme="light"] .feedback-success-card h4 {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .console-subtitle,
+html[data-theme="light"] .category-chip-desc,
+html[data-theme="light"] .channel-desc,
+html[data-theme="light"] .textarea-footer,
+html[data-theme="light"] .feedback-success-card p {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .form-label {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .category-chip-btn {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .category-chip-btn:hover {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html[data-theme="light"] .category-chip-btn.is-selected {
+  background: #E0F2FE !important;
+  border-color: #38BDF8 !important;
+}
+
+html[data-theme="light"] .feedback-textarea-large {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .feedback-input-email {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .feedback-input-email::placeholder {
+  color: #94A3B8 !important;
+}
+
+html[data-theme="light"] .form-label-optional,
+html[data-theme="light"] .form-hint {
+  color: #64748B !important;
+}
+
+html[data-theme="light"] .channel-card-link {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] .channel-card-link:hover {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html[data-theme="light"] .community-manifesto-box {
+  background: #FAF5FF !important;
+  border-color: #DDD6FE !important;
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .community-manifesto-box strong {
+  color: #1E1B4B !important;
+}
+
+

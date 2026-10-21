@@ -1,0 +1,67 @@
+/* hero-metrics — extracted from src/app/globals.css (order preserved) */
+/* -------------------------------------------------------------
+ * HERO DIGEST METRICS STRIP & BADGES
+ * ----------------------------------------------------------- */
+.hero-digest-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-digest-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.14);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #D8B4FE;
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-digest-metrics-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 6px 0 16px;
+}
+
+.digest-metric-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12.5px;
+  transition: all 160ms ease;
+}
+
+.digest-metric-chip .metric-chip-val {
+  font-weight: 800;
+  color: #F8FAFC;
+  font-variant-numeric: tabular-nums;
+}
+
+.digest-metric-chip .metric-chip-lbl {
+  color: #94A3B8;
+  font-weight: 500;
+  font-size: 11.5px;
+}
+
+.digest-metric-chip.chip-highlight {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.digest-metric-chip.chip-highlight .metric-chip-val {
+  color: #D8B4FE;
+}
+

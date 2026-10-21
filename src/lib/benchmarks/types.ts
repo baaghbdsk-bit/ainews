@@ -7,7 +7,13 @@ export type BenchmarkCategory =
   | 'Multimodal'
   | 'Agentic';
 
-export type ModelGeneration = 'current' | 'previous' | 'historical-baseline';
+/**
+ * How recently a model shipped. "current" is a rolling window (see
+ * `generationFor` in service.ts) rather than a stored label, so a model ages
+ * out of it on its own. `historical-baseline` was removed: nothing ever
+ * produced it, so the filter always returned an empty set.
+ */
+export type ModelGeneration = 'current' | 'previous';
 export type ModelAvailability = 'Generally Available' | 'Public Preview' | 'Legacy / Deprecated';
 export type ModelCapability =
   | 'Reasoning'
@@ -50,6 +56,11 @@ export interface ModelSpecs {
   isOpenWeights: boolean;
   releaseDate: string; // ISO date e.g. "2025-02-24"
   versionIdentifier: string; // e.g. "claude-3-7-sonnet-20250219"
+  /**
+   * Generation label captured when the catalogue snapshot was generated.
+   * Prefer `generationFor(model)` from service.ts, which derives the label
+   * from `releaseDate` at read time so it never goes stale.
+   */
   generation: ModelGeneration;
   availability: ModelAvailability;
   capabilities: ModelCapability[];
