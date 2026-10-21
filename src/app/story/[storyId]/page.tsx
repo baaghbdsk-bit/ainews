@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { after } from "next/server";
 import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getStoryBySlug, getStoryBySlugFresh, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
@@ -292,9 +293,13 @@ export default async function StoryPage({ params }: StoryPageProps) {
           const live = (await fetchAiNews()).find((s) => s.slug === storyId);
           if (live) {
             storyToRender = formatStory(live, colorForTopic(live.topic));
-            // Store it in the background so the next visit reads it from the
-            // database instead of re-downloading every feed.
-            void persistFeedStory(live);
+            // Store it so the next visit reads it from the database instead of
+            // re-downloading every feed. `after` runs the write once the
+            // response is on its way, and the platform waits for it; a bare
+            // floating promise is killed when the response completes.
+            after(async () => {
+              await persistFeedStory(live);
+            });
           }
         } catch {
           // Ignore and fall through to not-found.
@@ -363,16 +368,19 @@ export default async function StoryPage({ params }: StoryPageProps) {
         };
 
         // Persist to Supabase so subsequent visitors load instantly from DB
-        if (dbStory?.id) {
-          persistEnrichedStory(
-            dbStory.id,
-            outcome.article.body,
-            resolvedDeck,
-            resolvedKeyPoints,
-            resolvedBrief,
-            resolvedWhyItMatters,
-            resolvedImageUrl ?? null,
-          ).catch(() => {});
+        const persistedStoryId = dbStory?.id;
+        if (persistedStoryId) {
+          after(async () => {
+            await persistEnrichedStory(
+              persistedStoryId,
+              outcome.article.body,
+              resolvedDeck,
+              resolvedKeyPoints,
+              resolvedBrief,
+              resolvedWhyItMatters,
+              resolvedImageUrl ?? null,
+            );
+          });
         }
       }
     } catch (err) {
