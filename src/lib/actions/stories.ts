@@ -117,9 +117,27 @@ export async function getPublishedStoriesWithVotes(): Promise<StoryWithVotes[]> 
  */
 export async function getStoryBySlug(slug: string): Promise<Story | null> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('minutes');
   cacheTag(STORIES_TAG);
 
+  return queryStoryBySlug(slug);
+}
+
+/**
+ * The same lookup, but never served from the cache.
+ *
+ * The cached lookup also caches a miss, and a story that was missing a moment
+ * ago may have just been stored - by the ingest job, or by the reader who
+ * opened it. When the cached lookup misses, this re-reads the row so the
+ * article renders from the database instead of falling back to re-downloading
+ * every feed. The read is a single indexed lookup, so it costs about a
+ * millisecond.
+ */
+export async function getStoryBySlugFresh(slug: string): Promise<Story | null> {
+  return queryStoryBySlug(slug);
+}
+
+async function queryStoryBySlug(slug: string): Promise<Story | null> {
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
@@ -151,7 +169,7 @@ export async function getStoryBySlug(slug: string): Promise<Story | null> {
  */
 export async function getStoryBySlugPrefix(slug: string): Promise<Story | null> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('minutes');
   cacheTag(STORIES_TAG);
 
   const prefix = slugTitlePart(slug);

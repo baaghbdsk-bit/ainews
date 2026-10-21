@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getStoryBySlug, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
+import { getStoryBySlug, getStoryBySlugFresh, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
 import { fetchAiNews } from "@/lib/feeds/fetch-ai-news";
 import type { Story } from "@/lib/schemas/story";
 import { matchEntities } from "@/lib/dossier/entities";
@@ -10,6 +10,7 @@ import { stories as seedStories } from "../../stories";
 import type { Story as SeedStory } from "../../stories";
 import { slugify } from "@/lib/slug";
 import { colorForTopic } from "@/lib/story-colors";
+import { extractCompany } from "@/lib/story-company";
 import { SiteHeader } from "../../site-header";
 import { UpvoteButton, BookmarkButton, ShareButton } from "@/components/story-actions";
 import { extractStoryAnalytics } from "@/lib/story-stats";
@@ -44,6 +45,13 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
     dbStory = await getStoryBySlug(storyId);
   } catch {
     // During prerendering, Supabase may not be available; fall through.
+  }
+  if (!dbStory) {
+    try {
+      dbStory = await getStoryBySlugFresh(storyId);
+    } catch {
+      // Non-fatal; the feed fallback still applies.
+    }
   }
   if (!dbStory) {
     try {
@@ -195,12 +203,60 @@ async function persistEnrichedStory(
   }
 }
 
+/**
+ * Store a story that only existed in the feed.
+ *
+ * The ingest job runs on a schedule, so a brand new story can be missing from
+ * the database for a while - which meant every visit to it re-downloaded
+ * every feed. Storing it here, while a reader is already looking at it, means
+ * the corpus catches up with real traffic instead of waiting for a scheduler.
+ *
+ * Best effort: a duplicate (the ingest job got there first) is ignored.
+ */
+async function persistFeedStory(story: Story) {
+  try {
+    const { supabaseUrl, supabaseServiceRoleKey } = await import('@/lib/env');
+    const { createClient } = await import('@supabase/supabase-js');
+    const url = supabaseUrl();
+    const serviceKey = supabaseServiceRoleKey();
+    if (!url || !serviceKey) return;
+    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+    // Same shape the ingest job writes, so the two paths cannot disagree.
+    await admin.from('stories').upsert(
+      {
+        slug: story.slug,
+        title: story.title,
+        summary: story.summary,
+        significance: story.significance,
+        company:
+          story.company ??
+          extractCompany({ title: story.title, summary: story.summary, source: story.source }) ??
+          null,
+        source: story.source,
+        source_url: story.source_url,
+        image_url: story.image_url ?? null,
+        topic: story.topic,
+        event_date: story.event_date,
+        status: 'published',
+        published_at: story.published_at ?? null,
+      },
+      { onConflict: 'slug', ignoreDuplicates: true },
+    );
+  } catch {
+    // Non-fatal background persistence failure
+  }
+}
+
 export default async function StoryPage({ params }: StoryPageProps) {
   const { storyId } = await params;
 
   let dbStory: Story | null = null;
   try {
     dbStory = await getStoryBySlug(storyId);
+    // A cached miss can be stale: the story may have been stored a moment ago
+    // by the ingest job, or by the reader who opened it. Re-read it directly
+    // before giving up on the database.
+    if (!dbStory) dbStory = await getStoryBySlugFresh(storyId);
   } catch {
     // During prerendering, Supabase may not be available — fall back below.
   }
@@ -236,6 +292,9 @@ export default async function StoryPage({ params }: StoryPageProps) {
           const live = (await fetchAiNews()).find((s) => s.slug === storyId);
           if (live) {
             storyToRender = formatStory(live, colorForTopic(live.topic));
+            // Store it in the background so the next visit reads it from the
+            // database instead of re-downloading every feed.
+            void persistFeedStory(live);
           }
         } catch {
           // Ignore and fall through to not-found.
