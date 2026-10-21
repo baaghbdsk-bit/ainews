@@ -8,10 +8,21 @@
  */
 export function slugify(input: string): string {
   return input
-    .normalize("NFKD")
+    .normalize('NFKD')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * The title part of a story slug, without the trailing date and hash.
+ *
+ * Slugs are `<title>-<YYYY-MM-DD>-<hash>`. The title part stays stable even
+ * when the date or hash differs, which lets an article whose slug was minted
+ * on a different day still find its stored row.
+ */
+export function slugTitlePart(slug: string): string {
+  return slug.replace(/-\d{4}-\d{2}-\d{2}-[a-z0-9]{1,8}$/i, '');
 }
 
 /**

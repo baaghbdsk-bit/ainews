@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getStoryBySlug, getUpvoteCount } from "@/lib/actions/stories";
+import { getStoryBySlug, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
 import { fetchAiNews } from "@/lib/feeds/fetch-ai-news";
 import type { Story } from "@/lib/schemas/story";
 import { matchEntities } from "@/lib/dossier/entities";
@@ -35,14 +35,22 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: StoryPageProps): Promise<Metadata> {
   const { storyId } = await params;
 
-  // Mirror the page's lookup chain (db → seed → live). Calling notFound() here
-  // — before the response streams — is what makes a missing story return a real
-  // HTTP 404 instead of a streamed 200 with a "not found" title.
+  // Mirror the page's lookup chain (db → db-by-prefix → seed → live). Calling
+  // notFound() here — before the response streams — is what makes a missing
+  // story return a real HTTP 404 instead of a streamed 200 with a "not found"
+  // title.
   let dbStory: Story | null = null;
   try {
     dbStory = await getStoryBySlug(storyId);
   } catch {
     // During prerendering, Supabase may not be available; fall through.
+  }
+  if (!dbStory) {
+    try {
+      dbStory = await getStoryBySlugPrefix(storyId);
+    } catch {
+      // Non-fatal; the seed and feed fallbacks still apply.
+    }
   }
   if (dbStory) {
     return {
@@ -203,19 +211,35 @@ export default async function StoryPage({ params }: StoryPageProps) {
   if (dbStory) {
     storyToRender = formatStory(dbStory, colorForTopic(dbStory.topic));
   } else {
-    // 2. Curated seed story
-    const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
-    if (seedStory) {
-      storyToRender = formatStory(seedStory, colorForTopic(seedStory.topic));
+    // 2. The same story under a different slug. A feed that revises a title
+    //    or moves a publication date mints a new slug for a story that is
+    //    already stored, so match on the title part before falling back to
+    //    the feed. This is the difference between a 10ms page and a 4s one:
+    //    the feed fallback re-downloads every source.
+    let prefixStory: Story | null = null;
+    try {
+      prefixStory = await getStoryBySlugPrefix(storyId);
+    } catch {
+      // Non-fatal; the feed fallback below still applies.
+    }
+    if (prefixStory) {
+      dbStory = prefixStory;
+      storyToRender = formatStory(prefixStory, colorForTopic(prefixStory.topic));
     } else {
-      // 3. Live feed story that hasn't been ingested yet
-      try {
-        const live = (await fetchAiNews()).find((s) => s.slug === storyId);
-        if (live) {
-          storyToRender = formatStory(live, colorForTopic(live.topic));
+      // 3. Curated seed story
+      const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
+      if (seedStory) {
+        storyToRender = formatStory(seedStory, colorForTopic(seedStory.topic));
+      } else {
+        // 4. Live feed story that hasn't been ingested yet
+        try {
+          const live = (await fetchAiNews()).find((s) => s.slug === storyId);
+          if (live) {
+            storyToRender = formatStory(live, colorForTopic(live.topic));
+          }
+        } catch {
+          // Ignore and fall through to not-found.
         }
-      } catch {
-        // Ignore and fall through to not-found.
       }
     }
   }

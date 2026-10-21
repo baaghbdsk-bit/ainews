@@ -242,9 +242,15 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
   // timezone skew). Clamp to today so they don't pin to the top of the
   // timeline as if they had already happened.
   const today = new Date().toISOString().slice(0, 10);
+  const publishedDate = eventDate;
   if (eventDate > today) eventDate = today;
 
-  const slug = `${slugify(title).slice(0, 70)}-${eventDate}-${shortHash(link)}`;
+  // The slug uses the publisher's own date, never the clamped one. Embedding
+  // "today" made the URL of a future-dated post change every day, which broke
+  // bookmarks, churned the sitemap, and stopped the row matching the slug
+  // already stored in the database - which sent every article open down the
+  // slow "re-fetch all the feeds" path.
+  const slug = `${slugify(title).slice(0, 70)}-${publishedDate}-${shortHash(link)}`;
   const now = new Date().toISOString();
 
   // Feeds sometimes publish title-only entries with no description/content.

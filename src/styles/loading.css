@@ -1,0 +1,118 @@
+/* Shared loading states: spinners and skeleton rows.
+ * Kept in one place so every route that streams its content in shows the
+ * same motion, rather than a blank frame while data resolves. */
+
+.app-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted, #a3a8bf);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-loading-panel {
+  justify-content: center;
+  min-height: 220px;
+  padding: 40px 22px;
+  border: 1px solid var(--rule, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  background: var(--panel-bg, rgba(255, 255, 255, 0.02));
+}
+
+.app-loading-inline {
+  padding: 12px 14px;
+}
+
+.app-loading-spinner {
+  flex-shrink: 0;
+  color: var(--violet, #a78bfa);
+  animation: app-loading-spin 900ms linear infinite;
+}
+
+.app-loading-label {
+  letter-spacing: 0.01em;
+}
+
+@keyframes app-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Skeleton rows, shaped like a timeline entry. */
+.app-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.app-skeleton-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 0;
+}
+
+.app-skeleton-node {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  animation: app-loading-pulse 1100ms ease-in-out infinite;
+}
+
+.app-skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  padding-top: 6px;
+}
+
+.app-skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  animation: app-loading-pulse 1100ms ease-in-out infinite;
+}
+
+.app-skeleton-line-sm {
+  height: 9px;
+  opacity: 0.65;
+  animation-delay: 120ms;
+}
+
+@keyframes app-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loading-spinner,
+  .app-skeleton-node,
+  .app-skeleton-line {
+    animation: none;
+  }
+}
+
+html[data-theme="light"] .app-loading {
+  color: #64748b;
+}
+
+html[data-theme="light"] .app-loading-panel {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+html[data-theme="light"] .app-skeleton-node,
+html[data-theme="light"] .app-skeleton-line {
+  background: #e8ecf3;
+}

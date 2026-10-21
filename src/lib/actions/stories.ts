@@ -10,6 +10,7 @@ import { STORIES_TAG } from '@/lib/cache-tags';
 import { isEditor } from '@/lib/auth/editor';
 import { extractCompany } from '@/lib/story-company';
 import { termPattern } from '@/lib/dossier/entities';
+import { slugTitlePart } from '@/lib/slug';
 import { isMissingSchemaError } from '@/lib/supabase/api-guard';
 import { supabaseAnonKey, supabaseUrl } from '@/lib/env';
 
@@ -136,6 +137,47 @@ export async function getStoryBySlug(slug: string): Promise<Story | null> {
     return (data as Story | null) ?? null;
   } catch (err) {
     console.error('Error fetching story:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch a story whose slug differs only in its date or hash component.
+ *
+ * A feed that revises a title, or a post whose publication date moves, mints a
+ * new slug for a story that is already stored. Matching on the title part
+ * finds the stored row - and with it the extracted body, key points and lead
+ * image - instead of falling through to re-fetching every feed.
+ */
+export async function getStoryBySlugPrefix(slug: string): Promise<Story | null> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(STORIES_TAG);
+
+  const prefix = slugTitlePart(slug);
+  if (!prefix || prefix === slug) return null;
+
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from('stories')
+      .select('*')
+      .like('slug', `${prefix}-%`)
+      .eq('status', 'published')
+      .order('event_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      if (!isMissingSchemaError(error)) {
+        console.error(`Failed to fetch story by prefix ${prefix}:`, error);
+      }
+      return null;
+    }
+
+    return (data as Story | null) ?? null;
+  } catch (err) {
+    console.error('Error fetching story by prefix:', err);
     return null;
   }
 }

@@ -135,9 +135,26 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
     if (!imageByTitleDate.has(titleDate)) imageByTitleDate.set(titleDate, story.image_url);
   }
 
+  // The stored row for a story carries the enriched content the ingest job
+  // produced: the extracted body, the key points, the deck, the lead image.
+  // It also carries the slug the story is published under, which is stable -
+  // a feed copy mints a fresh slug whenever the publisher moves a post's date,
+  // so the feed slug and the stored slug drift apart. Serving the feed's slug
+  // meant the article page could not find the stored row, and fell through to
+  // re-downloading every feed on each visit. Index the stored rows by URL so
+  // the surviving copy can adopt their slug and their enrichment.
+  const storedByUrl = new Map<string, Story>();
+  for (const story of dbStories ?? []) {
+    const urlKey = canonicalizeUrl(story.source_url);
+    if (!storedByUrl.has(urlKey)) storedByUrl.set(urlKey, story);
+  }
+
   const merged: Story[] = [];
   const seenUrls = new Set<string>();
   const seenTitleDate = new Set<string>();
+  // Votes are recorded against the slug the reader saw, so a story that adopts
+  // the stored row's slug must keep counting the votes under the slug it had.
+  const aliasSlugs = new Map<string, string[]>();
   const pushStory = (story: Story) => {
     const urlKey = canonicalizeUrl(story.source_url);
     const titleDate = `${story.title.trim().toLowerCase()}|${story.event_date}`;
@@ -147,14 +164,47 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
     if (!story.image_url) {
       story.image_url = imageByUrl.get(urlKey) ?? imageByTitleDate.get(titleDate);
     }
+
+    // Adopt the stored row's slug and enrichment when this copy came from the
+    // feed. The text still comes from the feed, so a corrected publisher
+    // summary still wins.
+    const stored = storedByUrl.get(urlKey);
+    if (stored && stored.slug !== story.slug) {
+      const previousSlug = story.slug;
+      story.slug = stored.slug;
+      aliasSlugs.set(stored.slug, [...(aliasSlugs.get(stored.slug) ?? []), previousSlug]);
+      if (!story.body && stored.body) story.body = stored.body;
+      if (!story.deck && stored.deck) story.deck = stored.deck;
+      if (!story.brief && stored.brief) story.brief = stored.brief;
+      if (!story.key_points?.length && stored.key_points?.length) {
+        story.key_points = stored.key_points;
+      }
+      if (!story.why_it_matters && stored.why_it_matters) {
+        story.why_it_matters = stored.why_it_matters;
+      }
+      if (!story.image_url && stored.image_url) story.image_url = stored.image_url;
+    }
+
     merged.push(story);
   };
   sources.forEach(pushStory);
   merged.sort((a, b) => b.event_date.localeCompare(a.event_date));
 
-  return merged.map((s) =>
-    formatStoryForDisplay(s, colorForTopic(s.topic), upvoteCounts[s.slug] ?? 0),
-  );
+  return merged.map((s) => {
+    // Count votes under the story's current slug, falling back to any slug it
+    // was previously published under so a rename never drops a reader's vote.
+    let upvotes = upvoteCounts[s.slug] ?? 0;
+    if (!upvotes) {
+      for (const alias of aliasSlugs.get(s.slug) ?? []) {
+        const aliased = upvoteCounts[alias];
+        if (aliased) {
+          upvotes = aliased;
+          break;
+        }
+      }
+    }
+    return formatStoryForDisplay(s, colorForTopic(s.topic), upvotes);
+  });
 }
 
 export interface TimelinePage {
