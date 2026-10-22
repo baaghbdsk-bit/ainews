@@ -4,7 +4,7 @@ import { after } from "next/server";
 import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getStoryBySlug, getStoryBySlugFresh, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
-import { fetchAiNews } from "@/lib/feeds/fetch-ai-news";
+import { getMergedTimeline } from "@/lib/timeline";
 import type { Story } from "@/lib/schemas/story";
 import { matchEntities } from "@/lib/dossier/entities";
 import { stories as seedStories } from "../../stories";
@@ -20,6 +20,15 @@ import { extractArticle, type ExtractOutcome } from "@/lib/feeds/extract-article
 import { extractiveSummary } from "@/lib/feeds/summarize";
 
 export const instant = false;
+
+/**
+ * Wait for the real page instead of a prerendered fallback.
+ *
+ * Without it, a slug that is not in the archive is answered with a 200
+ * fallback while the page is generated in the background, so a missing story
+ * never returns a real 404.
+ */
+export const ensureStatic = 'navigation';
 
 type StoryPageProps = {
   params: Promise<{ storyId: string }>;
@@ -37,76 +46,23 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: StoryPageProps): Promise<Metadata> {
   const { storyId } = await params;
 
-  // Mirror the page's lookup chain (db → db-by-prefix → seed → live). Calling
-  // notFound() here — before the response streams — is what makes a missing
-  // story return a real HTTP 404 instead of a streamed 200 with a "not found"
-  // title.
-  let dbStory: Story | null = null;
-  try {
-    dbStory = await getStoryBySlug(storyId);
-  } catch {
-    // During prerendering, Supabase may not be available; fall through.
-  }
-  if (!dbStory) {
-    try {
-      dbStory = await getStoryBySlugFresh(storyId);
-    } catch {
-      // Non-fatal; the feed fallback still applies.
-    }
-  }
-  if (!dbStory) {
-    try {
-      dbStory = await getStoryBySlugPrefix(storyId);
-    } catch {
-      // Non-fatal; the seed and feed fallbacks still apply.
-    }
-  }
-  if (dbStory) {
-    return {
-      title: `${dbStory.title} | NeuBench`,
-      description: dbStory.summary,
-      alternates: { canonical: `/story/${storyId}` },
-      openGraph: {
-        title: dbStory.title,
-        description: dbStory.summary,
-        type: "article",
-      },
-    };
-  }
+  // The same resolution the page uses. Calling notFound() here — before the
+  // response streams — is what makes a missing story return a real HTTP 404
+  // instead of a streamed 200 with a "not found" title. The lookup reads
+  // cached data, so it is quick enough to decide before the shell is sent.
+  const story = await resolveStory(storyId);
+  if (!story) notFound();
 
-  const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
-  if (seedStory) {
-    return {
-      title: `${seedStory.title} | NeuBench`,
-      description: seedStory.summary,
-      alternates: { canonical: `/story/${storyId}` },
-      openGraph: {
-        title: seedStory.title,
-        description: seedStory.summary,
-        type: "article",
-      },
-    };
-  }
-
-  try {
-    const live = (await fetchAiNews()).find((s) => s.slug === storyId);
-    if (live) {
-      return {
-        title: `${live.title} | NeuBench`,
-        description: live.summary,
-        alternates: { canonical: `/story/${storyId}` },
-        openGraph: {
-          title: live.title,
-          description: live.summary,
-          type: "article",
-        },
-      };
-    }
-  } catch {
-    // Feed unavailable; fall through to notFound.
-  }
-
-  notFound();
+  return {
+    title: `${story.title} | NeuBench`,
+    description: story.summary,
+    alternates: { canonical: `/story/${storyId}` },
+    openGraph: {
+      title: story.title,
+      description: story.summary,
+      type: "article",
+    },
+  };
 }
 
 /**
@@ -214,7 +170,18 @@ async function persistEnrichedStory(
  *
  * Best effort: a duplicate (the ingest job got there first) is ignored.
  */
-async function persistFeedStory(story: Story) {
+async function persistFeedStory(story: {
+  slug: string;
+  title: string;
+  summary: string;
+  significance: string;
+  company?: string | null;
+  source: string;
+  sourceUrl: string;
+  imageUrl?: string | null;
+  topic: Story['topic'];
+  date: string;
+}) {
   try {
     const { supabaseUrl, supabaseServiceRoleKey } = await import('@/lib/env');
     const { createClient } = await import('@supabase/supabase-js');
@@ -234,12 +201,12 @@ async function persistFeedStory(story: Story) {
           extractCompany({ title: story.title, summary: story.summary, source: story.source }) ??
           null,
         source: story.source,
-        source_url: story.source_url,
-        image_url: story.image_url ?? null,
+        source_url: story.sourceUrl,
+        image_url: story.imageUrl ?? null,
         topic: story.topic,
-        event_date: story.event_date,
+        event_date: story.date,
         status: 'published',
-        published_at: story.published_at ?? null,
+        published_at: null,
       },
       { onConflict: 'slug', ignoreDuplicates: true },
     );
@@ -248,64 +215,97 @@ async function persistFeedStory(story: Story) {
   }
 }
 
-export default async function StoryPage({ params }: StoryPageProps) {
-  const { storyId } = await params;
-
+/**
+ * Find a story by slug, wherever it lives.
+ *
+ * The order matters. The database first - it holds the extracted body, the
+ * key points and the lead image. Then the same story under a different slug,
+ * for when a feed has moved a post's date. Then the curated seeds. Then the
+ * merged timeline, which is the one cached copy of the live feeds: reading it
+ * is far cheaper than downloading every feed again for a single story.
+ */
+async function resolveStory(storyId: string): Promise<DisplayStory | null> {
+  // 1. The stored row.
   let dbStory: Story | null = null;
   try {
     dbStory = await getStoryBySlug(storyId);
-    // A cached miss can be stale: the story may have been stored a moment ago
-    // by the ingest job, or by the reader who opened it. Re-read it directly
-    // before giving up on the database.
-    if (!dbStory) dbStory = await getStoryBySlugFresh(storyId);
   } catch {
-    // During prerendering, Supabase may not be available — fall back below.
+    // Fall through; the timeline below may still have it.
+  }
+  if (dbStory) return formatStory(dbStory, colorForTopic(dbStory.topic));
+
+  // 2. The same story under a different slug.
+  try {
+    const prefixStory = await getStoryBySlugPrefix(storyId);
+    if (prefixStory) return formatStory(prefixStory, colorForTopic(prefixStory.topic));
+  } catch {
+    // Fall through.
   }
 
-  let storyToRender: DisplayStory | null = null;
+  // 3. A curated seed story.
+  const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
+  if (seedStory) return formatStory(seedStory, colorForTopic(seedStory.topic));
 
-  // 1. Persisted / ingested story
-  if (dbStory) {
-    storyToRender = formatStory(dbStory, colorForTopic(dbStory.topic));
-  } else {
-    // 2. The same story under a different slug. A feed that revises a title
-    //    or moves a publication date mints a new slug for a story that is
-    //    already stored, so match on the title part before falling back to
-    //    the feed. This is the difference between a 10ms page and a 4s one:
-    //    the feed fallback re-downloads every source.
-    let prefixStory: Story | null = null;
-    try {
-      prefixStory = await getStoryBySlugPrefix(storyId);
-    } catch {
-      // Non-fatal; the feed fallback below still applies.
+  // 4. The merged timeline, which already includes the live feeds. It is the
+  //    one cached copy of the feeds, so a lookup here is a cache read rather
+  //    than a download of every source - which is what keeps this fast enough
+  //    to decide the status before the response streams.
+  try {
+    const merged = await getMergedTimeline();
+    const found = merged.find((s) => s.slug === storyId);
+    if (found) {
+      // Store it so the corpus catches up with real traffic. `after` runs the
+      // write once the response is on its way and the platform waits for it; a
+      // bare floating promise is killed when the response completes.
+      after(async () => {
+        await persistFeedStory({
+          slug: found.slug,
+          title: found.title,
+          summary: found.summary,
+          significance: found.significance,
+          company: found.company ?? null,
+          source: found.source,
+          sourceUrl: found.sourceUrl,
+          imageUrl: found.imageUrl ?? null,
+          topic: found.topic,
+          date: found.date,
+        });
+      });
+
+      return {
+        ...found,
+        body: null,
+        brief: null,
+        key_points: found.keyPoints ?? null,
+        why_it_matters: found.whyItMatters ?? null,
+        deck: found.deck ?? null,
+        sourceUrl: found.sourceUrl,
+        source: found.source,
+        summary: found.summary,
+        significance: found.significance,
+      } as DisplayStory;
     }
-    if (prefixStory) {
-      dbStory = prefixStory;
-      storyToRender = formatStory(prefixStory, colorForTopic(prefixStory.topic));
-    } else {
-      // 3. Curated seed story
-      const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
-      if (seedStory) {
-        storyToRender = formatStory(seedStory, colorForTopic(seedStory.topic));
-      } else {
-        // 4. Live feed story that hasn't been ingested yet
-        try {
-          const live = (await fetchAiNews()).find((s) => s.slug === storyId);
-          if (live) {
-            storyToRender = formatStory(live, colorForTopic(live.topic));
-            // Store it so the next visit reads it from the database instead of
-            // re-downloading every feed. `after` runs the write once the
-            // response is on its way, and the platform waits for it; a bare
-            // floating promise is killed when the response completes.
-            after(async () => {
-              await persistFeedStory(live);
-            });
-          }
-        } catch {
-          // Ignore and fall through to not-found.
-        }
-      }
-    }
+  } catch {
+    // Fall through to not-found.
+  }
+
+  return null;
+}
+
+export default async function StoryPage({ params }: StoryPageProps) {
+  const { storyId } = await params;
+
+  // The same resolution the metadata uses, so the two never disagree.
+  const storyToRender = await resolveStory(storyId);
+
+  // The row this story was stored as, when there is one, so the enriched
+  // content can be written back to it.
+  let dbStoryId: string | null = null;
+  try {
+    const dbStory = await getStoryBySlug(storyId);
+    dbStoryId = dbStory?.id ?? null;
+  } catch {
+    // Not fatal.
   }
 
   if (!storyToRender) notFound();
@@ -368,7 +368,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
         };
 
         // Persist to Supabase so subsequent visitors load instantly from DB
-        const persistedStoryId = dbStory?.id;
+        const persistedStoryId = dbStoryId;
         if (persistedStoryId) {
           after(async () => {
             await persistEnrichedStory(
@@ -451,7 +451,7 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
         }
       />
 
-      <article className={`story-article article-${story.color}`}>
+      <article className={`story-article article-${story.color}`} data-tour-target="story-page">
         <div className="story-article-meta">
           <span className="story-article-topic">
             <span className={`topic-dot dot-${story.color}`} />

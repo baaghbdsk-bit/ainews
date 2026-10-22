@@ -138,6 +138,96 @@ export type Database = {
         };
         Relationships: [];
       };
+      story_upvotes: {
+        Row: {
+          id: string;
+          story_slug: string;
+          client_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          story_slug: string;
+          client_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          story_slug?: string;
+          client_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      story_vote_counts: {
+        Row: {
+          story_slug: string;
+          upvote_count: number;
+          updated_at: string;
+        };
+        Insert: {
+          story_slug: string;
+          upvote_count?: number;
+          updated_at?: string;
+        };
+        Update: {
+          story_slug?: string;
+          upvote_count?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      story_bookmarks: {
+        Row: {
+          id: string;
+          story_slug: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          story_slug: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          story_slug?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      feedback_submissions: {
+        Row: {
+          id: string;
+          category: string;
+          comment: string;
+          email: string | null;
+          client_id: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          category: string;
+          comment: string;
+          email?: string | null;
+          client_id?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          category?: string;
+          comment?: string;
+          email?: string | null;
+          client_id?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

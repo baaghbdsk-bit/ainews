@@ -1,11 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronUp } from 'lucide-react';
-import { getOrCreateClientId } from './client-id';
-
-const VOTES_KEY = 'signal_upvoted_stories';
-const VOTES_EVENT = 'signal_upvotes_changed';
+import { useAuth, whenAuthSettled } from '@/lib/auth/store';
+import { showGuestNotice } from '@/components/auth/guest-notice';
+import { getVoteStore, useVoteMirror } from './vote-store';
 
 interface UpvoteButtonProps {
   slug: string;
@@ -19,63 +18,6 @@ interface UpvoteButtonProps {
 interface VoteState {
   voted: boolean;
   count: number;
-}
-
-function readLocalVotes(): Set<string> {
-  if (typeof window === 'undefined') return new Set();
-  try {
-    const raw = localStorage.getItem(VOTES_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return new Set();
-    return new Set(parsed.filter((value): value is string => typeof value === 'string'));
-  } catch {
-    return new Set();
-  }
-}
-
-function writeLocalVotes(slugs: Set<string>) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(VOTES_KEY, JSON.stringify(Array.from(slugs)));
-    window.dispatchEvent(new CustomEvent(VOTES_EVENT));
-  } catch {
-    return;
-  }
-}
-
-function subscribeVotes(callback: () => void) {
-  window.addEventListener(VOTES_EVENT, callback);
-  window.addEventListener('storage', callback);
-  return () => {
-    window.removeEventListener(VOTES_EVENT, callback);
-    window.removeEventListener('storage', callback);
-  };
-}
-
-function getVotesSnapshot(): string {
-  if (typeof window === 'undefined') return '[]';
-  try {
-    return localStorage.getItem(VOTES_KEY) || '[]';
-  } catch {
-    return '[]';
-  }
-}
-
-function getVotesServerSnapshot(): string {
-  return '[]';
-}
-
-function useLocalVotes(): Set<string> {
-  const raw = useSyncExternalStore(subscribeVotes, getVotesSnapshot, getVotesServerSnapshot);
-  return useMemo(() => {
-    try {
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return new Set<string>();
-      return new Set<string>(parsed.filter((value): value is string => typeof value === 'string'));
-    } catch {
-      return new Set<string>();
-    }
-  }, [raw]);
 }
 
 export function UpvoteButton({
@@ -96,7 +38,10 @@ export function UpvoteButton({
   const requestIdRef = useRef(0);
   const syncedPropsRef = useRef({ count: initialCount, voted: initialVoted });
   const interactedRef = useRef(false);
-  const localVotes = useLocalVotes();
+  // The identity the vote is recorded against: the account when signed in.
+  const { clientId, status, user } = useAuth();
+  const store = useMemo(() => getVoteStore(clientId), [clientId]);
+  const localVotes = useVoteMirror(clientId);
   const parentOwnsVote = initialVoted !== undefined;
 
   const applyVoteState = useCallback((next: VoteState) => {
@@ -112,12 +57,15 @@ export function UpvoteButton({
     [applyVoteState, onVoteChange, slug],
   );
 
-  const applyLocalVote = useCallback((targetSlug: string, voted: boolean) => {
-    const votes = readLocalVotes();
-    if (voted) votes.add(targetSlug);
-    else votes.delete(targetSlug);
-    writeLocalVotes(votes);
-  }, []);
+  const applyLocalVote = useCallback(
+    (targetSlug: string, voted: boolean) => {
+      const votes = store.read();
+      if (voted) votes.add(targetSlug);
+      else votes.delete(targetSlug);
+      store.write(votes);
+    },
+    [store],
+  );
 
   useEffect(() => {
     const last = syncedPropsRef.current;
@@ -144,46 +92,61 @@ export function UpvoteButton({
 
   useEffect(() => {
     if (parentOwnsVote) return;
-    const clientId = getOrCreateClientId();
     if (!clientId) return;
 
     let cancelled = false;
-    fetch(`/api/upvotes?clientId=${encodeURIComponent(clientId)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((payload) => {
-        if (cancelled || !payload || typeof payload !== 'object') return;
 
-        const serverCount = payload.counts?.[slug];
-        if (typeof serverCount === 'number' && !interactedRef.current) {
-          const current = stateRef.current;
-          if (current.count !== serverCount) {
-            applyVoteState({ voted: current.voted, count: serverCount });
-          }
-        }
+    const load = async () => {
+      // Let a sign-in finish moving the guest's votes first, so the reader's
+      // own votes are not read as empty.
+      await whenAuthSettled();
+      if (cancelled) return;
 
-        if (!Array.isArray(payload.userVotes)) return;
-        const votes = readLocalVotes();
-        let changed = false;
-        for (const votedSlug of payload.userVotes) {
-          if (typeof votedSlug === 'string' && !votes.has(votedSlug)) {
-            votes.add(votedSlug);
-            changed = true;
-          }
+      const res = await fetch(`/api/upvotes?clientId=${encodeURIComponent(clientId)}`);
+      if (!res.ok || cancelled) return;
+      const payload = await res.json();
+      if (cancelled || !payload || typeof payload !== 'object') return;
+
+      const serverCount = payload.counts?.[slug];
+      if (typeof serverCount === 'number' && !interactedRef.current) {
+        const current = stateRef.current;
+        if (current.count !== serverCount) {
+          applyVoteState({ voted: current.voted, count: serverCount });
         }
-        if (changed) writeLocalVotes(votes);
-      })
-      .catch(() => undefined);
+      }
+
+      if (!Array.isArray(payload.userVotes)) return;
+      const votes = store.read();
+      let changed = false;
+      for (const votedSlug of payload.userVotes) {
+        if (typeof votedSlug === 'string' && !votes.has(votedSlug)) {
+          votes.add(votedSlug);
+          changed = true;
+        }
+      }
+      if (changed) store.write(votes);
+    };
+
+    load().catch(() => undefined);
 
     return () => {
       cancelled = true;
     };
-  }, [applyVoteState, parentOwnsVote, slug]);
+  }, [applyVoteState, clientId, parentOwnsVote, slug, store]);
 
-  const voted = parentOwnsVote ? state.voted : localVotes.has(slug);
+  // A guest can read the count but has no vote of their own to show.
+  const voted = user ? (parentOwnsVote ? state.voted : localVotes.has(slug)) : false;
 
   const handleVote = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Voting is an account action. A guest gets a quiet nudge instead of a
+    // dialog being forced open over the story.
+    if (status !== 'signed-in' || !user) {
+      if (status === 'guest') showGuestNotice('Sign in to vote on stories.');
+      return;
+    }
 
     // One request at a time: a double click cannot toggle twice.
     if (pendingRef.current) return;
@@ -206,7 +169,6 @@ export function UpvoteButton({
     commit(next);
     applyLocalVote(slug, next.voted);
 
-    const clientId = getOrCreateClientId();
     if (!clientId) {
       if (requestId === requestIdRef.current) {
         pendingRef.current = false;
@@ -254,12 +216,17 @@ export function UpvoteButton({
     <button
       type="button"
       onClick={handleVote}
-      aria-label={`${voted ? 'Remove upvote' : 'Upvote'} story (${count} votes)`}
+      data-tour-target="vote"
+      aria-label={
+        user
+          ? `${voted ? 'Remove upvote' : 'Upvote'} story (${count} votes)`
+          : `Upvote story (${count} votes) - sign in to vote`
+      }
       aria-pressed={voted}
       aria-busy={isPending}
       disabled={isPending}
       className={`story-action-btn upvote-btn ${voted ? 'is-active' : ''} ${isPending ? 'is-pending' : ''} ${className}`}
-      title={voted ? 'Upvoted (click to undo)' : 'Upvote this story'}
+      title={!user ? 'Sign in to vote' : voted ? 'Upvoted (click to undo)' : 'Upvote this story'}
     >
       <ChevronUp
         size={isSmall ? 15 : 18}

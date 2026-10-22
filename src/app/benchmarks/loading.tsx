@@ -1,5 +1,3 @@
-import { LoadingSpinner } from '@/components/loading';
-
 /**
  * Shown while the benchmarks catalogue resolves.
  */

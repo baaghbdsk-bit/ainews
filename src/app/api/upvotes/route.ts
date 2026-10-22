@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { supabaseUrl, supabaseServiceRoleKey } from '@/lib/env';
+import { getSessionUser } from '@/lib/auth/session-server';
 import {
   clientIp,
   isMissingFunctionError,
@@ -25,7 +26,7 @@ const TrimmedString = (min: number, max: number) =>
 
 const UpvoteSchema = z.object({
   storySlug: TrimmedString(1, 200),
-  clientId: TrimmedString(1, 128),
+  clientId: TrimmedString(1, 128).optional(),
   action: ActionSchema.optional(),
 });
 
@@ -254,7 +255,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const clientId = parsed.data.clientId ?? '';
+  // Votes belong to an account. Read from the session, never from the query,
+  // so one reader cannot inspect another's votes.
+  const sessionUser = await getSessionUser();
+  const clientId = sessionUser?.id ?? '';
   const supabase = getAdminClient();
   if (!supabase) return jsonNoStore(memorySnapshot(clientId));
 
@@ -311,7 +315,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { storySlug, clientId, action = 'toggle' } = parsed.data;
+  const { storySlug, action = 'toggle' } = parsed.data;
+
+  // Voting is an account action. A guest can read counts, but the vote itself
+  // is refused rather than recorded against a browser token.
+  const sessionUser = await getSessionUser();
+  if (!sessionUser) {
+    return jsonNoStore({ error: 'Sign in to vote' }, { status: 401 });
+  }
+  const clientId = sessionUser.id;
 
   const ipLimit = rateLimit(`upvotes:post:ip:${clientIp(request)}`, POST_LIMIT * 2, POST_WINDOW_MS);
   if (!ipLimit.allowed) return tooManyRequests(ipLimit.retryAfterSeconds);

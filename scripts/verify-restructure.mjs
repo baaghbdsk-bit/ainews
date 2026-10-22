@@ -83,12 +83,23 @@ if (!up) {
 }
 
 console.log("\n=== 4. routes ===");
+// Use a story the timeline is serving right now, so the check does not rot
+// when a slug changes.
+let liveSlug = null;
+try {
+  const api = await (await fetch(`${BASE}/api/stories?limit=1`)).json();
+  liveSlug = api.stories?.[0]?.slug ?? null;
+} catch {}
+if (!liveSlug) {
+  liveSlug = "introducing-olmo-core-3-open-scalable-training-infrastructure-for-larg-2026-10-31-mh6gjm";
+}
+
 const ROUTES = [
   ["/", 200],
   ["/about", 200],
   ["/benchmarks", 200],
   ["/topic/anthropic", 200],
-  ["/story/introducing-olmo-core-3-open-scalable-training-infrastructure-for-larg-2026-10-21-mh6gjm", 200],
+  [`/story/${liveSlug}`, 200],
   ["/story/definitely-not-a-real-story-zzz", 404],
   ["/topic/definitely-not-a-real-topic-zzz", 404],
   ["/icon.svg", 200],

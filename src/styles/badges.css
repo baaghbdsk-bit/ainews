@@ -37,9 +37,9 @@
 }
 
 html[data-theme="light"] .story-saved-pill {
-  background: #D1FAE5 !important;
-  border-color: #6EE7B7 !important;
-  color: #065F46 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 /* Trending Rank Badge: Flame icon & clean text */
@@ -57,31 +57,31 @@ html[data-theme="light"] .story-saved-pill {
 }
 
 .trending-rank-badge.rank-1 {
-  background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%) !important;
-  color: #1A1202 !important;
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
-  border: 1px solid #FDE68A !important;
+  background: #B45309 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 14px rgba(180, 83, 9, 0.4) !important;
+  border: 1px solid #B45309 !important;
 }
 
 .trending-rank-badge.rank-2 {
-  background: linear-gradient(135deg, #F1F5F9 0%, #94A3B8 100%) !important;
+  background: #F1F5F9 !important;
   color: #0F172A !important;
-  box-shadow: 0 0 12px rgba(226, 232, 240, 0.4) !important;
-  border: 1px solid #FFFFFF !important;
+  box-shadow: 0 0 12px rgba(226, 232, 240, 0.2) !important;
+  border: 1px solid #CBD5E1 !important;
 }
 
 .trending-rank-badge.rank-3 {
-  background: linear-gradient(135deg, #FB923C 0%, #C2410C 100%) !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 0 12px rgba(251, 146, 60, 0.45) !important;
-  border: 1px solid #FDBA74 !important;
+  background: #DBEAFE !important;
+  color: #1E3A8A !important;
+  box-shadow: 0 0 12px rgba(30, 58, 138, 0.3) !important;
+  border: 1px solid #BFDBFE !important;
 }
 
 .trending-rank-badge.rank-other {
-  background: rgba(245, 158, 11, 0.12) !important;
-  color: #FBBF24 !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15) !important;
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 0 10px rgba(30, 58, 138, 0.1) !important;
 }
 
 

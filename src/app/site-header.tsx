@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NeuBenchLogo } from "@/components/neubench-logo";
+import { AccountButton } from "@/components/auth/account-button";
 
 /**
  * The site header shell, shared by the timeline, the article page, the loading
@@ -29,6 +30,9 @@ export function SiteHeader({
         </span>
       </Link>
       {children}
+      <div className="account-slot">
+        <AccountButton />
+      </div>
       {right}
     </header>
   );

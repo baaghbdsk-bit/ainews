@@ -255,28 +255,28 @@
 }
 
 .sidebar-nav-item.is-active .sidebar-nav-icon {
-  background: rgba(139, 92, 246, 0.25);
-  color: #DDD6FE;
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .sidebar-nav-item.item-models.is-active .sidebar-nav-icon {
-  background: rgba(167, 139, 250, 0.25);
-  color: #A78BFA;
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .sidebar-nav-item.item-products.is-active .sidebar-nav-icon {
-  background: rgba(45, 212, 191, 0.25);
-  color: #2DD4BF;
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .sidebar-nav-item.item-research.is-active .sidebar-nav-icon {
-  background: rgba(251, 191, 36, 0.25);
-  color: #FBBF24;
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .sidebar-nav-item.item-policy.is-active .sidebar-nav-icon {
-  background: rgba(122, 165, 255, 0.25);
-  color: #7AA5FF;
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .sidebar-nav-info {
@@ -311,57 +311,57 @@
 }
 
 .sidebar-badge-pill.pill-digest {
-  background: rgba(168, 85, 247, 0.2);
-  color: #C084FC;
-  border: 1px solid rgba(168, 85, 247, 0.38);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-hot {
-  background: rgba(245, 158, 11, 0.2);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: var(--trending-light);
+  color: var(--trending);
+  border: 1px solid rgba(180, 83, 9, 0.35);
 }
 
 .sidebar-badge-pill.pill-count {
-  background: rgba(139, 92, 246, 0.25);
-  color: #C4B5FD;
-  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-models {
-  background: rgba(167, 139, 250, 0.16);
-  color: #A78BFA;
-  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-products {
-  background: rgba(45, 212, 191, 0.16);
-  color: #2DD4BF;
-  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-research {
-  background: rgba(251, 191, 36, 0.16);
-  color: #FBBF24;
-  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-policy {
-  background: rgba(122, 165, 255, 0.16);
-  color: #7AA5FF;
-  border: 1px solid rgba(122, 165, 255, 0.35);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-benchmarks {
-  background: rgba(139, 92, 246, 0.18);
-  color: #C084FC;
-  border: 1px solid rgba(139, 92, 246, 0.38);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(30, 58, 138, 0.25);
 }
 
 .sidebar-badge-pill.pill-feedback {
-  background: rgba(56, 189, 248, 0.18);
-  color: #38BDF8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(71, 85, 105, 0.12);
+  color: var(--muted);
+  border: 1px solid rgba(71, 85, 105, 0.25);
 }
 
 .sidebar-divider {

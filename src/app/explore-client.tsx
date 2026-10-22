@@ -40,15 +40,15 @@ import {
   type TimelineFacets,
 } from "@/lib/timeline-shared";
 import { useTheme } from "@/lib/theme";
+import { useAuth, whenAuthSettled } from "@/lib/auth/store";
 import {
   UpvoteButton,
   BookmarkButton,
   ShareButton,
   useBookmarks,
-  saveLocalBookmarks,
-  getOrCreateClientId,
 } from "@/components/story-actions";
 import { performSemanticSearch } from "@/lib/semantic-search";
+import { AccountButton } from "@/components/auth/account-button";
 import {
   HeroLatestArt,
   HeroTrendingArt,
@@ -625,10 +625,20 @@ function FilterFields({
 
 type FeedMode = "latest" | "digest" | "trending" | "saved" | "feedback" | "about" | "benchmarks";
 
-function getTrendingScore(story: StoryDisplay, upvotes: number): number {
+// Scores are relative to the newest story rather than the wall clock, so the
+// server HTML and the hydrating client agree on the ranking.
+function getTrendingReferenceTime(stories: StoryDisplay[]): number {
+  let latest = 0;
+  for (const story of stories) {
+    const time = new Date(story.date).getTime();
+    if (Number.isFinite(time) && time > latest) latest = time;
+  }
+  return latest;
+}
+
+function getTrendingScore(story: StoryDisplay, upvotes: number, referenceTime: number): number {
   const publishedDate = new Date(story.date).getTime();
-  const now = Date.now();
-  const hoursAgo = Math.max(1, (now - publishedDate) / (1000 * 60 * 60));
+  const hoursAgo = Math.max(1, (referenceTime - publishedDate) / (1000 * 60 * 60));
   const basePoints = (upvotes || 0) * 10 + 1;
   return basePoints / Math.pow(hoursAgo / 24 + 1, 1.25);
 }
@@ -926,8 +936,8 @@ function AboutBriefingView({
             <p>NeuBench runs continuous automated ingest pipelines that crawl major pre-print archives, code repositories, and lab blogs hourly. Trending velocity scores update in real-time as readers interact.</p>
           </div>
           <div className="faq-card">
-            <h5>Do I need an account to upvote or bookmark?</h5>
-            <p>No. NeuBench uses zero-friction client identity. Your votes and bookmarks persist in your browser across sessions with instant optimistic feedback.</p>
+              <h5>Do I need an account to upvote or bookmark?</h5>
+              <p>Every story is free to read as a guest. An account is needed to vote and save, so your votes and saved stories follow you across devices.</p>
           </div>
           <div className="faq-card">
             <h5>How does the Trending velocity formula work?</h5>
@@ -988,7 +998,10 @@ export function ExploreClient({
   const [feedMode, setFeedMode] = useState<FeedMode>("latest");
   const [upvoteCounts, setUpvoteCounts] = useState<Record<string, number>>({});
   const [userVotes, setUserVotes] = useState<Set<string>>(new Set());
-  const [bookmarks] = useBookmarks();
+  const [bookmarks, , replaceBookmarks] = useBookmarks();
+  // The identity votes are recorded against: the account when signed in, the
+  // local guest token otherwise.
+  const { clientId: authClientId, user: authUser, openAuth } = useAuth();
 
   // The server renders one page so the document stays small and the first
   // paint is quick. The rest of the merge streams in afterwards, so filtering
@@ -1045,9 +1058,9 @@ export function ExploreClient({
       }
     });
     if (hasStale) {
-      saveLocalBookmarks(cleaned);
+      replaceBookmarks(cleaned);
     }
-  }, [allStories, bookmarks]);
+  }, [allStories, bookmarks, replaceBookmarks]);
 
   // Draft filter state for uncommitted adjustments (only committed upon "Apply")
   const [draftYear, setDraftYear] = useState<string>(activeYear);
@@ -1165,23 +1178,34 @@ export function ExploreClient({
     if (isMobileSearchOpen) searchInputRef.current?.focus();
   }, [isMobileSearchOpen]);
 
-  // Load upvotes on mount
+  // Load upvotes on mount, and again whenever the identity changes: a
+  // signed-in reader's votes are their own, not the guest token's.
   useEffect(() => {
-    const clientId = getOrCreateClientId();
-    if (!clientId) return;
+    if (!authClientId) return;
 
-    fetch(`/api/upvotes?clientId=${encodeURIComponent(clientId)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.counts && typeof data.counts === "object") {
-          setUpvoteCounts(data.counts);
-        }
-        if (Array.isArray(data.userVotes)) {
-          setUserVotes(new Set(data.userVotes));
-        }
-      })
-      .catch((err) => console.error("Failed to load upvotes:", err));
-  }, []);
+    let cancelled = false;
+    const load = async () => {
+      // A sign-in is still transferring the guest's votes; reading first
+      // would mark them all as not voted.
+      await whenAuthSettled();
+      if (cancelled) return;
+      const res = await fetch(`/api/upvotes?clientId=${encodeURIComponent(authClientId)}`);
+      const data = await res.json();
+      if (cancelled) return;
+      if (data.counts && typeof data.counts === "object") {
+        setUpvoteCounts(data.counts);
+      }
+      if (Array.isArray(data.userVotes)) {
+        setUserVotes(new Set(data.userVotes));
+      }
+    };
+
+    load().catch((err) => console.error("Failed to load upvotes:", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authClientId]);
 
   const handleVoteChange = useCallback((slug: string, voted: boolean, newCount: number) => {
     setUpvoteCounts((prev) => ({ ...prev, [slug]: newCount }));
@@ -1194,6 +1218,8 @@ export function ExploreClient({
   }, []);
 
   // ── Client-side filtering & Semantic AI Search ──────────
+  const trendingReferenceTime = useMemo(() => getTrendingReferenceTime(allStories), [allStories]);
+
   const { filtered, semanticConcepts } = useMemo(() => {
     let result = (feedMode === "saved")
       ? validSavedStories
@@ -1237,28 +1263,28 @@ export function ExploreClient({
       }
     } else if (feedMode === "trending") {
       result = [...result].sort((a, b) => {
-        const scoreA = getTrendingScore(a, upvoteCounts[a.slug] || 0);
-        const scoreB = getTrendingScore(b, upvoteCounts[b.slug] || 0);
+        const scoreA = getTrendingScore(a, upvoteCounts[a.slug] || 0, trendingReferenceTime);
+        const scoreB = getTrendingScore(b, upvoteCounts[b.slug] || 0, trendingReferenceTime);
         return scoreB - scoreA;
       });
     }
 
     return { filtered: result, semanticConcepts: matchedConcepts };
-  }, [allStories, activeTopic, activeYear, activeMonth, activeCompany, search, feedMode, upvoteCounts, validSavedStories]);
+  }, [allStories, activeTopic, activeYear, activeMonth, activeCompany, search, feedMode, upvoteCounts, validSavedStories, trendingReferenceTime]);
 
   // Compute top trending stories map (slug -> rank) so trending indicators can be shown on any view
   const topTrendingSlugs = useMemo(() => {
     const sorted = [...allStories]
       .sort((a, b) => {
-        const scoreA = getTrendingScore(a, upvoteCounts[a.slug] || 0);
-        const scoreB = getTrendingScore(b, upvoteCounts[b.slug] || 0);
+        const scoreA = getTrendingScore(a, upvoteCounts[a.slug] || 0, trendingReferenceTime);
+        const scoreB = getTrendingScore(b, upvoteCounts[b.slug] || 0, trendingReferenceTime);
         return scoreB - scoreA;
       })
       .slice(0, 10);
     const map = new Map<string, number>();
     sorted.forEach((story, idx) => map.set(story.slug, idx + 1));
     return map;
-  }, [allStories, upvoteCounts]);
+  }, [allStories, upvoteCounts, trendingReferenceTime]);
 
   const [activeTimelineIndex, setActiveTimelineIndex] = useState(0);
   const timelineRef = useRef<HTMLElement>(null);
@@ -1503,8 +1529,12 @@ export function ExploreClient({
         </label>
 
         <div className="header-actions">
+          {/* The account is optional - a guest reads the timeline exactly the
+              same way, so this is a plain button and never a modal on load. */}
+          <AccountButton />
+
           {/* Header Filter Button & Anchored Dropdown Popover */}
-          <div className="header-filter-wrapper" ref={filterWrapperRef}>
+          <div className="header-filter-wrapper" ref={filterWrapperRef} data-tour-target="filter">
             <button
               ref={headerFilterBtnRef}
               aria-controls="header-filter-popover"
@@ -2257,7 +2287,7 @@ export function ExploreClient({
                   {resultCountLabel}
                 </span>
               </div>
-              <div className="timeline-list">
+              <div className="timeline-list" data-tour-target="timeline">
                 {stories.length ? (
                 <>
                   {stories.map((story, index) => (
@@ -2283,12 +2313,24 @@ export function ExploreClient({
                   {feedMode === "saved" ? (
                     <>
                       <Bookmark size={24} className="text-amber-400/80" />
-                      <p>No saved moments yet.</p>
+                      <p>{authUser ? "No saved moments yet." : "Saved stories need an account."}</p>
                       <p style={{ fontSize: "12px", color: "var(--muted)", margin: "4px 0 12px" }}>
-                        Click the bookmark icon on any story to save it for later.
+                        {authUser
+                          ? "Click the bookmark icon on any story to save it for later."
+                          : "Sign in to save stories and keep them across your devices."}
                       </p>
-                      <button type="button" onClick={() => { setFeedMode("latest"); setActiveTopic("all"); }}>
-                        Explore latest stories
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!authUser) {
+                            openAuth();
+                            return;
+                          }
+                          setFeedMode("latest");
+                          setActiveTopic("all");
+                        }}
+                      >
+                        {authUser ? "Explore latest stories" : "Sign in or create account"}
                       </button>
                     </>
                   ) : (

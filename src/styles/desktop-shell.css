@@ -72,24 +72,47 @@
    ========================================================================== */
 
 .archive-page {
-  --shell-bg: #080A12;
-  --shell-surface: #0D101C;
-  --shell-surface-2: #151B30;
-  --shell-line: #343B55;
-  --shell-line-2: #414967;
-  --shell-line-hover: #6D5AA8;
-  --shell-line-focus: #A78BFA;
-  --shell-text: #F4F3FA;
-  --shell-muted: #A3A8BF;
-  --shell-faint: #78819C;
-  --shell-accent: #8B5CF6;
-  --shell-accent-2: #C084FC;
-  --shell-accent-soft: #8B5CF62e;
+  --shell-bg: #020617;
+  --shell-surface: #0F172A;
+  --shell-surface-2: #1E293B;
+  --shell-line: #334155;
+  --shell-line-2: #475569;
+  --shell-line-hover: #60A5FA;
+  --shell-line-focus: #1E3A8A;
+  --shell-text: #F8FAFC;
+  --shell-muted: #CBD5E1;
+  --shell-faint: #94A3B8;
+  --shell-accent: #1E3A8A;
+  --shell-accent-2: #60A5FA;
+  --shell-accent-soft: #1E3A8A2e;
   background-color: var(--shell-bg);
   background-image:
-    radial-gradient(1100px 520px at 10% -10%, #8B5CF61f, transparent 62%),
-    radial-gradient(900px 460px at 92% -14%, #C084FC14, transparent 60%),
-    radial-gradient(#3A30601f 0.7px, transparent 0.7px);
+    radial-gradient(1100px 520px at 10% -10%, #1E3A8A1a, transparent 62%),
+    radial-gradient(900px 460px at 92% -14%, #60A5FA0a, transparent 60%),
+    radial-gradient(#334155 0.7px, transparent 0.7px);
+  background-size: auto, auto, 8px 8px;
+  color: var(--shell-text);
+}
+
+html[data-theme="light"] .archive-page {
+  --shell-bg: #FFFFFF;
+  --shell-surface: #F8FAFC;
+  --shell-surface-2: #F1F5F9;
+  --shell-line: #E2E8F0;
+  --shell-line-2: #CBD5E1;
+  --shell-line-hover: #3B82F6;
+  --shell-line-focus: #1E3A8A;
+  --shell-text: #0F172A;
+  --shell-muted: #475569;
+  --shell-faint: #94A3B8;
+  --shell-accent: #1E3A8A;
+  --shell-accent-2: #3B82F6;
+  --shell-accent-soft: #1E3A8A2e;
+  background-color: var(--shell-bg);
+  background-image:
+    radial-gradient(1100px 520px at 10% -10%, #1E3A8A1a, transparent 62%),
+    radial-gradient(900px 460px at 92% -14%, #3B82F60a, transparent 60%),
+    radial-gradient(#E2E8F0 0.7px, transparent 0.7px);
   background-size: auto, auto, 8px 8px;
   color: var(--shell-text);
 }
@@ -1106,7 +1129,7 @@ html[data-theme="light"] .active-filter-chip:hover {
 }
 
 .mobile-bottom-nav button.item-benchmarks.is-active {
-  color: #F472B6;
+  color: #1E3A8A;
 }
 
 .mobile-bottom-nav button.item-saved.is-active {
@@ -1480,24 +1503,15 @@ html[data-theme="light"] .hero-title-accent-purple {
   background: linear-gradient(96deg, #7C3AED, #6D28D9 60%, #A21CAF 100%);
 }
 
-html[data-theme="light"] .hero-title-accent-sky {
-  background: linear-gradient(96deg, #0369A1, #0E7490 60%, #1D4ED8 100%);
-}
-
-html[data-theme="light"] .hero-title-accent-amber {
-  background: linear-gradient(96deg, #B45309, #C2410C 78%);
-}
-
-html[data-theme="light"] .hero-title-accent-emerald {
-  background: linear-gradient(96deg, #047857, #065F46 48%, #064E3B 88%);
-}
-
-html[data-theme="light"] .hero-title-accent-violet {
-  background: linear-gradient(96deg, #6D28D9, #7C3AED 60%, #A21CAF 100%);
-}
-
+html[data-theme="light"] .hero-title-accent-sky,
+html[data-theme="light"] .hero-title-accent-amber,
+html[data-theme="light"] .hero-title-accent-emerald,
+html[data-theme="light"] .hero-title-accent-violet,
 html[data-theme="light"] .hero-title-accent-cyan {
-  background: linear-gradient(96deg, #0E7490, #155E75 78%);
+  background: linear-gradient(96deg, #1E3A8A, #3B82F6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 html[data-theme="light"] .hero-title-accent,

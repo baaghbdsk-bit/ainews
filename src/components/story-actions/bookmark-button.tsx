@@ -1,76 +1,53 @@
 'use client';
 
-import { useSyncExternalStore, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Bookmark } from 'lucide-react';
+import { useAuth } from '@/lib/auth/store';
+import { showGuestNotice } from '@/components/auth/guest-notice';
+import { getBookmarkStore, hydrateBookmarks, useBookmarkMirror } from './bookmark-store';
 
-const BOOKMARKS_KEY = 'signal_bookmarked_stories';
+/** A guest has no saved stories: saving is an account action. */
+const NO_BOOKMARKS = new Set<string>();
 
-export function getLocalBookmarks(): Set<string> {
-  if (typeof window === 'undefined') return new Set();
-  try {
-    const raw = localStorage.getItem(BOOKMARKS_KEY);
-    if (!raw) return new Set();
-    const arr = JSON.parse(raw);
-    return new Set(Array.isArray(arr) ? arr : []);
-  } catch {
-    return new Set();
-  }
-}
+/**
+ * The account's saved stories, a way to add or remove one, and a way to
+ * replace the whole set.
+ *
+ * Saving needs an account, so a guest reads as an empty set and is offered
+ * the sign-in choice instead of a silent no-op.
+ */
+export function useBookmarks(): [Set<string>, (slug: string) => void, (slugs: Set<string>) => void] {
+  const { clientId, user, status } = useAuth();
+  const store = useMemo(() => getBookmarkStore(clientId), [clientId]);
+  const bookmarks = useBookmarkMirror(clientId);
 
-export function saveLocalBookmarks(slugs: Set<string>) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(Array.from(slugs)));
-    window.dispatchEvent(new CustomEvent('signal_bookmarks_changed'));
-  } catch {
-    // Ignore storage quota
-  }
-}
+  useEffect(() => {
+    if (!user || status !== 'signed-in') return;
+    void hydrateBookmarks(clientId);
+  }, [clientId, status, user]);
 
-function subscribe(callback: () => void) {
-  window.addEventListener('signal_bookmarks_changed', callback);
-  window.addEventListener('storage', callback);
-  return () => {
-    window.removeEventListener('signal_bookmarks_changed', callback);
-    window.removeEventListener('storage', callback);
-  };
-}
+  const toggleBookmark = useCallback(
+    (slug: string) => {
+      if (status !== 'signed-in' || !user) {
+        if (status === 'guest') showGuestNotice('Sign in to save stories.');
+        return;
+      }
+      const current = store.read();
+      if (current.has(slug)) current.delete(slug);
+      else current.add(slug);
+      store.write(current);
+    },
+    [status, store, user],
+  );
 
-function getSnapshot(): string {
-  if (typeof window === 'undefined') return '[]';
-  try {
-    return localStorage.getItem(BOOKMARKS_KEY) || '[]';
-  } catch {
-    return '[]';
-  }
-}
+  const replaceBookmarks = useCallback(
+    (slugs: Set<string>) => {
+      store.write(slugs);
+    },
+    [store],
+  );
 
-function getServerSnapshot(): string {
-  return '[]';
-}
-
-export function useBookmarks(): [Set<string>, (slug: string) => void] {
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const bookmarks = useMemo(() => {
-    try {
-      const arr = JSON.parse(raw);
-      return new Set<string>(Array.isArray(arr) ? arr : []);
-    } catch {
-      return new Set<string>();
-    }
-  }, [raw]);
-
-  const toggleBookmark = useCallback((slug: string) => {
-    const current = getLocalBookmarks();
-    if (current.has(slug)) {
-      current.delete(slug);
-    } else {
-      current.add(slug);
-    }
-    saveLocalBookmarks(current);
-  }, []);
-
-  return [bookmarks, toggleBookmark];
+  return [user ? bookmarks : NO_BOOKMARKS, toggleBookmark, replaceBookmarks];
 }
 
 interface BookmarkButtonProps {
@@ -86,14 +63,57 @@ export function BookmarkButton({
   size = 'sm',
   className = '',
 }: BookmarkButtonProps) {
-  const [bookmarks, toggleBookmark] = useBookmarks();
-  const bookmarked = bookmarks.has(slug);
+  const { user, clientId, status } = useAuth();
+  const store = useMemo(() => getBookmarkStore(clientId), [clientId]);
+  const bookmarks = useBookmarkMirror(clientId);
+  const bookmarked = user ? bookmarks.has(slug) : false;
 
-  const handleToggle = (e: React.MouseEvent) => {
+  // A signed-in reader's saved stories live on the account, so the local copy
+  // is reconciled when the identity changes. The reconciliation is shared by
+  // every Save button on the page.
+  useEffect(() => {
+    if (!user || status !== 'signed-in') return;
+    void hydrateBookmarks(clientId);
+  }, [clientId, status, user]);
+
+  const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleBookmark(slug);
-    onBookmarkChange?.(slug, !bookmarked);
+
+    // Saving is an account action. A guest gets a quiet nudge instead of a
+    // dialog being forced open over the story.
+    if (status !== 'signed-in' || !user) {
+      if (status === 'guest') showGuestNotice('Sign in to save stories.');
+      return;
+    }
+
+    const current = store.read();
+    const wasBookmarked = current.has(slug);
+    if (wasBookmarked) current.delete(slug);
+    else current.add(slug);
+    store.write(current);
+    onBookmarkChange?.(slug, !wasBookmarked);
+
+    if (!user) return;
+
+    // Keep the account in step, but never block the local change on it.
+    try {
+      const res = await fetch('/api/bookmarks', {
+        method: wasBookmarked ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      });
+      if (!res.ok) throw new Error(`Bookmark request failed with ${res.status}`);
+    } catch (err) {
+      console.error('Failed to sync saved story:', err);
+      // Put the button back, so it never claims a save the account does not
+      // have.
+      const reverted = store.read();
+      if (wasBookmarked) reverted.add(slug);
+      else reverted.delete(slug);
+      store.write(reverted);
+      onBookmarkChange?.(slug, wasBookmarked);
+    }
   };
 
   const isSmall = size === 'sm';
@@ -102,10 +122,17 @@ export function BookmarkButton({
     <button
       type="button"
       onClick={handleToggle}
-      aria-label={bookmarked ? 'Remove from saved stories' : 'Save story for later'}
+      data-tour-target="bookmark"
+      aria-label={
+        !user
+          ? 'Save story for later - sign in to save'
+          : bookmarked
+            ? 'Remove from saved stories'
+            : 'Save story for later'
+      }
       aria-pressed={bookmarked}
       className={`story-action-btn bookmark-btn ${bookmarked ? 'is-active' : ''} ${className}`}
-      title={bookmarked ? 'Saved (click to remove)' : 'Save story for later'}
+      title={!user ? 'Sign in to save stories' : bookmarked ? 'Saved (click to remove)' : 'Save story for later'}
     >
       <Bookmark
         size={isSmall ? 14 : 16}
@@ -116,4 +143,3 @@ export function BookmarkButton({
     </button>
   );
 }
-

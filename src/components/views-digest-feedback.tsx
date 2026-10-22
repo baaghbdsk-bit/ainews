@@ -31,6 +31,8 @@ import {
   Braces,
 } from 'lucide-react';
 import type { StoryDisplay } from '@/lib/timeline-shared';
+import { useAuth } from '@/lib/auth/store';
+import { showGuestNotice } from '@/components/auth/guest-notice';
 
 export interface DailyDigestData {
   totalStories: number;
@@ -709,6 +711,7 @@ export function FeedbackConnectMainView({ onBrowseLatest }: FeedbackConnectMainV
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [, startTransition] = useTransition();
+  const { status: authStatus, user: authUser } = useAuth();
 
   const githubUrl = 'https://github.com/baaghbdsk-bit/ainews';
   const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://www.instagram.com';
@@ -716,6 +719,10 @@ export function FeedbackConnectMainView({ onBrowseLatest }: FeedbackConnectMainV
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (authStatus !== 'signed-in' || !authUser) {
+      if (authStatus === 'guest') showGuestNotice('Sign in to send feedback.');
+      return;
+    }
     if (comment.trim().length < 3) {
       setErrorMessage('Please provide a brief description (at least 3 characters).');
       setStatus('error');

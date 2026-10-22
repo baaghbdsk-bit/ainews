@@ -85,9 +85,9 @@ html[data-theme="light"] .story-back-link {
   background: #f1f5f9;
   border-color: #cbd5e1;}
 html[data-theme="light"] .story-back-link:hover {
-  color: #6d28d9;
-  background: #ede9fe;
-  border-color: #8b5cf6;}
+  color: #1E3A8A;
+  background: #DBEAFE;
+  border-color: #BFDBFE;}
 .story-article-readtime {
   display: inline-flex;
   align-items: center;
@@ -1434,13 +1434,13 @@ html[data-theme="light"] .header-nav-pill.is-active.pill-trending {
   border-color: #F59E0B;
   color: #B45309;}
 html[data-theme="light"] .header-nav-pill.is-active.pill-saved {
-  background: #FAF5FF;
-  border-color: #A855F7;
-  color: #6B21A8;}
+  background: #DBEAFE;
+  border-color: #BFDBFE;
+  color: #1E3A8A;}
 html[data-theme="light"] .nav-badge-count {
-  background: #EDE9FE;
-  color: #6D28D9;
-  border-color: #DDD6FE;}
+  background: #DBEAFE;
+  color: #1E3A8A;
+  border-color: #BFDBFE;}
 html[data-theme="light"] .hero-card.hero-mode-digest {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(168, 85, 247, 0.1), transparent 62%),
@@ -1501,9 +1501,9 @@ html[data-theme="light"] .story-read-time {
 html[data-theme="light"] .story-meta-dot {
   color: #94A3B8;}
 html[data-theme="light"] .stream-chip-pill {
-  background: #EDE9FE;
-  border-color: #DDD6FE;
-  color: #6D28D9;}
+  background: #DBEAFE;
+  border-color: #BFDBFE;
+  color: #1E3A8A;}
 html[data-theme="light"] .stream-clear-pill {
   border-color: #CBD5E1;
   color: #64748B;}
@@ -1516,9 +1516,9 @@ html[data-theme="light"] .trending-rank-badge.rank-other {
   color: #475569;
   border-color: #E2E8F0;}
 html[data-theme="light"] .timeline-company-pill {
-  background: #EDE9FE;
-  border-color: #DDD6FE;
-  color: #6D28D9;}
+  background: #DBEAFE;
+  border-color: #BFDBFE;
+  color: #1E3A8A;}
 .sidebar-sticky-wrapper-disabled-scrollbar {
   width: 3px;}
 .sidebar-sticky-wrapper::-webkit-scrollbar-track {
@@ -2117,9 +2117,9 @@ html[data-theme="light"] .sidebar-nav-item.is-active {
   color: #1E1B4B;
   box-shadow: 0 4px 14px rgba(139, 92, 246, 0.12);}
 html[data-theme="light"] .sidebar-nav-item.item-digest.is-active {
-  background: #FAF5FF;
-  border-color: #A855F7;
-  color: #7E22CE;}
+  background: #DBEAFE;
+  border-color: #BFDBFE;
+  color: #1E3A8A;}
 html[data-theme="light"] .sidebar-nav-item.item-trending.is-active {
   background: #FFFBEB;
   border-color: #F59E0B;
@@ -2145,7 +2145,7 @@ html[data-theme="light"] .sidebar-nav-item.item-policy.is-active {
   border-color: #7AA5FF;
   color: #1E40AF;}
 html[data-theme="light"] .sidebar-badge-pill.pill-digest {
-  background: #F3E8FF;
+  background: #DBEAFE;
   color: #7E22CE;
   border-color: #D8B4FE;}
 html[data-theme="light"] .sidebar-badge-pill.pill-models {
@@ -2169,9 +2169,9 @@ html[data-theme="light"] .sidebar-badge-pill.pill-research {
   color: #B45309;
   border: 1px solid #FDE68A;}
 html[data-theme="light"] .sidebar-badge-pill.pill-policy {
-  background: #EFF6FF;
-  color: #1E40AF;
-  border: 1px solid #93C5FD;}
+  background: #DBEAFE;
+  color: #1E3A8A;
+  border: 1px solid #BFDBFE;}
 html[data-theme="light"] .sidebar-badge-pill.pill-benchmarks {
   background: #F3E8FF;
   color: #7E22CE;
@@ -2244,9 +2244,9 @@ html[data-theme="light"] .filter-popover-close:hover {
   background: #f1f5f9;
   color: #0f172a;}
 html[data-theme="light"] .header-filter-chip {
-  background: #ede9fe;
-  border-color: #c4b5fd;
-  color: #5b21b6;}
+  background: #DBEAFE;
+  border-color: #BFDBFE;
+  color: #1E3A8A;}
 .hero-card.hero-mode-about {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(34, 211, 238, 0.16), transparent 62%),
@@ -2566,8 +2566,8 @@ from {
   border-top: 1px solid var(--shell-line);
   flex-wrap: wrap;}
 html[data-theme="light"] .sidebar-nav-item.is-active .sidebar-nav-icon {
-  background: #EDE9FE;
-  color: #7C3AED;}
+  background: #1E3A8A;
+  color: #FFFFFF;}
 html[data-theme="light"] .sidebar-nav-item.item-digest.is-active .sidebar-nav-icon {
   background: #F3E8FF;
   color: #9333EA;}
@@ -2600,8 +2600,8 @@ html[data-theme="light"] .sidebar-nav-item.item-about.is-active .sidebar-nav-ico
   background: #E0F2FE;
   color: #0284C7;}
 html[data-theme="light"] .sidebar-nav-item.item-benchmarks.is-active .sidebar-nav-icon {
-  background: #EDE9FE;
-  color: #6D28D9;}
+  background: #1E3A8A;
+  color: #FFFFFF;}
 html[data-theme="light"] .hero-card.hero-mode-about {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(34, 211, 238, 0.12), transparent 62%),

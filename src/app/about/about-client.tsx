@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "../site-header";
 import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/auth/store";
+import { showGuestNotice } from "@/components/auth/guest-notice";
 
 function InstagramIcon({ size = 16 }: { size?: number }) {
   return (
@@ -63,6 +65,7 @@ function GithubIcon({ size = 16 }: { size?: number }) {
 
 export function AboutClient() {
   const [isLight, toggleTheme] = useTheme();
+  const { status: authStatus } = useAuth();
 
   // Form submission state for story tip / feedback
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -75,6 +78,10 @@ export function AboutClient() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (authStatus !== "signed-in") {
+      if (authStatus === "guest") showGuestNotice("Sign in to submit a story.");
+      return;
+    }
     if (!formData.url && !formData.title && !formData.note) return;
     setFormSubmitted(true);
   };

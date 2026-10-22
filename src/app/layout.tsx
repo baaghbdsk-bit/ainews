@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { AuthDialog } from "@/components/auth/auth-dialog";
+import { TourOverlay } from "@/components/tour/tour-overlay";
+import { WelcomeGate } from "@/components/auth/welcome-gate";
+import { GuestNotice } from "@/components/auth/guest-notice";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -205,6 +209,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }
         `}</style>
         {children}
+        <WelcomeGate />
+        <AuthDialog />
+        <GuestNotice />
+        <TourOverlay />
         <Analytics />
       </body>
     </html>

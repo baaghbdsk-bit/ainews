@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { SiteHeader } from '@/app/site-header';
@@ -25,6 +26,10 @@ export const metadata: Metadata = {
 type BenchmarksSearchParams = Promise<{ view?: string }>;
 
 async function BenchmarksView({ searchParams }: { searchParams?: BenchmarksSearchParams }) {
+  // Reading the clock is only allowed at request time. The static shell uses
+  // the data-derived audit; this part opts into dynamic rendering first.
+  await connection();
+
   const params = await searchParams;
   const initialView =
     params?.view === 'radar' ||

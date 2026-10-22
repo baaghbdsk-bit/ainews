@@ -20,11 +20,21 @@ import { supabaseAnonKey, supabaseUrl } from '@/lib/env';
 const PUBLISHED_STORY_COLUMNS =
   'id, slug, title, summary, significance, deck, key_points, why_it_matters, company, image_url, source, source_url, topic, event_date, published_at, status, updated_at';
 
+/** Rows per page when reading the archive. PostgREST returns at most this
+ *  many rows in one response, so the read has to be paged. */
+const STORY_PAGE_SIZE = 1000;
+
 /**
  * Fetch all published stories ordered by event_date descending.
  *
  * Cached: published rows are identical for every visitor. The cookie-free
  * client keeps this inside `'use cache'` (the SSR client reads `cookies()`).
+ *
+ * The read is paged. PostgREST caps a single response at a thousand rows
+ * whatever the limit asks for, so one un-paged request quietly returned only
+ * the most recent thousand stories and the rest of the archive was invisible.
+ * The second sort column keeps the order stable across pages, so a row
+ * cannot be skipped or repeated at a boundary.
  */
 export async function getPublishedStories(): Promise<Story[]> {
   'use cache';
@@ -33,18 +43,29 @@ export async function getPublishedStories(): Promise<Story[]> {
 
   try {
     const supabase = createPublicClient();
-    const { data, error } = await supabase
-      .from('stories')
-      .select(PUBLISHED_STORY_COLUMNS)
-      .eq('status', 'published')
-      .order('event_date', { ascending: false });
+    const rows: Story[] = [];
 
-    if (error) {
-      console.error('Failed to fetch published stories:', error);
-      return [];
+    for (let offset = 0; ; offset += STORY_PAGE_SIZE) {
+      const { data, error } = await supabase
+        .from('stories')
+        .select(PUBLISHED_STORY_COLUMNS)
+        .eq('status', 'published')
+        .order('event_date', { ascending: false })
+        .order('id', { ascending: false })
+        .range(offset, offset + STORY_PAGE_SIZE - 1);
+
+      if (error) {
+        console.error('Failed to fetch published stories:', error);
+        // Keep whatever was read before the failure rather than losing the
+        // whole archive.
+        break;
+      }
+
+      rows.push(...((data ?? []) as Story[]));
+      if (!data || data.length < STORY_PAGE_SIZE) break;
     }
 
-    return data as Story[];
+    return rows;
   } catch (err) {
     console.error('Error fetching published stories:', err);
     return [];
@@ -126,12 +147,10 @@ export async function getStoryBySlug(slug: string): Promise<Story | null> {
 /**
  * The same lookup, but never served from the cache.
  *
- * The cached lookup also caches a miss, and a story that was missing a moment
- * ago may have just been stored - by the ingest job, or by the reader who
- * opened it. When the cached lookup misses, this re-reads the row so the
- * article renders from the database instead of falling back to re-downloading
- * every feed. The read is a single indexed lookup, so it costs about a
- * millisecond.
+ * Kept for the rare case where a caller needs the current state of a row
+ * rather than the cached one. The article page does not use it: the route has
+ * to stay fully static, and a cached miss costs at most a minute, which the
+ * background write covers.
  */
 export async function getStoryBySlugFresh(slug: string): Promise<Story | null> {
   return queryStoryBySlug(slug);
@@ -148,13 +167,21 @@ async function queryStoryBySlug(slug: string): Promise<Story | null> {
       .maybeSingle();
 
     if (error) {
-      console.error(`Failed to fetch story ${slug}:`, error);
+      // While a route is being prerendered the platform tears the request
+      // down, and the read fails with a message about the prerender being
+      // complete. That is expected, not a fault worth logging.
+      if (!/prerender/i.test(error.message ?? '')) {
+        console.error(`Failed to fetch story ${slug}:`, error);
+      }
       return null;
     }
 
     return (data as Story | null) ?? null;
   } catch (err) {
-    console.error('Error fetching story:', err);
+    const message = err instanceof Error ? err.message : String(err);
+    if (!/prerender/i.test(message)) {
+      console.error('Error fetching story:', err);
+    }
     return null;
   }
 }

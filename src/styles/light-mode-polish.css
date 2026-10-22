@@ -29,8 +29,8 @@ html[data-theme="light"] .header-search {
 }
 
 html[data-theme="light"] .header-search:focus-within {
-  border-color: #7C3AED !important;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
+  border-color: #1E3A8A !important;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15) !important;
 }
 
 html[data-theme="light"] .header-search input {
@@ -92,86 +92,86 @@ html[data-theme="light"] .sidebar-nav-item:hover .sidebar-nav-label {
 
 /* Sidebar Active Items */
 html[data-theme="light"] .sidebar-nav-item.is-active {
-  background: #FAF5FF !important;
-  border-color: #DDD6FE !important;
-  color: #6D28D9 !important;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.1) !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
+  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.1) !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.is-active .sidebar-nav-label {
-  color: #6D28D9 !important;
+  color: #1E3A8A !important;
   font-weight: 700 !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-digest.is-active {
-  background: #FAF5FF !important;
-  border-color: #DDD6FE !important;
-  color: #7C3AED !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-trending.is-active {
-  background: #FFFBEB !important;
-  border-color: #FDE68A !important;
+  background: #FEF3C7 !important;
+  border-color: #FDBA74 !important;
   color: #B45309 !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-saved.is-active {
-  background: #ECFDF5 !important;
-  border-color: #A7F3D0 !important;
-  color: #047857 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-models.is-active {
-  background: #F5F3FF !important;
-  border-color: #C4B5FD !important;
-  color: #5B21B6 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-products.is-active {
-  background: #F0FDFA !important;
-  border-color: #99F6E4 !important;
-  color: #0D9488 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-research.is-active {
-  background: #FFFBEB !important;
-  border-color: #FDE68A !important;
-  color: #B45309 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-policy.is-active {
-  background: #EFF6FF !important;
-  border-color: #93C5FD !important;
-  color: #1E40AF !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-feedback.is-active {
-  background: #F0F9FF !important;
-  border-color: #BAE6FD !important;
-  color: #0369A1 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-about.is-active {
-  background: #FAF5FF !important;
-  border-color: #DDD6FE !important;
-  color: #6D28D9 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-benchmarks.is-active {
-  background: #FCE7F3 !important;
-  border-color: #DB2777 !important;
-  color: #9D174D !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-latest.is-active {
-  background: #EFF6FF !important;
-  border-color: #6366F1 !important;
-  color: #4338CA !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.item-latest.is-active .sidebar-nav-icon {
-  background: #DDD6FE !important;
-  color: #4F46E5 !important;
+  background: #1E3A8A !important;
+  color: #FFFFFF !important;
 }
 
 /* Sidebar Badges in Light Mode */
@@ -189,20 +189,20 @@ html[data-theme="light"] .sidebar-nav-item.is-active .sidebar-badge-pill.pill-co
 
 html[data-theme="light"] .sidebar-badge-pill.pill-hot {
   background: #FEF3C7 !important;
-  border: 1px solid #FDE68A !important;
+  border: 1px solid #FDBA74 !important;
   color: #B45309 !important;
 }
 
 html[data-theme="light"] .sidebar-badge-pill.pill-digest {
-  background: #F3E8FF !important;
-  border: 1px solid #DDD6FE !important;
-  color: #6D28D9 !important;
+  background: #DBEAFE !important;
+  border: 1px solid #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .sidebar-badge-pill.pill-bench {
-  background: #EDE9FE !important;
-  border: 1px solid #DDD6FE !important;
-  color: #6D28D9 !important;
+  background: #DBEAFE !important;
+  border: 1px solid #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 /* 3. Timeline Items, Node & Year Milestones */
@@ -253,8 +253,8 @@ html[data-theme="light"] .archive-timeline .story-row:hover {
 }
 
 html[data-theme="light"] .archive-timeline .timeline-item.is-expanded .story-row {
-  border-color: #8B5CF6 !important;
-  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.1), 0 0 0 2px rgba(139, 92, 246, 0.15) !important;
+  border-color: #1E3A8A !important;
+  box-shadow: 0 10px 30px rgba(30, 58, 138, 0.1), 0 0 0 2px rgba(30, 58, 138, 0.15) !important;
 }
 
 html[data-theme="light"] .archive-timeline .story-title,
@@ -264,7 +264,7 @@ html[data-theme="light"] .archive-timeline .story-title-text {
 }
 
 html[data-theme="light"] .archive-timeline .story-title-link:hover .story-title-text {
-  color: #7C3AED !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .story-preview {
@@ -315,7 +315,7 @@ html[data-theme="light"] .archive-timeline .key-points {
 }
 
 html[data-theme="light"] .archive-timeline .key-points span {
-  color: #6D28D9 !important;
+  color: #1E3A8A !important;
   font-weight: 700 !important;
   letter-spacing: 0.1em !important;
 }
@@ -327,11 +327,11 @@ html[data-theme="light"] .archive-timeline .key-points li {
 }
 
 html[data-theme="light"] .archive-timeline .key-points li::marker {
-  color: #7C3AED !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .archive-timeline .story-overview-label {
-  color: #6D28D9 !important;
+  color: #1E3A8A !important;
   font-weight: 700 !important;
 }
 
@@ -355,15 +355,15 @@ html[data-theme="light"] .story-action-btn:hover {
 }
 
 html[data-theme="light"] .upvote-btn.is-active {
-  background: #EDE9FE !important;
-  border-color: #C4B5FD !important;
-  color: #6D28D9 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .bookmark-btn.is-active {
-  background: #D1FAE5 !important;
-  border-color: #6EE7B7 !important;
-  color: #065F46 !important;
+  background: #DBEAFE !important;
+  border-color: #BFDBFE !important;
+  color: #1E3A8A !important;
 }
 
 /* 5. Mobile Bottom Navigation in Light Mode */
@@ -380,23 +380,23 @@ html[data-theme="light"] .mobile-bottom-nav a {
 
 html[data-theme="light"] .mobile-bottom-nav button:hover,
 html[data-theme="light"] .mobile-bottom-nav button.is-active {
-  color: #7C3AED !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-bottom-nav button.is-active .nav-label {
-  color: #7C3AED !important;
+  color: #1E3A8A !important;
   font-weight: 700 !important;
 }
 
 /* Mobile bottom nav: light theme per-mode active colors */
 html[data-theme="light"] .mobile-bottom-nav button.item-latest.is-active,
 html[data-theme="light"] .mobile-bottom-nav button.item-latest.is-active .nav-label {
-  color: #4338CA !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-bottom-nav button.item-digest.is-active,
 html[data-theme="light"] .mobile-bottom-nav button.item-digest.is-active .nav-label {
-  color: #6D28D9 !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-bottom-nav button.item-trending.is-active,
@@ -406,57 +406,57 @@ html[data-theme="light"] .mobile-bottom-nav button.item-trending.is-active .nav-
 
 html[data-theme="light"] .mobile-bottom-nav button.item-benchmarks.is-active,
 html[data-theme="light"] .mobile-bottom-nav button.item-benchmarks.is-active .nav-label {
-  color: #9D174D !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-bottom-nav button.item-saved.is-active,
 html[data-theme="light"] .mobile-bottom-nav button.item-saved.is-active .nav-label {
-  color: #047857 !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-bottom-nav button.item-feedback.is-active,
 html[data-theme="light"] .mobile-bottom-nav button.item-feedback.is-active .nav-label {
-  color: #0369A1 !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-bottom-nav button.item-about.is-active,
 html[data-theme="light"] .mobile-bottom-nav button.item-about.is-active .nav-label {
-  color: #0891B2 !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .mobile-saved-badge {
-  background: #059669 !important;
+  background: #1E3A8A !important;
   color: #FFFFFF !important;
 }
 
 /* 6. Semantic Search & Active Filter Chips in Light Mode */
 html[data-theme="light"] .semantic-search-banner {
-  background: #FAF5FF !important;
-  border: 1px solid #DDD6FE !important;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.06) !important;
+  background: #EFF6FF !important;
+  border: 1px solid #BFDBFE !important;
+  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.06) !important;
 }
 
 html[data-theme="light"] .semantic-banner-title {
-  color: #6D28D9 !important;
+  color: #1E3A8A !important;
   font-weight: 700 !important;
 }
 
 html[data-theme="light"] .semantic-concept-badge {
-  background: #EDE9FE !important;
-  border: 1px solid #C4B5FD !important;
-  color: #5B21B6 !important;
+  background: #DBEAFE !important;
+  border: 1px solid #BFDBFE !important;
+  color: #1E3A8A !important;
   font-weight: 600 !important;
 }
 
 html[data-theme="light"] .stream-chip-pill {
-  background: #EDE9FE !important;
-  border: 1px solid #C4B5FD !important;
-  color: #5B21B6 !important;
+  background: #DBEAFE !important;
+  border: 1px solid #BFDBFE !important;
+  color: #1E3A8A !important;
   font-weight: 600 !important;
 }
 
 html[data-theme="light"] .stream-chip-close {
-  color: #7C3AED !important;
+  color: #1E3A8A !important;
 }
 
 html[data-theme="light"] .active-filters-label {

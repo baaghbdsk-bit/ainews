@@ -1,34 +1,59 @@
 /* base — extracted from src/app/globals.css (order preserved) */
 
 :root {
-  --paper: #080A12;
-  --paper-raised: #0D101C;
-  --panel-bg: #111525;
-  --card-bg: #151B30;
-  --surface: #1A2037;
-  --ink: #F4F3FA;
-  --muted: #A3A8BF;
-  --faint: #78819C;
-  --rule: #343B55;
-  --rule-strong: #414967;
-  --rule-hover: #6D5AA8;
-  --rule-focus: #A78BFA;
-  --hover: #202641;
-  --accent: #8B5CF6;
-  --accent-2: #C084FC;
-  --highlight: #F472B6;
-  /* Distinct per-category hues (Policy / Models / Products / Research).
-     Deliberately spread across the wheel so timeline dots, date rings,
-     labels and monogram tiles read as a legend, not shades of one accent. */
-  --blue: #7AA5FF;
-  --green: #8B5CF6;
-  --deep-green: #C084FC;
-  --violet: #A78BFA;
-  --cyan: #2DD4BF;
-  --coral: #F472B6;
-  --amber: #FBBF24;
-  --orange: #FB923C;
+  /* Corporate dark mode — default */
+  --paper: #020617;
+  --paper-raised: #0F172A;
+  --panel-bg: #1E293B;
+  --card-bg: #0F172A;
+  --surface: #1E293B;
+  --ink: #F8FAFC;
+  --muted: #CBD5E1;
+  --faint: #94A3B8;
+  --rule: #334155;
+  --rule-strong: #475569;
+  --rule-hover: #60A5FA;
+  --rule-focus: #1E3A8A;
+  --hover: #1E293B;
+  /* Main brand — navy blue (trust, authority, enterprise AI) */
+  --accent: #1E3A8A;
+  --accent-2: #60A5FA;
+  /* Trending accent — single accent color for trending/hot items only */
+  --trending: #F59E0B;
+  --trending-light: #451A03;
+  --highlight: #F59E0B;
+  /* Category hues — muted slate/blue family only (no rainbow) */
+  --blue: #1E3A8A;
+  --blue-light: #60A5FA;
+  --slate: #94A3B8;
+  --slate-light: #334155;
   --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+html[data-theme="light"] {
+  /* Corporate light mode */
+  --paper: #FFFFFF;
+  --paper-raised: #F8FAFC;
+  --panel-bg: #F1F5F9;
+  --card-bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --ink: #0F172A;
+  --muted: #475569;
+  --faint: #94A3B8;
+  --rule: #E2E8F0;
+  --rule-strong: #CBD5E1;
+  --rule-hover: #3B82F6;
+  --rule-focus: #1E3A8A;
+  --hover: #F1F5F9;
+  --accent: #1E3A8A;
+  --accent-2: #3B82F6;
+  --trending: #B45309;
+  --trending-light: #FEF3C7;
+  --highlight: #B45309;
+  --blue: #1E3A8A;
+  --blue-light: #DBEAFE;
+  --slate: #475569;
+  --slate-light: #E2E8F0;
 }
 
 @theme inline {

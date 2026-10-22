@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { supabaseUrl, supabaseServiceRoleKey } from '@/lib/env';
+import { getSessionUser } from '@/lib/auth/session-server';
 import {
   clientIp,
   isMissingColumnError,
@@ -91,6 +92,12 @@ function memoryStats() {
 }
 
 export async function POST(request: NextRequest) {
+  // Feedback is a change a guest cannot make, same as voting and saving.
+  const sessionUser = await getSessionUser();
+  if (!sessionUser) {
+    return jsonNoStore({ error: 'Sign in to send feedback.' }, { status: 401 });
+  }
+
   const body = await readJsonBody(request);
   if (!body.ok) return body.response;
 
