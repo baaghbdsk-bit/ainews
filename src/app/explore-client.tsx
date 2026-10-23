@@ -26,7 +26,7 @@ import {
   Send,
 } from "lucide-react";
 import Link from "next/link";
-import { NeuBenchLogo } from "@/components/neubench-logo";
+import { NeubenchLogo } from "@/components/neubench-logo";
 import dynamic from "next/dynamic";
 import "./benchmarks/benchmarks.css";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -1482,13 +1482,8 @@ export function ExploreClient({
       </a>
       <header className={`archive-topbar ${isMobileSearchOpen ? "is-mobile-search-open" : ""}`}>
         <div className="header-brand-group">
-          <Link className="wordmark" href="/" aria-label="NeuBench, home">
-            <span className="wordmark-symbol">
-              <NeuBenchLogo size={22} />
-            </span>
-            <span>
-              <span className="wordmark-text"><span className="wordmark-neu">Neu</span><span className="wordmark-bench">Bench</span><span className="wordmark-dot" aria-hidden="true" /></span>
-            </span>
+          <Link className="wordmark" href="/" aria-label="NEUBENCH, home">
+            <NeubenchLogo size={22} />
           </Link>
           
         </div>

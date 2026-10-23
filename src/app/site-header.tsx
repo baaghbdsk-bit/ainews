@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NeuBenchLogo } from "@/components/neubench-logo";
+import { NeubenchLogo } from "@/components/neubench-logo";
 import { AccountButton } from "@/components/auth/account-button";
 
 /**
@@ -19,15 +19,8 @@ export function SiteHeader({
 }) {
   return (
     <header className={`topbar archive-topbar${className ? ` ${className}` : ""}`}>
-      <Link className="wordmark" href="/" aria-label="NeuBench — The Pulse of AI, home">
-        <span className="wordmark-symbol" aria-hidden="true">
-          <NeuBenchLogo size={22} />
-        </span>
-        <span className="wordmark-text">
-          <span className="wordmark-neu">Neu</span>
-          <span className="wordmark-bench">Bench</span>
-          <span className="wordmark-dot" aria-hidden="true" />
-        </span>
+      <Link className="wordmark" href="/" aria-label="NEUBENCH, home">
+        <NeubenchLogo size={22} />
       </Link>
       {children}
       <div className="account-slot">

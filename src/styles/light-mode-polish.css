@@ -248,8 +248,10 @@ html[data-theme="light"] .archive-timeline .story-row {
 }
 
 html[data-theme="light"] .archive-timeline .story-row:hover {
-  border-color: #C084FC !important;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.08) !important;
+  border-color: transparent !important;
+  box-shadow: inset 3px 0 0 #7C3AED, 0 0 0 1px rgba(124, 58, 237, 0.2) !important;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.06), transparent 40%) !important;
+  transform: none !important;
 }
 
 html[data-theme="light"] .archive-timeline .timeline-item.is-expanded .story-row {

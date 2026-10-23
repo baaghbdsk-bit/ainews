@@ -1,0 +1,89 @@
+/* NeubenchLogo — official wordmark animation (scoped) */
+.neubench-logo-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.06em;
+  font-family: var(--font-geist-sans, "Geist", system-ui, -apple-system, sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #F5F5F5;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.neubench-logo-letters {
+  display: inline-block;
+}
+
+.neubench-logo-e {
+  display: inline-flex;
+  align-items: center;
+  width: 0.62em;
+  height: 0.72em;
+  flex: 0 0 auto;
+}
+
+.neubench-logo-e svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.neubench-logo-bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  opacity: 0;
+  transform: scaleX(0.3);
+  animation: neubench-bar-expand 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 forwards;
+}
+
+.neubench-logo-bar--blue {
+  animation-delay: 150ms;
+}
+
+.neubench-logo-bar--violet {
+  animation-delay: 300ms;
+}
+
+.neubench-logo-bar--teal {
+  animation-delay: 450ms;
+}
+
+@keyframes neubench-bar-expand {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+  55% {
+    opacity: 1;
+    transform: scaleX(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.neubench-logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #08090B;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.neubench-logo-icon .neubench-logo-e {
+  width: 58%;
+  height: 58%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neubench-logo-bar {
+    animation: none;
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}

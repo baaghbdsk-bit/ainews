@@ -712,9 +712,10 @@ html[data-theme="light"] .active-filter-chip:hover {
 .archive-timeline .story-row:has(.node-amber)::before { background: var(--amber); }
 
 .archive-timeline .story-row:hover {
-  border-color: var(--shell-line-hover);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shell-accent-soft);
-  transform: translateY(-2px);
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 var(--shell-accent, #8B5CF6), 0 0 0 1px rgba(139, 92, 246, 0.25);
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.08), transparent 40%);
+  transform: none;
 }
 
 /* Expanded (open) card: accent-tinted border so the open state is obvious. */
