@@ -16,8 +16,6 @@ import {
   Layers,
   MessageSquare,
   Orbit,
-  PanelLeftClose,
-  PanelLeftOpen,
   Radio,
   RotateCcw,
   Search,
@@ -368,22 +366,28 @@ onBookmarkChange={onBookmarkChange}
  *  the active option is pointed at with aria-activedescendant, so Arrow keys,
  *  Home/End, Enter/Space and Escape all work without moving DOM focus.
  */
-function CompanySelect({
+function SidebarSelect({
   options,
   value,
   onChange,
+  allLabel = "All",
+  ariaLabel = "Filter",
+  panelMinWidth = 0,
 }: {
-  options: string[];
+  options: { value: string; label: string }[];
   value: string;
   onChange: (selected: string) => void;
+  allLabel?: string;
+  ariaLabel?: string;
+  panelMinWidth?: number;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLUListElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<'down' | 'up'>('down');
   const listboxId = useId();
-  const allOptions = useMemo(() => ['all', ...options], [options]);
-  const selectedIndex = Math.max(0, allOptions.indexOf(value));
+  const allOptions = useMemo(() => [{ value: "all", label: allLabel }, ...options], [options, allLabel]);
+  const selectedIndex = Math.max(0, allOptions.findIndex((o) => o.value === value));
   const [activeIndex, setActiveIndex] = useState(selectedIndex);
   const [openSelection, setOpenSelection] = useState({ isOpen, selectedIndex });
 
@@ -474,7 +478,7 @@ function CompanySelect({
 
     if ((key === 'Enter' || key === ' ') && isOpen) {
       event.preventDefault();
-      choose(allOptions[activeIndex]);
+      choose(allOptions[activeIndex].value);
     }
   };
 
@@ -488,12 +492,14 @@ function CompanySelect({
         aria-expanded={isOpen}
         aria-controls={isOpen ? listboxId : undefined}
         aria-activedescendant={isOpen ? `${listboxId}-option-${activeIndex}` : undefined}
-        aria-label="Filter by company"
+        aria-label={ariaLabel}
         className="company-select-trigger"
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleKeyDown}
       >
-        <span className="company-select-trigger-label">{value === 'all' ? 'All companies' : value}</span>
+        <span className="company-select-trigger-label">
+          {allOptions.find((o) => o.value === value)?.label ?? allLabel}
+        </span>
         <ChevronDown size={13} strokeWidth={2} />
       </button>
       {isOpen && (
@@ -501,21 +507,22 @@ function CompanySelect({
           ref={panelRef}
           id={listboxId}
           role="listbox"
-          aria-label="Companies"
+          aria-label={ariaLabel}
           className={`company-select-panel ${position === 'up' ? 'panel-open-up' : ''}`}
+          style={{ minWidth: panelMinWidth || undefined }}
         >
           {allOptions.map((option, index) => (
             <li
-              key={option}
+              key={option.value}
               id={`${listboxId}-option-${index}`}
               role="option"
-              aria-selected={value === option}
+              aria-selected={value === option.value}
               data-active={index === activeIndex}
-              className={`company-select-option ${value === option ? 'is-selected' : ''}`}
-              onClick={() => choose(option)}
+              className={`company-select-option ${value === option.value ? 'is-selected' : ''}`}
+              onClick={() => choose(option.value)}
               onMouseEnter={() => setActiveIndex(index)}
             >
-              {option === 'all' ? 'All companies' : option}
+              {option.label}
             </li>
           ))}
         </ul>
@@ -617,7 +624,7 @@ function FilterFields({
 
       <div className="filter-popover-field">
         <span className="filter-popover-label">Company / Lab</span>
-        <CompanySelect options={facets.companies} value={company} onChange={onCompanyChange} />
+        <SidebarSelect options={facets.companies.map((c) => ({ value: c, label: c }))} value={company} onChange={onCompanyChange} allLabel="All companies" ariaLabel="Filter by company" panelMinWidth={200} />
       </div>
     </div>
   );
@@ -990,7 +997,6 @@ export function ExploreClient({
   const [activeMonth, setActiveMonth] = useState<string>("all");
   const [activeCompany, setActiveCompany] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const isNarrowLayout = useNarrowLayout();
@@ -1106,7 +1112,7 @@ export function ExploreClient({
     setActiveTimelineIndex(0);
     if (isMobileFilterOpen) {
       closeMobileFilter();
-    } else {
+    } else if (isFilterOpen) {
       setIsFilterOpen(false);
       requestAnimationFrame(() => headerFilterBtnRef.current?.focus());
     }
@@ -1529,10 +1535,6 @@ export function ExploreClient({
         </label>
 
         <div className="header-actions">
-          {/* The account is optional - a guest reads the timeline exactly the
-              same way, so this is a plain button and never a modal on load. */}
-          <AccountButton />
-
           {/* Header Filter Button & Anchored Dropdown Popover */}
           <div className="header-filter-wrapper" ref={filterWrapperRef} data-tour-target="filter">
             <button
@@ -1634,32 +1636,20 @@ export function ExploreClient({
           >
             <Sun size={17} />
           </button>
+
+          {/* Account affordance: shows a user icon (not email) when signed in. */}
+          <AccountButton />
         </div>
       </header>
 
       <div className="archive-shell">
-        <div className={`archive-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+        <div className="archive-layout">
           {/* Left Sidebar Navigation */}
-          <aside aria-label="Primary Navigation" className={`archive-sidebar ${isSidebarCollapsed ? "is-collapsed" : ""}`}>
+          <aside aria-label="Primary Navigation" className="archive-sidebar">
             <div className="sidebar-sticky-wrapper">
-              {/* Sidebar Header & Collapse Toggle */}
-              <div className="sidebar-top-bar">
-                {!isSidebarCollapsed && (
-                  <span className="sidebar-top-title">Navigation</span>
-                )}
-                <button
-                  type="button"
-                  className="sidebar-collapse-btn"
-                  onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-                  aria-label={isSidebarCollapsed ? "Expand navigation pane" : "Collapse navigation pane"}
-                  
-                >
-                  {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-                </button>
-              </div>
-
               {/* Group 1: Discover */}
               <div className="sidebar-nav-group">
+                <div className="sidebar-section-title">TOPIC</div>
                 <nav className="sidebar-nav" aria-label="Feeds">
                   {/* 1. Latest */}
                   <button
@@ -1770,94 +1760,67 @@ export function ExploreClient({
                 </nav>
               </div>
 
-              <div className="sidebar-divider" />
-
-              {/* Group 2: Intelligence Streams / Categories */}
+              {/* Inline filters (year / month / company) */}
               <div className="sidebar-nav-group">
-                <nav className="sidebar-nav" aria-label="Categories">
-                  {/* Models */}
-                  <button
-                    type="button"
-                    className={`sidebar-nav-item item-models ${feedMode === "latest" && activeTopic === "Models" ? "is-active" : ""}`} data-label="Models"
-                    onClick={() => {
-                      setFeedMode("latest");
-                      setActiveTopic(activeTopic === "Models" ? "all" : "Models");
-                      setActiveTimelineIndex(0);
-                    }}
-                  >
-                    <div className="sidebar-nav-icon">
-                      <Cpu size={16} className={activeTopic === "Models" && feedMode === "latest" ? "text-cyan-400" : ""} />
+                <div className="sidebar-section-title" style={{ paddingTop: 18, paddingBottom: 8 }}>FILTER</div>
+                <nav className="sidebar-nav" aria-label="Filters">
+                  <div className="sidebar-filter-row">
+                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                      <div className="sidebar-nav-icon">
+                        <Calendar size={16} />
+                      </div>
+                      <span className="sidebar-nav-label">Year</span>
                     </div>
-                    <div className="sidebar-nav-info">
-                      <span className="sidebar-nav-label">Models</span>
-                    </div>
-                    <span className="sidebar-badge-pill pill-models">{topicCounts["Models"] ?? 0}</span>
-                  </button>
+                    <SidebarSelect
+                      options={facets.years.map((y) => ({ value: y, label: y }))}
+                      value={activeYear}
+                      onChange={(value) => { setActiveYear(value); setActiveTimelineIndex(0); }}
+                      allLabel="All years"
+                      ariaLabel="Filter by year"
+                      panelMinWidth={200}
+                    />
+                  </div>
 
-                  {/* Products */}
-                  <button
-                    type="button"
-                    className={`sidebar-nav-item item-products ${feedMode === "latest" && activeTopic === "Products" ? "is-active" : ""}`} data-label="Products"
-                    onClick={() => {
-                      setFeedMode("latest");
-                      setActiveTopic(activeTopic === "Products" ? "all" : "Products");
-                      setActiveTimelineIndex(0);
-                    }}
-                  >
-                    <div className="sidebar-nav-icon">
-                      <Layers size={16} className={activeTopic === "Products" && feedMode === "latest" ? "text-indigo-400" : ""} />
+                  <div className="sidebar-filter-row">
+                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                      <div className="sidebar-nav-icon">
+                        <Calendar size={16} />
+                      </div>
+                      <span className="sidebar-nav-label">Month</span>
                     </div>
-                    <div className="sidebar-nav-info">
-                      <span className="sidebar-nav-label">Products</span>
-                    </div>
-                    <span className="sidebar-badge-pill pill-products">{topicCounts["Products"] ?? 0}</span>
-                  </button>
+                    <SidebarSelect
+                      options={facets.months}
+                      value={activeMonth}
+                      onChange={(value) => { setActiveMonth(value); setActiveTimelineIndex(0); }}
+                      allLabel="All months"
+                      ariaLabel="Filter by month"
+                      panelMinWidth={200}
+                    />
+                  </div>
 
-                  {/* Research */}
-                  <button
-                    type="button"
-                    className={`sidebar-nav-item item-research ${feedMode === "latest" && activeTopic === "Research" ? "is-active" : ""}`} data-label="Research"
-                    onClick={() => {
-                      setFeedMode("latest");
-                      setActiveTopic(activeTopic === "Research" ? "all" : "Research");
-                      setActiveTimelineIndex(0);
-                    }}
-                  >
-                    <div className="sidebar-nav-icon">
-                      <Sparkles size={16} className={activeTopic === "Research" && feedMode === "latest" ? "text-amber-400" : ""} />
+                  <div className="sidebar-filter-row">
+                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                      <div className="sidebar-nav-icon">
+                        <Layers size={16} />
+                      </div>
+                      <span className="sidebar-nav-label">Company</span>
                     </div>
-                    <div className="sidebar-nav-info">
-                      <span className="sidebar-nav-label">Research</span>
-                    </div>
-                    <span className="sidebar-badge-pill pill-research">{topicCounts["Research"] ?? 0}</span>
-                  </button>
-
-                  {/* Policy */}
-                  <button
-                    type="button"
-                    className={`sidebar-nav-item item-policy ${feedMode === "latest" && activeTopic === "Policy" ? "is-active" : ""}`} data-label="Policy"
-                    onClick={() => {
-                      setFeedMode("latest");
-                      setActiveTopic(activeTopic === "Policy" ? "all" : "Policy");
-                      setActiveTimelineIndex(0);
-                    }}
-                  >
-                    <div className="sidebar-nav-icon">
-                      <BookOpen size={16} className={activeTopic === "Policy" && feedMode === "latest" ? "text-emerald-400" : ""} />
-                    </div>
-                    <div className="sidebar-nav-info">
-                      <span className="sidebar-nav-label">Policy</span>
-                    </div>
-                    <span className="sidebar-badge-pill pill-policy">{topicCounts["Policy"] ?? 0}</span>
-                  </button>
+                    <SidebarSelect
+                      options={facets.companies.map((c) => ({ value: c, label: c }))}
+                      value={activeCompany}
+                      onChange={(value) => { setActiveCompany(value); setActiveTimelineIndex(0); }}
+                      allLabel="All companies"
+                      ariaLabel="Filter by company"
+                      panelMinWidth={200}
+                    />
+                  </div>
                 </nav>
               </div>
 
-              <div className="sidebar-divider" />
-
-              {/* Group 3: Platform & System */}
+              {/* Group 3: Connect */}
               <div className="sidebar-nav-group">
-                <nav className="sidebar-nav" aria-label="Platform">
+                <div className="sidebar-section-title" style={{ paddingTop: 18, paddingBottom: 8 }}>CONNECT</div>
+                <nav className="sidebar-nav" aria-label="Connect">
                   {/* Feedback & Connect */}
                   <button
                     type="button"

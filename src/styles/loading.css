@@ -1,4 +1,4 @@
-/* Shared loading states: spinners and skeleton rows.
+﻿/* Shared loading states: spinners and skeleton rows.
  * Kept in one place so every route that streams its content in shows the
  * same motion, rather than a blank frame while data resolves. */
 
@@ -17,7 +17,7 @@
   padding: 40px 22px;
   border: 1px solid var(--rule, rgba(255, 255, 255, 0.08));
   border-radius: 14px;
-  background: var(--panel-bg, rgba(255, 255, 255, 0.02));
+  background: #18181b;
 }
 
 .app-loading-inline {

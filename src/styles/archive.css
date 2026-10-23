@@ -1,4 +1,4 @@
-/* archive — extracted from src/app/globals.css (order preserved) */
+﻿/* archive — extracted from src/app/globals.css (order preserved) */
 /* High-contrast dark surfaces with distinct, saturated story accents. */
 .site-frame {
   background-color: var(--paper);
@@ -89,7 +89,7 @@ h1 em {
 }
 
 .moment-count {
-  border-color: #343B55;
+  border-color: #18181b;
   color: #A3A8BF;
 }
 
@@ -111,12 +111,12 @@ h1 em {
 }
 
 .timeline-list::before {
-  background: linear-gradient(to bottom, #343B55, #343B55 94%, transparent);
+  background: linear-gradient(to bottom, #18181b, #18181b 94%, transparent);
 }
 
 .year-rule,
 .end-marker > span {
-  background: #343B55;
+  background: #18181b;
 }
 
 .date-day {
@@ -132,7 +132,7 @@ h1 em {
 }
 
 .expand-icon {
-  border-color: #343B55;
+  border-color: #18181b;
   color: #A3A8BF;
 }
 
@@ -146,7 +146,7 @@ h1 em {
 .why-it-matters,
 .quote-block {
   border-color: var(--blue);
-  background: #111525;
+  background: #18181b;
 }
 
 .why-it-matters span {
@@ -212,8 +212,8 @@ h1 em {
   height: 60px;
   gap: 16px;
   padding: 0 20px;
-  border-color: #343B55cc;
-    background: #080A12f2;
+  border-color: #18181bcc;
+    background: #000000f2;
   }
 
 .archive-topbar .wordmark {
@@ -260,9 +260,9 @@ h1 em {
      clipped behind it; the panel box itself sticks below the topbar. */
   z-index: 25;
   padding: 22px 20px 20px;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 10px;
-  background: #111525;
+  background: #18181b;
   display: grid;
   gap: 20px;
 }
@@ -284,7 +284,7 @@ h1 em {
     gap: 8px;
     border: 1px solid var(--rule);
     border-radius: 999px;
-    background: #080A12f2;
+    background: #000000f2;
     backdrop-filter: blur(10px);
     color: var(--ink);
     font-size: 12px;
@@ -468,7 +468,7 @@ h1 em {
   align-items: center;
   gap: 10px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #343B55;
+  border-bottom: 1px solid #18181b;
 }
 
 .filter-panel-head h2 {
@@ -487,9 +487,9 @@ h1 em {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 6px;
-  background: #151B30;
+  background: #18181b;
   color: var(--blue);
 }
 
@@ -511,7 +511,7 @@ h1 em {
   display: grid;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #343B55;
+  border-top: 1px solid #18181b;
 }
 
 .filter-result-count {
@@ -532,7 +532,7 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 5px;
   background: transparent;
   color: #A3A8BF;
@@ -590,7 +590,7 @@ h1 em {
   min-height: 44px;
   padding: 0 16px;
   gap: 8px;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 999px;
   background: transparent;
   color: #A3A8BF;
@@ -598,14 +598,14 @@ h1 em {
 }
 
 .archive-topic-nav .topic-button:hover {
-  background: #343B55;
+  background: #18181b;
   color: var(--ink);
 }
 
 .archive-topic-nav .topic-button.is-active {
   border-color: var(--blue);
   background: var(--blue);
-  color: #080A12;
+  color: #000000;
   box-shadow: 0 0 0 1px var(--blue);
 }
 
@@ -616,9 +616,9 @@ h1 em {
 .archive-search {
   min-width: 0;
   padding: 0 12px;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 5px;
-  background: #1A2037;
+  background: #18181b;
   color: #A3A8BF;
 }
 
@@ -634,7 +634,7 @@ h1 em {
 }
 
 .archive-search .clear-search:hover {
-  background: #343B55;
+  background: #18181b;
   color: var(--blue);
 }
 
@@ -648,9 +648,9 @@ h1 em {
   width: 100%;
   height: 36px;
   padding: 0 28px 0 10px;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 5px;
-  background: #1A2037;
+  background: #18181b;
   /* Custom chevron so the select reads the same on every OS. */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -662,7 +662,7 @@ h1 em {
 }
 
 .date-filter-select option {
-  background: #151B30;
+  background: #18181b;
   color: #F4F3FA;
 }
 
@@ -685,9 +685,9 @@ h1 em {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 5px;
-  background: #1A2037;
+  background: #18181b;
   color: #F4F3FA;
   font-size: 12px;
   font-family: inherit;
@@ -711,6 +711,7 @@ h1 em {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: right;
 }
 
 .company-select-trigger svg {
@@ -721,18 +722,23 @@ h1 em {
 .company-select-panel {
   position: absolute;
   top: 100%;
-  left: 0;
+  left: auto;
   right: 0;
   max-height: min(260px, 45vh);
   overflow-y: auto;
+  scrollbar-width: none;
   margin: 0;
   padding: 4px;
   list-style: none;
-  background: #111525;
-  border: 1px solid #343B55;
+  background: #18181b;
+  border: none;
   border-radius: 0 0 6px 6px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
   z-index: 30;
+}
+
+.company-select-panel::-webkit-scrollbar {
+  display: none;
 }
 
 /* Flip upward when the field sits near the bottom of the viewport. */
@@ -758,7 +764,7 @@ h1 em {
 }
 
 .company-select-option:hover {
-  background: #343B55;
+  background: #18181b;
   outline: 1px solid var(--rule-hover);
   outline-offset: -1px;
 }
@@ -785,7 +791,7 @@ h1 em {
   bottom: 34px;
   left: 55px;
   width: 2px;
-  background: linear-gradient(to bottom, #3A2D5C, #2E2650 88%, transparent);
+  background: linear-gradient(to bottom, #3A2D5C, #18181b 88%, transparent);
 }
 
 .archive-timeline .timeline-item {
@@ -798,9 +804,9 @@ h1 em {
   display: flex;
   align-items: center;
   gap: 16px;
-  border: 1.5px solid #343B55;
+  border: 1.5px solid #18181b;
   border-radius: 8px;
-  background: linear-gradient(90deg, #151B30, #111525 70%);
+  background: linear-gradient(90deg, #18181b, #18181b 70%);
   color: var(--blue);
 }
 
@@ -837,8 +843,8 @@ h1 em {
   justify-content: center;
   border: 2px solid currentColor;
   border-radius: 50%;
-  background: #151B30;
-  box-shadow: 0 0 0 6px #080A12, 0 8px 26px #0005;
+  background: #18181b;
+  box-shadow: 0 0 0 6px #000000, 0 8px 26px #0005;
 }
 
 .archive-timeline .date-day {
@@ -891,7 +897,7 @@ h1 em {
 }
 
 .archive-timeline .expand-icon {
-  border-color: #343B55;
+  border-color: #18181b;
   color: #A3A8BF;
 }
 
@@ -911,7 +917,7 @@ h1 em {
 
 .archive-timeline .why-it-matters {
   border-color: var(--blue);
-  background: #111525;
+  background: #18181b;
 }
 
 .archive-timeline .why-it-matters span,

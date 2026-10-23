@@ -1,4 +1,4 @@
-/* badges — extracted from src/app/globals.css (order preserved) */
+﻿/* badges — extracted from src/app/globals.css (order preserved) */
 /* ============ TRENDING & SAVED RECORD BADGES ============ */
 /* Story Saved Indicator Badge */
 .story-saved-pill {
@@ -65,7 +65,7 @@ html[data-theme="light"] .story-saved-pill {
 
 .trending-rank-badge.rank-2 {
   background: #F1F5F9 !important;
-  color: #0F172A !important;
+  color: #18181b !important;
   box-shadow: 0 0 12px rgba(226, 232, 240, 0.2) !important;
   border: 1px solid #CBD5E1 !important;
 }
@@ -79,7 +79,7 @@ html[data-theme="light"] .story-saved-pill {
 
 .trending-rank-badge.rank-other {
   background: #F1F5F9 !important;
-  color: #475569 !important;
+  color: #18181b !important;
   border: 1px solid #E2E8F0 !important;
   box-shadow: 0 0 10px rgba(30, 58, 138, 0.1) !important;
 }

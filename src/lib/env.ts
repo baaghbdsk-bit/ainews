@@ -11,6 +11,10 @@ const PLACEHOLDERS = new Set([
   'your_supabase_anon_key',
   'your_supabase_service_role_key',
   'change-me',
+  'https://dummy-project.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy',
+  'dummy-service-role-key',
+  'dummy',
 ]);
 
 function requireEnv(value: string | undefined, name: string): string {
@@ -33,6 +37,24 @@ export function supabaseAnonKey(): string {
 
 export function supabaseServiceRoleKey(): string {
   return requireEnv(process.env.SUPABASE_SERVICE_ROLE_KEY, 'SUPABASE_SERVICE_ROLE_KEY');
+}
+
+/** True when the public Supabase credentials are present and not placeholders. */
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return (
+    !!url &&
+    !!anonKey &&
+    !PLACEHOLDERS.has(url) &&
+    !PLACEHOLDERS.has(anonKey)
+  );
+}
+
+/** True when the service-role key is present and not a placeholder. */
+export function hasSupabaseServiceRole(): boolean {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return !!key && !PLACEHOLDERS.has(key);
 }
 
 /**

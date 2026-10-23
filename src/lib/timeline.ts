@@ -58,7 +58,7 @@ function formatStoryForDisplay(
     id: story.id || story.slug,
     slug: story.slug,
     title: story.title,
-    summary: story.summary,
+    summary: story.deck ?? story.summary,
     significance: story.significance,
     source: story.source,
     sourceUrl: story.source_url,
@@ -66,7 +66,7 @@ function formatStoryForDisplay(
       story.company ??
       extractCompany({
         title: story.title,
-        summary: story.summary,
+        summary: story.deck ?? story.summary,
         source: story.source,
       }),
     imageUrl: story.image_url ?? null,

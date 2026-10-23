@@ -15,9 +15,11 @@ import { extractCompany } from "@/lib/story-company";
 import { SiteHeader } from "../../site-header";
 import { UpvoteButton, BookmarkButton, ShareButton } from "@/components/story-actions";
 import { extractStoryAnalytics } from "@/lib/story-stats";
-import { StoryStatsDashboard } from "@/components/story-stats-dashboard";
 import { extractArticle, type ExtractOutcome } from "@/lib/feeds/extract-article";
+import { StoryStatsDashboard } from "@/components/story-stats-dashboard";
+import { ReadingProgress } from "@/components/reading-progress";
 import { extractiveSummary } from "@/lib/feeds/summarize";
+import { unstable_cache } from "next/cache";
 
 export const instant = false;
 
@@ -29,6 +31,19 @@ export const instant = false;
  * never returns a real 404.
  */
 export const ensureStatic = 'navigation';
+
+const getCachedExtraction = unstable_cache(
+  async (url: string): Promise<ExtractOutcome> => {
+    return Promise.race([
+      extractArticle(url),
+      new Promise<ExtractOutcome>((resolve) =>
+        setTimeout(() => resolve({ status: "unavailable" }), 2500),
+      ),
+    ]);
+  },
+  ["article-extraction"],
+  { revalidate: 3600, tags: ["article-extraction"] },
+);
 
 type StoryPageProps = {
   params: Promise<{ storyId: string }>;
@@ -61,6 +76,14 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
       title: story.title,
       description: story.summary,
       type: "article",
+      publishedTime: `${story.date}T00:00:00Z`,
+      images: story.imageUrl ? [{ url: story.imageUrl, alt: story.title }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: story.title,
+      description: story.summary,
+      images: story.imageUrl ? [story.imageUrl] : undefined,
     },
   };
 }
@@ -148,6 +171,7 @@ async function persistEnrichedStory(
       .from('stories')
       .update({
         body,
+        ...(deck ? { summary: deck } : {}),
         deck: deck || null,
         key_points: keyPoints.length > 0 ? keyPoints : null,
         brief: brief || null,
@@ -314,23 +338,18 @@ export default async function StoryPage({ params }: StoryPageProps) {
 
   const isSeedStory = seedStories.some((s) => slugify(s.title) === storyId);
 
-  // If the story doesn't have an extracted body yet, extract it on-demand from the source URL
+  // If the story doesn't have an extracted body yet, extract it (cached so the
+  // route stays static) from the source URL.
   const hasSubstantialBody =
-    'body' in finalStory &&
-    typeof finalStory.body === 'string' &&
+    "body" in finalStory &&
+    typeof finalStory.body === "string" &&
     finalStory.body.length >= 300;
 
   if (!isSeedStory && !hasSubstantialBody && finalStory.sourceUrl) {
     try {
-      // Race extraction against a strict 2500ms ceiling so visitor connections never hang
-      const outcome = await Promise.race([
-        extractArticle(finalStory.sourceUrl),
-        new Promise<ExtractOutcome>((resolve) =>
-          setTimeout(() => resolve({ status: 'unavailable' }), 2500)
-        ),
-      ]);
+      const outcome = await getCachedExtraction(finalStory.sourceUrl);
 
-      if (outcome.status === 'ok') {
+      if (outcome.status === "ok") {
         const enriched = extractiveSummary({
           title: finalStory.title,
           summary: finalStory.summary,
@@ -340,19 +359,19 @@ export default async function StoryPage({ params }: StoryPageProps) {
         });
 
         const resolvedDeck =
-          ('deck' in finalStory && typeof finalStory.deck === 'string' && finalStory.deck)
+          "deck" in finalStory && typeof finalStory.deck === "string" && finalStory.deck
             ? finalStory.deck
             : enriched.deck;
         const resolvedBrief =
-          ('brief' in finalStory && typeof finalStory.brief === 'string' && finalStory.brief)
+          "brief" in finalStory && typeof finalStory.brief === "string" && finalStory.brief
             ? finalStory.brief
             : enriched.brief;
         const resolvedKeyPoints =
-          ('key_points' in finalStory && Array.isArray(finalStory.key_points) && finalStory.key_points.length > 0)
+          "key_points" in finalStory && Array.isArray(finalStory.key_points) && finalStory.key_points.length > 0
             ? finalStory.key_points
             : enriched.keyPoints;
         const resolvedWhyItMatters =
-          ('why_it_matters' in finalStory && typeof finalStory.why_it_matters === 'string')
+          "why_it_matters" in finalStory && typeof finalStory.why_it_matters === "string"
             ? finalStory.why_it_matters
             : enriched.whyItMatters;
         const resolvedImageUrl = finalStory.imageUrl || outcome.article.imageUrl;
@@ -367,24 +386,23 @@ export default async function StoryPage({ params }: StoryPageProps) {
           imageUrl: resolvedImageUrl,
         };
 
-        // Persist to Supabase so subsequent visitors load instantly from DB
         const persistedStoryId = dbStoryId;
         if (persistedStoryId) {
           after(async () => {
             await persistEnrichedStory(
               persistedStoryId,
               outcome.article.body,
-              resolvedDeck,
-              resolvedKeyPoints,
-              resolvedBrief,
-              resolvedWhyItMatters,
+              resolvedDeck ?? "",
+              resolvedKeyPoints ?? [],
+              resolvedBrief ?? null,
+              resolvedWhyItMatters ?? null,
               resolvedImageUrl ?? null,
             );
           });
         }
       }
     } catch (err) {
-      console.warn('Failed on-demand article extraction:', err);
+      console.warn("Failed on-demand article extraction:", err);
     }
   }
 
@@ -417,7 +435,11 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
   const briefParagraphs = brief
     ? brief.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean)
     : [];
-  const proseParagraphs = briefParagraphs.length ? briefParagraphs : bodyParagraphs;
+  const proseParagraphs = briefParagraphs.length
+    ? briefParagraphs
+    : bodyParagraphs.length
+      ? bodyParagraphs
+      : [story.summary, story.significance].filter(Boolean);
 
   const totalWords = [story.title, deck, ...proseParagraphs, whyItMatters, ...(keyPoints ?? [])]
     .filter(Boolean)
@@ -426,6 +448,20 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
     .length;
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 180));
 
+  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://neubench.vercel.app").replace(/\/$/, "");
+  const canonicalUrl = `${siteOrigin}/story/${story.slug}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: story.title,
+    description: deck || story.summary,
+    image: story.imageUrl ? [story.imageUrl] : undefined,
+    datePublished: story.date,
+    author: { "@type": "Organization", name: "NeuBench" },
+    publisher: { "@type": "Organization", name: "NeuBench" },
+    mainEntityOfPage: canonicalUrl,
+  };
   const analytics = extractStoryAnalytics({
     title: story.title,
     summary: story.summary,
@@ -439,6 +475,7 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
 
   return (
     <main className="site-frame archive-page story-article-page">
+      <ReadingProgress />
       <SiteHeader
         className="story-article-topbar"
         right={
@@ -452,6 +489,10 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
       />
 
       <article className={`story-article article-${story.color}`} data-tour-target="story-page">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <div className="story-article-meta">
           <span className="story-article-topic">
             <span className={`topic-dot dot-${story.color}`} />
@@ -465,6 +506,14 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
 
         <h1>{story.title}</h1>
 
+        {story.imageUrl ? (
+          <figure className="story-article-hero">
+            <img src={story.imageUrl} alt={story.title} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+          </figure>
+        ) : null}
+
+        {deck ? <p className="story-article-standfirst">{deck}</p> : null}
+
         <div className="story-article-actions">
           <UpvoteButton slug={story.slug} size="md" initialCount={upvoteCount} />
           <BookmarkButton slug={story.slug} size="md" />
@@ -476,11 +525,16 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
           />
         </div>
 
-        {deck ? <p className="story-article-standfirst">{deck}</p> : null}
+        <nav className="story-article-toc" aria-label="Table of contents">
+          <span>Contents</span>
+          {keyPoints.length ? <a href="#key-takeaways">Key takeaways</a> : null}
+          <a href="#why-it-matters">Why it matters</a>
+          {topics.length ? <a href="#topics">Topics</a> : null}
+        </nav>
 
         {keyPoints.length ? (
-          <aside className="story-article-keypoints" aria-label="Key highlights">
-            <h2>Key highlights</h2>
+          <aside className="story-article-keypoints" aria-label="Key takeaways" id="key-takeaways">
+            <h2>Key takeaways</h2>
             <ul>
               {keyPoints.map((point, index) => (
                 <li key={index}>{point}</li>
@@ -496,7 +550,7 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
           <span />
         </div>
 
-        <section className={`story-article-context context-${story.color}`}>
+        <section className={`story-article-context context-${story.color}`} id="why-it-matters">
           <div className="story-article-context-header">
             <Sparkles aria-hidden="true" size={16} strokeWidth={2.2} />
             <h2>Why it matters</h2>
@@ -505,7 +559,7 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
         </section>
 
         {topics.length ? (
-          <div className="story-article-topics">
+          <div className="story-article-topics" id="topics">
             <span>Topic dossiers</span>
             {topics.map((topic) => (
               <Link key={topic.slug} href={`/topic/${topic.slug}`}>

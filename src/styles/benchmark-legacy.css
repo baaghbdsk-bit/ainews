@@ -1,11 +1,11 @@
-/* benchmark-legacy — extracted from src/app/globals.css (order preserved) */
+﻿/* benchmark-legacy — extracted from src/app/globals.css (order preserved) */
 @layer benchmark-legacy {
 .benchmarks-page {
   min-height: 100vh;}
 .benchmarks-container {
-  --bench-panel: var(--shell-surface, #0d101c);
-  --bench-panel-2: var(--shell-surface-2, #151b30);
-  --bench-line: var(--shell-line, #343b55);
+  --bench-panel: var(--shell-surface, #18181b);
+  --bench-panel-2: var(--shell-surface-2, #18181b);
+  --bench-line: var(--shell-line, #18181b);
   --bench-line-strong: var(--shell-line-2, #414967);
   --bench-text: var(--shell-text, #f4f3fa);
   --bench-muted: var(--shell-muted, #a3a8bf);
@@ -135,7 +135,7 @@ html[data-theme="light"] .benchmarks-container {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 16px 14px;
-  background: rgba(13, 16, 28, 0.72);
+  background: rgba(24, 24, 27, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
@@ -336,7 +336,7 @@ from { opacity: 0; transform: translateY(-8px);}
   max-height: 280px;
 
   padding: 16px 14px;
-  background: rgba(13, 16, 28, 0.72);
+  background: rgba(24, 24, 27, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
@@ -1047,10 +1047,10 @@ html[data-theme="light"] .bench-stat-mini:hover {
 html[data-theme="light"] .preset-pill-btn {
   background: #f8fafc;
   border-color: #e2e8f0;
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .preset-pill-btn:hover {
   background: #f1f5f9;
-  color: #0f172a;}
+  color: #18181b;}
 html[data-theme="light"] .preset-pill-btn.is-active {
   background: #ede9fe;
   border-color: #8b5cf6;
@@ -1058,13 +1058,13 @@ html[data-theme="light"] .preset-pill-btn.is-active {
 html[data-theme="light"] .active-model-chip {
   background: #f1f5f9;
   border-color: #e2e8f0;
-  color: #1e293b;}
+  color: #18181b;}
 html[data-theme="light"] .views-segmented-control {
   background: #f1f5f9;
   border-color: #e2e8f0;}
 html[data-theme="light"] .view-tab-btn.is-active {
   background: #ffffff;
-  color: #0f172a;
+  color: #18181b;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);}
 html[data-theme="light"] .bench-card-explanation,  html[data-theme="light"] .radar-stats-side-panel,  html[data-theme="light"] .quadrant-svg,  html[data-theme="light"] .quadrant-quad-desc,  html[data-theme="light"] .specs-table-container,  html[data-theme="light"] .guide-compact-card,  html[data-theme="light"] .drawer-search-bar,  html[data-theme="light"] .drawer-model-card {
   background: #f8fafc;
@@ -1075,7 +1075,7 @@ html[data-theme="light"] .bench-specs-table th {
   color: #64748b;}
 html[data-theme="light"] .bench-specs-table td {
   border-color: #e2e8f0;
-  color: #1e293b;}
+  color: #18181b;}
 html[data-theme="light"] .bench-specs-table tbody tr:hover {
   background: #f1f5f9;}
 html[data-theme="light"] .quadrant-hover-card {

@@ -59,8 +59,7 @@ export function AccountButton() {
         aria-expanded={menuOpen}
         data-tour-target="account"
       >
-        <UserIcon size={14} />
-        <span className="account-email">{label}</span>
+        <UserIcon size={16} />
       </button>
 
       {menuOpen && (

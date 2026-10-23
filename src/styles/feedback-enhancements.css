@@ -1,4 +1,4 @@
-/* feedback-enhancements — extracted from src/app/globals.css (order preserved) */
+﻿/* feedback-enhancements — extracted from src/app/globals.css (order preserved) */
 /* ============ FEEDBACK & CONNECT ENHANCEMENTS (FULL WIDTH & LEGIBLE TEXT) ============ */
 /* 1. Full width layout taking complete available space */
 .feedback-connect-dossier {
@@ -58,7 +58,7 @@
   margin: 0 !important;
   font-size: 15px !important;
   line-height: 1.65 !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
   max-width: none !important;
 }
 
@@ -116,7 +116,7 @@
 
 .category-chip-desc {
   font-size: 12.5px !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
   line-height: 1.45 !important;
 }
 
@@ -177,7 +177,7 @@
 
 .textarea-footer {
   font-size: 12.5px !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
   padding: 2px 4px 0 !important;
 }
 
@@ -287,7 +287,7 @@
 
 .channel-desc {
   font-size: 14px !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
   line-height: 1.6 !important;
   margin-top: 2px !important;
 }
@@ -322,7 +322,7 @@
 .feedback-success-card p {
   font-size: 15px !important;
   line-height: 1.65 !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
 }
 
 /* Light Theme overrides for Feedback & Connect */
@@ -342,7 +342,7 @@ html[data-theme="light"] .console-title,
 html[data-theme="light"] .category-chip-title,
 html[data-theme="light"] .channel-title,
 html[data-theme="light"] .feedback-success-card h4 {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .console-subtitle,
@@ -350,11 +350,11 @@ html[data-theme="light"] .category-chip-desc,
 html[data-theme="light"] .channel-desc,
 html[data-theme="light"] .textarea-footer,
 html[data-theme="light"] .feedback-success-card p {
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .form-label {
-  color: #334155 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .category-chip-btn {
@@ -375,17 +375,17 @@ html[data-theme="light"] .category-chip-btn.is-selected {
 html[data-theme="light"] .feedback-textarea-large {
   background: #FFFFFF !important;
   border-color: #CBD5E1 !important;
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .feedback-input-email {
   background: #FFFFFF !important;
   border-color: #CBD5E1 !important;
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .feedback-input-email::placeholder {
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
 }
 
 html[data-theme="light"] .form-label-optional,
@@ -406,7 +406,7 @@ html[data-theme="light"] .channel-card-link:hover {
 html[data-theme="light"] .community-manifesto-box {
   background: #FAF5FF !important;
   border-color: #DDD6FE !important;
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .community-manifesto-box strong {

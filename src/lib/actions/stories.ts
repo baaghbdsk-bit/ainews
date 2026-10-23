@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createPublicClient } from '@/lib/supabase/public';
-import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
+// (Supabase client is obtained via createPublicClient; no direct createClient needed here.)
 import { CreateStorySchema, UpdateStorySchema, type Story } from '@/lib/schemas/story';
 import { ZodError } from 'zod';
 import { cacheLife, cacheTag, revalidatePath, updateTag } from 'next/cache';
@@ -12,7 +12,6 @@ import { extractCompany } from '@/lib/story-company';
 import { termPattern } from '@/lib/dossier/entities';
 import { slugTitlePart } from '@/lib/slug';
 import { isMissingSchemaError } from '@/lib/supabase/api-guard';
-import { supabaseAnonKey, supabaseUrl } from '@/lib/env';
 
 // Only what the timeline projection and the sitemap actually read. Skipping
 // body/brief (multi-MB on this table) keeps the public query fast while including
@@ -41,8 +40,10 @@ export async function getPublishedStories(): Promise<Story[]> {
   cacheLife('hours');
   cacheTag(STORIES_TAG);
 
+  const supabase = createPublicClient();
+  if (!supabase) return [];
+
   try {
-    const supabase = createPublicClient();
     const rows: Story[] = [];
 
     for (let offset = 0; ; offset += STORY_PAGE_SIZE) {
@@ -79,8 +80,8 @@ interface VoteCountRow {
   upvote_count: number;
 }
 
-const voteCountsClient = (): SupabaseClient =>
-  createSupabaseClient(supabaseUrl(), supabaseAnonKey());
+const voteCountsClient = (): ReturnType<typeof createPublicClient> =>
+  createPublicClient();
 
 /**
  * Current upvote totals per story slug, read from the aggregate vote table.
@@ -92,8 +93,11 @@ export async function getUpvoteCounts(): Promise<Record<string, number>> {
 
   const counts: Record<string, number> = {};
 
+  const supabase = voteCountsClient();
+  if (!supabase) return counts;
+
   try {
-    const { data, error } = await voteCountsClient()
+    const { data, error } = await supabase
       .from('story_vote_counts')
       .select('story_slug, upvote_count');
 
@@ -157,8 +161,10 @@ export async function getStoryBySlugFresh(slug: string): Promise<Story | null> {
 }
 
 async function queryStoryBySlug(slug: string): Promise<Story | null> {
+  const supabase = createPublicClient();
+  if (!supabase) return null;
+
   try {
-    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('stories')
       .select('*')
@@ -204,6 +210,7 @@ export async function getStoryBySlugPrefix(slug: string): Promise<Story | null> 
 
   try {
     const supabase = createPublicClient();
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('stories')
       .select('*')
@@ -241,6 +248,7 @@ export async function getStoriesByEntityTerms(terms: string[], limit = 40): Prom
 
   try {
     const supabase = createPublicClient();
+    if (!supabase) return [];
     // PostgREST needs double-quoted values when the pattern contains a space.
     const filter = terms
       .map((term) => `title.ilike."${termPattern(term)}",summary.ilike."${termPattern(term)}"`)

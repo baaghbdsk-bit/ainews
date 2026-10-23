@@ -198,6 +198,7 @@ export function whenAuthSettled(): Promise<void> {
 
 export async function signIn(email: string, password: string): Promise<void> {
   const supabase = createClient();
+  if (!supabase) throw new Error('Authentication is not available.');
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
 
@@ -242,6 +243,7 @@ export async function signUp(
 
 export async function resetPassword(email: string): Promise<void> {
   const supabase = createClient();
+  if (!supabase) throw new Error('Authentication is not available.');
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: callbackUrl('/auth/reset-password'),
   });
@@ -258,6 +260,7 @@ export async function resetPassword(email: string): Promise<void> {
 
 export async function updatePassword(password: string): Promise<void> {
   const supabase = createClient();
+  if (!supabase) throw new Error('Authentication is not available.');
   const { data, error } = await supabase.auth.updateUser({ password });
   if (error) {
     if (/failed to fetch|network/i.test(error.message)) {
@@ -276,6 +279,7 @@ export async function updatePassword(password: string): Promise<void> {
 
 export async function sendMagicLink(email: string): Promise<void> {
   const supabase = createClient();
+  if (!supabase) throw new Error('Authentication is not available.');
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: callbackUrl() },
@@ -285,6 +289,7 @@ export async function sendMagicLink(email: string): Promise<void> {
 
 export async function signOut(): Promise<void> {
   const supabase = createClient();
+  if (!supabase) return;
   await supabase.auth.signOut();
   // A guest token is kept, so the reading experience is unchanged after
   // signing out - the reader is not punished for it.
@@ -307,6 +312,13 @@ export function startAuth(): void {
   started = true;
 
   const supabase = createClient();
+  if (!supabase) {
+    ready = true;
+    user = null;
+    snapshot = buildSnapshot();
+    emit();
+    return;
+  }
 
   supabase.auth.getSession().then(({ data }) => {
     user = data.session?.user ?? null;

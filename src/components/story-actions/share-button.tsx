@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { Share2, Check, Copy, ExternalLink, X } from 'lucide-react';
 
 interface ShareButtonProps {
@@ -20,6 +21,7 @@ export function ShareButton({
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -89,12 +91,30 @@ export function ShareButton({
   useEffect(() => {
     if (!isOpen) return;
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+      if (
+        wrapperRef.current?.contains(event.target as Node) ||
+        menuRef.current?.contains(event.target as Node)
+      ) {
+        return;
       }
+      setIsOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const menuHeight = menuRef.current?.offsetHeight ?? 260;
+    let top = rect.bottom + 6;
+    if (top + menuHeight > window.innerHeight - 8) {
+      top = Math.max(8, rect.top - menuHeight - 6);
+    }
+    setMenuPos({
+      top,
+      right: Math.max(8, window.innerWidth - rect.right),
+    });
   }, [isOpen]);
 
   // Move focus into the menu when it opens, and leave it on the trigger when
@@ -187,59 +207,70 @@ export function ShareButton({
         )}
       </button>
 
-      {isOpen && (
-        <div
-          className="share-dropdown-menu"
-          id={menuId}
-          ref={menuRef}
-          role="menu"
-          aria-label="Share options"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="share-dropdown-header">
-            <span>Share Story</span>
-            <button
-              type="button"
-              onClick={() => closeMenu(true)}
-              className="share-close-btn"
-              aria-label="Close"
+      {isOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="share-dropdown-menu"
+              id={menuId}
+              ref={menuRef}
+              role="menu"
+              aria-label="Share options"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'fixed',
+                top: menuPos?.top ?? 0,
+                right: menuPos?.right ?? 8,
+                maxHeight: 'calc(100vh - 16px)',
+                overflowY: 'auto',
+                zIndex: 10000,
+              }}
             >
-              <X size={12} />
-            </button>
-          </div>
+              <div className="share-dropdown-header">
+                <span>Share Story</span>
+                <button
+                  type="button"
+                  onClick={() => closeMenu(true)}
+                  className="share-close-btn"
+                  aria-label="Close"
+                >
+                  <X size={12} />
+                </button>
+              </div>
 
-          <button
-            type="button"
-            onClick={copyLink}
-            className="share-menu-item copy-link-item"
-            role="menuitem"
-            tabIndex={-1}
-          >
-            {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-            <span>{copied ? 'Link copied to clipboard!' : 'Copy direct link'}</span>
-          </button>
-
-          <div className="share-divider" />
-
-          <div className="share-links-list">
-            {shareLinks.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="share-menu-item"
+              <button
+                type="button"
+                onClick={copyLink}
+                className="share-menu-item copy-link-item"
                 role="menuitem"
                 tabIndex={-1}
-                onClick={() => setIsOpen(false)}
               >
-                <span>{item.name}</span>
-                <ExternalLink size={12} className="opacity-60" />
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+                {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                <span>{copied ? 'Link copied to clipboard!' : 'Copy direct link'}</span>
+              </button>
+
+              <div className="share-divider" />
+
+              <div className="share-links-list">
+                {shareLinks.map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="share-menu-item"
+                    role="menuitem"
+                    tabIndex={-1}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <span>{item.name}</span>
+                    <ExternalLink size={12} className="opacity-60" />
+                  </a>
+                ))}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

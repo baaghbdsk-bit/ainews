@@ -1,4 +1,4 @@
-import { ImageResponse } from "next/og";
+﻿import { ImageResponse } from "next/og";
 
 export const alt = "NeuBench";
 export const size = { width: 1200, height: 630 };
@@ -19,7 +19,7 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "center",
-          backgroundColor: "#080A12",
+          backgroundColor: "#000000",
           padding: "0 96px",
           color: "#F4F3FA",
         }}

@@ -61,6 +61,7 @@ export async function getDossierBySlug(slug: string): Promise<DossierView | null
 
   try {
     const supabase = createPublicClient();
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('dossiers')
       .select('slug, title, subtitle, blocks, story_ids, llm_model, generated_at')

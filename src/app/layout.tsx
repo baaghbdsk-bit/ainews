@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthDialog } from "@/components/auth/auth-dialog";
@@ -189,7 +189,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             border: 1px solid rgba(139, 92, 246, 0.32);
             border-bottom: 0;
             border-radius: 18px 18px 0 0;
-            background: #0f1322;
+            background: #18181b;
             box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.6);
           }
           html[data-theme="light"] .mobile-filter-sheet {
@@ -197,7 +197,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             border-color: #d3c9e3;
           }
           .mobile-filter-sheet .company-select-option[data-active="true"] {
-            background: #343b55;
+            background: #18181b;
           }
           html[data-theme="light"] .mobile-filter-sheet .company-select-option[data-active="true"] {
             background: #ede6f9;

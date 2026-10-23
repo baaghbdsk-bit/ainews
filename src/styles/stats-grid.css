@@ -1,4 +1,4 @@
-/* stats-grid — extracted from src/app/globals.css (order preserved) */
+﻿/* stats-grid — extracted from src/app/globals.css (order preserved) */
 /* ============ ABOUT STATS GRID STYLING ============ */
 .about-stats-grid {
   display: grid !important;
@@ -65,7 +65,7 @@
 .about-stat-desc {
   font-size: 13px !important;
   line-height: 1.55 !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
 }
 
 html[data-theme="light"] .about-stat-card {
@@ -75,7 +75,7 @@ html[data-theme="light"] .about-stat-card {
 }
 
 html[data-theme="light"] .about-stat-value {
-  background: linear-gradient(135deg, #0F172A 30%, #334155 100%) !important;
+  background: linear-gradient(135deg, #18181b 30%, #18181b 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
@@ -85,7 +85,7 @@ html[data-theme="light"] .about-stat-label {
 }
 
 html[data-theme="light"] .about-stat-desc {
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 

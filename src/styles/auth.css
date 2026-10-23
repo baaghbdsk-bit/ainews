@@ -1,4 +1,4 @@
-/* Account: the header button, the sign-in dialog, and the guest option.
+﻿/* Account: the header button, the sign-in dialog, and the guest option.
  * The dialog is opt-in only - it never opens by itself, so a reader who
  * came for the news is never interrupted. */
 
@@ -158,7 +158,7 @@
   padding: 26px 24px 22px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.13);
-  background: linear-gradient(160deg, #151b30 0%, #0c1120 100%);
+  background: linear-gradient(160deg, #18181b 0%, #000000 100%);
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
   animation: auth-rise 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -184,7 +184,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
-  color: #94a3b8;
+  color: #a1a1aa;
   cursor: pointer;
   transition: background 140ms ease, color 140ms ease;
 }
@@ -221,7 +221,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #94a3b8;
+  color: #a1a1aa;
 }
 
 .auth-form {
@@ -235,7 +235,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: #94a3b8;
+  color: #a1a1aa;
   margin-top: 6px;
 }
 
@@ -414,13 +414,13 @@
 html[data-theme="light"] .account-btn {
   border-color: #e2e8f0;
   background: #ffffff;
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .account-btn:hover {
   background: #f1f5f9;
   border-color: #c4b5fd;
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .account-menu {
@@ -430,20 +430,20 @@ html[data-theme="light"] .account-menu {
 }
 
 html[data-theme="light"] .account-menu-label {
-  color: #94a3b8;
+  color: #a1a1aa;
 }
 
 html[data-theme="light"] .account-menu-email {
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .account-menu-item {
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .account-menu-item:hover {
   background: #f1f5f9;
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-overlay {
@@ -458,7 +458,7 @@ html[data-theme="light"] .auth-dialog {
 }
 
 html[data-theme="light"] .auth-title {
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-subtitle {
@@ -478,13 +478,13 @@ html[data-theme="light"] .auth-label {
 html[data-theme="light"] .auth-input {
   background: #ffffff;
   border-color: #cbd5e1;
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-guest-btn {
   border-color: #cbd5e1;
   background: #ffffff;
-  color: #334155;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-guest-btn:hover {
@@ -571,14 +571,14 @@ html[data-theme="light"] .auth-guest-rule::after {
 
 html[data-theme="light"] .guest-notice {
   background: #ffffff;
-  color: #0f172a;
+  color: #18181b;
   border-color: rgba(15, 23, 42, 0.12);
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
 }
 
 html[data-theme="light"] .guest-notice-action {
   background: rgba(15, 23, 42, 0.06);
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .guest-notice-action:hover {
@@ -647,7 +647,7 @@ html[data-theme="light"] .guest-notice-action:hover {
   margin: 0;
   font-size: 13px;
   line-height: 1.55;
-  color: #94a3b8;
+  color: #a1a1aa;
 }
 
 .auth-sent-text strong {
@@ -714,7 +714,7 @@ html[data-theme="light"] .guest-notice-action:hover {
   margin: 0;
   font-size: 13px;
   line-height: 1.55;
-  color: #94a3b8;
+  color: #a1a1aa;
 }
 
 .auth-reset-state .auth-submit {
@@ -738,20 +738,20 @@ html[data-theme="light"] .auth-page {
 }
 
 html[data-theme="light"] .auth-page-brand {
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-sent-title {
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-sent-text,
 html[data-theme="light"] .auth-reset-state-text {
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-sent-text strong {
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .auth-sent-icon,

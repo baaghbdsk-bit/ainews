@@ -1,4 +1,4 @@
-/* digest-enhancements — extracted from src/app/globals.css (order preserved) */
+﻿/* digest-enhancements — extracted from src/app/globals.css (order preserved) */
 /* ============ DAILY DIGEST ENHANCEMENTS (FULL WIDTH & 2x2 THEMES) ============ */
 .daily-digest-dossier {
   display: flex !important;
@@ -40,7 +40,7 @@
   margin: 0 0 28px !important;
   font-size: 15.5px !important;
   line-height: 1.7 !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
   max-width: 100% !important;
 }
 
@@ -82,7 +82,7 @@
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
 }
 
 .digest-stat-item .stat-num {
@@ -133,7 +133,7 @@
   margin: 0 !important;
   font-size: 15px !important;
   line-height: 1.65 !important;
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
   max-width: 100% !important;
 }
 
@@ -339,13 +339,13 @@ html[data-theme="light"] .digest-section-title,
 html[data-theme="light"] .theme-card-title-row h4,
 html[data-theme="light"] .pillar-header-left h4,
 html[data-theme="light"] .digest-story-title {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .digest-executive-summary-card .executive-lede,
 html[data-theme="light"] .digest-section-subtitle,
 html[data-theme="light"] .theme-card-desc {
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .digest-stat-item {
@@ -354,7 +354,7 @@ html[data-theme="light"] .digest-stat-item {
 }
 
 html[data-theme="light"] .digest-stat-item .stat-num {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .digest-theme-card {
@@ -387,7 +387,7 @@ html[data-theme="light"] .digest-pillar-header {
 html[data-theme="light"] .pillar-count-badge {
   background: #F1F5F9 !important;
   border-color: #E2E8F0 !important;
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .digest-story-link-item {

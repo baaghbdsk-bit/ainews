@@ -1,4 +1,4 @@
-/* desktop-shell — extracted from src/app/globals.css (order preserved) */
+﻿/* desktop-shell — extracted from src/app/globals.css (order preserved) */
 /* ==========================================================================
    TIMELINE ROW THUMBNAIL — the story's lead image, or a monogram tile when the
    source had none. Additive: the row gains a third column and nothing already
@@ -20,9 +20,9 @@
   display: grid;
   place-items: center;
   overflow: hidden;
-  border: 1px solid #343B55;
+  border: 1px solid #18181b;
   border-radius: 10px;
-  background: #151B30;
+  background: #18181b;
   transition: border-color 160ms ease;
 }
 
@@ -41,7 +41,7 @@
   --tone: var(--blue);
   background:
     radial-gradient(120% 120% at 18% 12%, #8B5CF61f, transparent 58%),
-    linear-gradient(150deg, #151B30, #111525 72%);
+    linear-gradient(150deg, #18181b, #18181b 72%);
   color: var(--tone);
   font-size: 20px;
   font-weight: 700;
@@ -72,24 +72,21 @@
    ========================================================================== */
 
 .archive-page {
-  --shell-bg: #020617;
-  --shell-surface: #0F172A;
-  --shell-surface-2: #1E293B;
-  --shell-line: #334155;
-  --shell-line-2: #475569;
+  --shell-bg: #000000;
+  --shell-surface: #18181b;
+  --shell-surface-2: #18181b;
+  --shell-line: #18181b;
+  --shell-line-2: #18181b;
   --shell-line-hover: #60A5FA;
   --shell-line-focus: #1E3A8A;
   --shell-text: #F8FAFC;
-  --shell-muted: #CBD5E1;
-  --shell-faint: #94A3B8;
+  --shell-muted: #FFFFFF;
+  --shell-faint: #a1a1aa;
   --shell-accent: #1E3A8A;
   --shell-accent-2: #60A5FA;
-  --shell-accent-soft: #1E3A8A2e;
+  --shell-accent-soft: #18181b2e;
   background-color: var(--shell-bg);
-  background-image:
-    radial-gradient(1100px 520px at 10% -10%, #1E3A8A1a, transparent 62%),
-    radial-gradient(900px 460px at 92% -14%, #60A5FA0a, transparent 60%),
-    radial-gradient(#334155 0.7px, transparent 0.7px);
+  background-image: none;
   background-size: auto, auto, 8px 8px;
   color: var(--shell-text);
 }
@@ -102,15 +99,15 @@ html[data-theme="light"] .archive-page {
   --shell-line-2: #CBD5E1;
   --shell-line-hover: #3B82F6;
   --shell-line-focus: #1E3A8A;
-  --shell-text: #0F172A;
-  --shell-muted: #475569;
-  --shell-faint: #94A3B8;
+  --shell-text: #18181b;
+  --shell-muted: #18181b;
+  --shell-faint: #a1a1aa;
   --shell-accent: #1E3A8A;
   --shell-accent-2: #3B82F6;
-  --shell-accent-soft: #1E3A8A2e;
+  --shell-accent-soft: #18181b2e;
   background-color: var(--shell-bg);
   background-image:
-    radial-gradient(1100px 520px at 10% -10%, #1E3A8A1a, transparent 62%),
+    radial-gradient(1100px 520px at 10% -10%, #18181b1a, transparent 62%),
     radial-gradient(900px 460px at 92% -14%, #3B82F60a, transparent 60%),
     radial-gradient(#E2E8F0 0.7px, transparent 0.7px);
   background-size: auto, auto, 8px 8px;
@@ -130,9 +127,9 @@ html[data-theme="light"] .archive-page {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   border-bottom: 1px solid var(--shell-line);
-  background: #0b0d19e6;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #000000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .archive-topbar .wordmark {
@@ -270,7 +267,7 @@ html[data-theme="light"] .archive-page {
   place-items: center;
   border: 1px solid var(--shell-line-2);
   border-radius: 999px;
-  background: linear-gradient(140deg, #2E2650, #1A2037);
+  background: linear-gradient(140deg, #18181b, #18181b);
   color: #A3A8BF;
 }
 
@@ -302,7 +299,7 @@ html[data-theme="light"] .archive-page {
   padding: 5px;
   border: 1px solid var(--shell-line);
   border-radius: 999px;
-  background: #0D101Cb8;
+  background: #18181bb8;
 }
 
 .archive-topic-nav .topic-button {
@@ -326,7 +323,7 @@ html[data-theme="light"] .archive-page {
 .archive-topic-nav .topic-button.is-active {
   border-color: transparent;
   background: linear-gradient(120deg, #8B5CF6, #C084FC);
-  color: #080A12;
+  color: #000000;
   box-shadow: 0 6px 20px #8B5CF645;
 }
 
@@ -352,7 +349,7 @@ html[data-theme="light"] .archive-page {
   padding: 16px 16px 18px;
   border: 1px solid var(--shell-line);
   border-radius: 16px;
-  background: linear-gradient(180deg, #111525f5, #0D101Cf5);
+  background: linear-gradient(180deg, #18181bf5, #18181bf5);
   box-shadow: 0 18px 44px #00000040;
 }
 
@@ -444,7 +441,7 @@ html[data-theme="light"] .archive-page {
 }
 
 .archive-page .date-filter-select option {
-  background: #151B30;
+  background: #18181b;
   color: var(--shell-text);
 }
 
@@ -500,7 +497,7 @@ html[data-theme="light"] .archive-page {
 .category-chip.is-active {
   border-color: transparent;
   background: linear-gradient(120deg, #8B5CF6, #C084FC);
-  color: #080A12;
+  color: #000000;
   box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
 }
 
@@ -515,7 +512,7 @@ html[data-theme="light"] .archive-page {
 
 .category-chip.is-active .category-chip-count {
   background: rgba(0, 0, 0, 0.22);
-  color: #080A12;
+  color: #000000;
   font-weight: 700;
 }
 
@@ -577,7 +574,7 @@ html[data-theme="light"] .archive-page {
   gap: 6px;
   border: 1px solid var(--shell-line-2);
   border-radius: 999px;
-  background: #1A2037;
+  background: #18181b;
   color: var(--shell-text);
   font-size: 12px;
   font-weight: 500;
@@ -622,12 +619,12 @@ html[data-theme="light"] .active-filter-chip:hover {
 /* ---- Timeline rows, recoloured to the shell palette ---- */
 
 .archive-timeline .timeline-list::before {
-  background: linear-gradient(to bottom, #3A2D5C, #2E2650 88%, transparent);
+  background: linear-gradient(to bottom, #3A2D5C, #18181b 88%, transparent);
 }
 
 .archive-timeline .year-divider {
   border: 1px solid var(--shell-line);
-  background: linear-gradient(90deg, #151B30, #0D101C 72%);
+  background: linear-gradient(90deg, #18181b, #18181b 72%);
   color: var(--shell-text);
 }
 
@@ -799,17 +796,17 @@ html[data-theme="light"] .active-filter-chip:hover {
 .story-thumb-mono {
   background:
     radial-gradient(120% 120% at 18% 12%, #8B5CF626, transparent 58%),
-    linear-gradient(150deg, #1A2037, #111525 72%);
+    linear-gradient(150deg, #18181b, #18181b 72%);
   color: var(--tone, var(--shell-text));
   border-color: color-mix(in srgb, currentColor 55%, var(--shell-line-2));
 }
 
 /* Monogram tile per-category backlight: same hue as the dot/ring, kept faint
    so the tile stays a neutral surface with a category-colored glow. */
-.thumb-blue { --tone: var(--blue); background: radial-gradient(120% 120% at 18% 12%, #7AA5FF2e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
-.thumb-violet { --tone: var(--violet); background: radial-gradient(120% 120% at 18% 12%, #A78BFA2e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
-.thumb-cyan { --tone: var(--cyan); background: radial-gradient(120% 120% at 18% 12%, #2DD4BF2e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
-.thumb-amber { --tone: var(--amber); background: radial-gradient(120% 120% at 18% 12%, #FBBF242e, transparent 58%), linear-gradient(150deg, #1A2037, #111525 72%); }
+.thumb-blue { --tone: var(--blue); background: radial-gradient(120% 120% at 18% 12%, #7AA5FF2e, transparent 58%), linear-gradient(150deg, #18181b, #18181b 72%); }
+.thumb-violet { --tone: var(--violet); background: radial-gradient(120% 120% at 18% 12%, #A78BFA2e, transparent 58%), linear-gradient(150deg, #18181b, #18181b 72%); }
+.thumb-cyan { --tone: var(--cyan); background: radial-gradient(120% 120% at 18% 12%, #2DD4BF2e, transparent 58%), linear-gradient(150deg, #18181b, #18181b 72%); }
+.thumb-amber { --tone: var(--amber); background: radial-gradient(120% 120% at 18% 12%, #FBBF242e, transparent 58%), linear-gradient(150deg, #18181b, #18181b 72%); }
 
 .archive-page .archive-search .clear-search:hover,
 .archive-page .header-search .clear-search:hover {
@@ -934,7 +931,7 @@ html[data-theme="light"] .active-filter-chip:hover {
   border-radius: 20px;
   background:
     radial-gradient(130% 170% at 86% 46%, #8B5CF621, transparent 62%),
-    linear-gradient(135deg, #111525, #080A12 74%);
+    linear-gradient(135deg, #18181b, #000000 74%);
   box-shadow: 0 24px 60px #00000059;
 }
 
@@ -986,7 +983,7 @@ html[data-theme="light"] .active-filter-chip:hover {
   padding: 7px 14px;
   border: 1px solid var(--shell-line-2);
   border-radius: 999px;
-  background: #151B30cc;
+  background: #18181bcc;
   color: var(--shell-text);
   font-size: 12px;
   font-weight: 600;
@@ -1087,7 +1084,7 @@ html[data-theme="light"] .active-filter-chip:hover {
   align-items: center;
   justify-content: space-around;
   border-top: 1px solid var(--rule);
-  background: #1A2037ed;
+  background: #18181bed;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 40;
@@ -1279,7 +1276,7 @@ html[data-theme="light"] .active-filter-chip:hover {
     padding: 6px;
     border: 1px solid var(--shell-line-2);
     border-radius: 14px;
-    background: #0D101Cf7;
+    background: #18181bf7;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 18px 44px #00000066;
@@ -1303,7 +1300,7 @@ html[data-theme="light"] .active-filter-chip:hover {
   }
 
   .mobile-menu-panel button:hover {
-    background: #1A2037;
+    background: #18181b;
   }
 
   .mobile-menu-panel button svg {
@@ -1696,7 +1693,7 @@ html[data-theme="light"] .archive-timeline .why-it-matters.why-amber span,
 html[data-theme="light"] .archive-timeline .why-it-matters.why-amber .why-it-matters-header { color: #B45309; }
 
 html[data-theme="light"] .archive-timeline .why-it-matters p {
-  color: #334155;
+  color: #18181b;
 }
 
 html[data-theme="light"] .header-search-kbd {
@@ -1738,7 +1735,7 @@ html[data-theme="light"] .story-article-context {
 }
 
 html[data-theme="light"] .story-article-context p {
-  color: #334155;
+  color: #18181b;
 }
 
 html[data-theme="light"] .story-article-source {

@@ -1,32 +1,32 @@
-/* base — extracted from src/app/globals.css (order preserved) */
+﻿/* base — extracted from src/app/globals.css (order preserved) */
 
 :root {
-  /* Corporate dark mode — default */
-  --paper: #020617;
-  --paper-raised: #0F172A;
-  --panel-bg: #1E293B;
-  --card-bg: #0F172A;
-  --surface: #1E293B;
+  /* Article dark template — default */
+  --paper: #000000;
+  --paper-raised: #18181b;
+  --panel-bg: #18181b;
+  --card-bg: #18181b;
+  --surface: #18181b;
   --ink: #F8FAFC;
-  --muted: #CBD5E1;
-  --faint: #94A3B8;
-  --rule: #334155;
-  --rule-strong: #475569;
-  --rule-hover: #60A5FA;
-  --rule-focus: #1E3A8A;
-  --hover: #1E293B;
-  /* Main brand — navy blue (trust, authority, enterprise AI) */
-  --accent: #1E3A8A;
-  --accent-2: #60A5FA;
+  --muted: #FFFFFF;
+  --faint: #A1A1AA;
+  --rule: #18181b;
+  --rule-strong: #18181b;
+  --rule-hover: #A1A1AA;
+  --rule-focus: #71717A;
+  --hover: #18181b;
+  /* Main brand — neutral grey */
+  --accent: #A1A1AA;
+  --accent-2: #F8FAFC;
   /* Trending accent — single accent color for trending/hot items only */
   --trending: #F59E0B;
   --trending-light: #451A03;
   --highlight: #F59E0B;
   /* Category hues — muted slate/blue family only (no rainbow) */
-  --blue: #1E3A8A;
-  --blue-light: #60A5FA;
-  --slate: #94A3B8;
-  --slate-light: #334155;
+  --blue: #71717A;
+  --blue-light: #A1A1AA;
+  --slate: #A1A1AA;
+  --slate-light: #18181b;
   --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
@@ -37,9 +37,9 @@ html[data-theme="light"] {
   --panel-bg: #F1F5F9;
   --card-bg: #FFFFFF;
   --surface: #FFFFFF;
-  --ink: #0F172A;
-  --muted: #475569;
-  --faint: #94A3B8;
+  --ink: #18181b;
+  --muted: #18181b;
+  --faint: #a1a1aa;
   --rule: #E2E8F0;
   --rule-strong: #CBD5E1;
   --rule-hover: #3B82F6;
@@ -52,7 +52,7 @@ html[data-theme="light"] {
   --highlight: #B45309;
   --blue: #1E3A8A;
   --blue-light: #DBEAFE;
-  --slate: #475569;
+  --slate: #18181b;
   --slate-light: #E2E8F0;
 }
 

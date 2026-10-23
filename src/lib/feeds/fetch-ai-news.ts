@@ -233,17 +233,12 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
   const link = toHttpsUrl(textOf(item.link) || atomLink(item));
   const dateRaw =
     textOf(item.pubDate) || textOf(item.published) || textOf(item.updated) || textOf(item['dc:date']);
-  let eventDate = toIsoDate(dateRaw);
+  const eventDate = toIsoDate(dateRaw);
   const summary = bestSummaryText(item);
 
   if (!title || !link || !eventDate) return null;
 
-  // Feeds sometimes publish entries dated in the future (scheduled posts,
-  // timezone skew). Clamp to today so they don't pin to the top of the
-  // timeline as if they had already happened.
-  const today = new Date().toISOString().slice(0, 10);
   const publishedDate = eventDate;
-  if (eventDate > today) eventDate = today;
 
   // The slug uses the publisher's own date, never the clamped one. Embedding
   // "today" made the URL of a future-dated post change every day, which broke
@@ -251,7 +246,6 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
   // already stored in the database - which sent every article open down the
   // slow "re-fetch all the feeds" path.
   const slug = `${slugify(title).slice(0, 70)}-${publishedDate}-${shortHash(link)}`;
-  const now = new Date().toISOString();
 
   // Feeds sometimes publish title-only entries with no description/content.
   // Storing the bare title as the summary renders a useless timeline row, so
@@ -281,10 +275,8 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
     image_url: bestImageUrl(item),
     topic,
     event_date: eventDate,
-    published_at: now,
+    published_at: null,
     status: 'published',
-    created_at: now,
-    updated_at: now,
   };
 }
 
@@ -381,13 +373,17 @@ export async function loadFeed(
 
   try {
     const parsed = parser.parse(xml) as Record<string, unknown>;
-    const cutoffYear = new Date().getFullYear() - HISTORY_YEARS;
-    return (
-      extractItems(parsed)
-        .map((item) => normalizeItem(item, feed))
-        .filter((s): s is Story => s !== null && Number(s.event_date.slice(0, 4)) >= cutoffYear)
-        .slice(0, MAX_ITEMS_PER_FEED)
+    const normalized = extractItems(parsed)
+      .map((item) => normalizeItem(item, feed))
+      .filter((s): s is Story => s !== null);
+    const maxYear = normalized.reduce(
+      (max, s) => Math.max(max, Number(s.event_date.slice(0, 4)) || 0),
+      0,
     );
+    const cutoffYear = maxYear ? maxYear - HISTORY_YEARS : 0;
+    return normalized
+      .filter((s) => Number(s.event_date.slice(0, 4)) >= cutoffYear)
+      .slice(0, MAX_ITEMS_PER_FEED);
   } catch (err) {
     console.error(`Failed to parse feed ${feed.url}:`, err);
     return [];

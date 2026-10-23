@@ -1,4 +1,4 @@
-/* shell — extracted from src/app/globals.css (order preserved) */
+﻿/* shell — extracted from src/app/globals.css (order preserved) */
 
 /* ---- Border visibility system ----
    1px default edges via --rule / --shell-line; stronger 2nd-level edges via
@@ -45,7 +45,7 @@
 .site-frame {
   min-height: 100vh;
   overflow: clip;
-  background-image: radial-gradient(#46345a0a 0.65px, transparent 0.65px);
+  background-image: none;
   background-size: 7px 7px;
 }
 
@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #1A2037ed;
+  background: #000000ed;
 }
 
 .wordmark {
@@ -139,7 +139,7 @@
 }
 
 html[data-theme="light"] .wordmark-neu {
-  background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+  background: linear-gradient(180deg, #18181b 0%, #18181b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -263,7 +263,7 @@ html[data-theme="light"] .wordmark-dot {
 
 .topic-button:hover {
   color: var(--ink);
-  background: #343B5580;
+  background: #18181b80;
 }
 
 .topic-button.is-active {
@@ -723,7 +723,7 @@ h1 em {
   margin: 15px 0 14px;
   padding: 11px 13px 12px;
   border-left: 2px solid var(--blue);
-  background: #111525;
+  background: #18181b;
 }
 
 .why-it-matters span {
@@ -927,8 +927,8 @@ h1 em {
 .quote-block {
   margin-top: 20px;
   padding: 12px 14px 14px;
-  background: #111525;
-  border: 1px solid #343B55;
+  background: #18181b;
+  border: 1px solid #18181b;
   border-radius: 6px;
 }
 

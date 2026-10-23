@@ -1,4 +1,4 @@
-/* light-mode-polish — extracted from src/app/globals.css (order preserved) */
+﻿/* light-mode-polish — extracted from src/app/globals.css (order preserved) */
 /* ==========================================================================
    COMPREHENSIVE LIGHT MODE POLISH & ACCESSIBILITY REFINEMENTS
    ========================================================================== */
@@ -8,7 +8,7 @@ html[data-theme="light"] body,
 html[data-theme="light"] .site-frame,
 html[data-theme="light"] .archive-page {
   background-color: #F8FAFC !important;
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .archive-topbar {
@@ -18,13 +18,13 @@ html[data-theme="light"] .archive-topbar {
 }
 
 html[data-theme="light"] .archive-topbar .wordmark {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .header-search {
   background: #FFFFFF !important;
   border-color: #CBD5E1 !important;
-  color: #0F172A !important;
+  color: #18181b !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
 }
 
@@ -34,25 +34,25 @@ html[data-theme="light"] .header-search:focus-within {
 }
 
 html[data-theme="light"] .header-search input {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .header-search input::placeholder {
-  color: #94A3B8 !important;
+  color: #a1a1aa !important;
 }
 
 html[data-theme="light"] .header-filter-toggle-btn {
   background: #FFFFFF !important;
   border-color: #CBD5E1 !important;
-  color: #334155 !important;
+  color: #18181b !important;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
 }
 
 html[data-theme="light"] .header-filter-toggle-btn:hover,
 html[data-theme="light"] .header-filter-toggle-btn.is-open {
   background: #F1F5F9 !important;
-  border-color: #94A3B8 !important;
-  color: #0F172A !important;
+  border-color: #a1a1aa !important;
+  color: #18181b !important;
 }
 
 /* 2. Left Sidebar Navigation in Light Mode */
@@ -68,11 +68,11 @@ html[data-theme="light"] .sidebar-top-title {
 }
 
 html[data-theme="light"] .sidebar-nav-item {
-  color: #334155 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item .sidebar-nav-label {
-  color: #334155 !important;
+  color: #18181b !important;
   font-weight: 600 !important;
 }
 
@@ -83,11 +83,11 @@ html[data-theme="light"] .sidebar-nav-item .sidebar-nav-icon svg {
 html[data-theme="light"] .sidebar-nav-item:hover {
   background: #F1F5F9 !important;
   border-color: #E2E8F0 !important;
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item:hover .sidebar-nav-label {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 /* Sidebar Active Items */
@@ -178,7 +178,7 @@ html[data-theme="light"] .sidebar-nav-item.item-latest.is-active .sidebar-nav-ic
 html[data-theme="light"] .sidebar-badge-pill.pill-count {
   background: #F1F5F9 !important;
   border: 1px solid #CBD5E1 !important;
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .sidebar-nav-item.is-active .sidebar-badge-pill.pill-count {
@@ -217,7 +217,7 @@ html[data-theme="light"] .archive-timeline .timeline-node {
 }
 
 html[data-theme="light"] .archive-timeline .timeline-node .date-day {
-  color: #0F172A !important;
+  color: #18181b !important;
   font-weight: 800 !important;
 }
 
@@ -232,7 +232,7 @@ html[data-theme="light"] .archive-timeline .year-divider {
 }
 
 html[data-theme="light"] .archive-timeline .year-divider span:first-child {
-  color: #0F172A !important;
+  color: #18181b !important;
   font-weight: 800 !important;
 }
 
@@ -259,7 +259,7 @@ html[data-theme="light"] .archive-timeline .timeline-item.is-expanded .story-row
 
 html[data-theme="light"] .archive-timeline .story-title,
 html[data-theme="light"] .archive-timeline .story-title-text {
-  color: #0F172A !important;
+  color: #18181b !important;
   font-weight: 700 !important;
 }
 
@@ -268,7 +268,7 @@ html[data-theme="light"] .archive-timeline .story-title-link:hover .story-title-
 }
 
 html[data-theme="light"] .story-preview {
-  color: #334155 !important;
+  color: #18181b !important;
   font-size: 14px !important;
   line-height: 1.6 !important;
 }
@@ -276,7 +276,7 @@ html[data-theme="light"] .story-preview {
 html[data-theme="light"] .story-company-tag {
   background: #F1F5F9 !important;
   border: 1px solid #E2E8F0 !important;
-  color: #475569 !important;
+  color: #18181b !important;
   font-weight: 600 !important;
   border-radius: 6px !important;
   padding: 1px 7px !important;
@@ -294,7 +294,7 @@ html[data-theme="light"] .story-meta-dot {
 /* Trending Rank Badges in Light Mode */
 html[data-theme="light"] .trending-rank-badge.rank-2 {
   background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%) !important;
-  color: #0F172A !important;
+  color: #18181b !important;
   border: 1px solid #CBD5E1 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 }
@@ -321,7 +321,7 @@ html[data-theme="light"] .archive-timeline .key-points span {
 }
 
 html[data-theme="light"] .archive-timeline .key-points li {
-  color: #334155 !important;
+  color: #18181b !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
 }
@@ -336,7 +336,7 @@ html[data-theme="light"] .archive-timeline .story-overview-label {
 }
 
 html[data-theme="light"] .archive-timeline .story-summary {
-  color: #334155 !important;
+  color: #18181b !important;
   font-size: 13.5px !important;
   line-height: 1.65 !important;
 }
@@ -345,13 +345,13 @@ html[data-theme="light"] .archive-timeline .story-summary {
 html[data-theme="light"] .story-action-btn {
   background: #F8FAFC !important;
   border: 1px solid #E2E8F0 !important;
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .story-action-btn:hover {
   background: #F1F5F9 !important;
   border-color: #CBD5E1 !important;
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .upvote-btn.is-active {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Last-resort error boundary. Replaces the root layout when it (or the shell)
@@ -19,7 +19,7 @@ export default function GlobalError({
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          background: "#080A12",
+          background: "#000000",
           color: "#F4F3FA",
           fontFamily: "system-ui, sans-serif",
         }}

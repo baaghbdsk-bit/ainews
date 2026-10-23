@@ -1,4 +1,4 @@
-/* daily-digest — extracted from src/app/globals.css (order preserved) */
+﻿/* daily-digest — extracted from src/app/globals.css (order preserved) */
 .daily-digest-dossier {
   display: flex;
   flex-direction: column;
@@ -36,7 +36,7 @@
   letter-spacing: 0.08em;}
 .digest-timestamp-badge {
   font-size: 11.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   padding: 3px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
@@ -79,7 +79,7 @@
 .digest-empty-box p {
   margin: 0;
   font-size: 13.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   max-width: 46ch;}
 .digest-executive-summary-card {
   position: relative;
@@ -112,7 +112,7 @@
   margin: 0 0 24px;
   font-size: 14.5px;
   line-height: 1.65;
-  color: #94A3B8;
+  color: #a1a1aa;
   max-width: 80ch;}
 .digest-stats-grid {
   display: grid;
@@ -133,7 +133,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #94A3B8;}
+  color: #a1a1aa;}
 .digest-stat-item .stat-num {
   font-size: 22px;
   font-weight: 750;
@@ -156,7 +156,7 @@
 .digest-section-subtitle {
   margin: 0;
   font-size: 13.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   line-height: 1.5;}
 .digest-themes-grid {
   display: grid;
@@ -192,7 +192,7 @@
 .theme-card-signals {
   font-size: 11px;
   font-weight: 600;
-  color: #94A3B8;}
+  color: #a1a1aa;}
 .theme-card-title-row {
   display: flex;
   align-items: center;
@@ -240,7 +240,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
-  color: #94A3B8;
+  color: #a1a1aa;
   border: 1px solid rgba(255, 255, 255, 0.08);}
 .digest-pillar-stories {
   display: flex;
@@ -282,7 +282,7 @@
   text-overflow: ellipsis;}
 .digest-story-company {
   font-size: 11px;
-  color: #94A3B8;}
+  color: #a1a1aa;}
 .digest-story-arrow {
   color: #64748B;
   flex-shrink: 0;
@@ -333,7 +333,7 @@
 .console-subtitle {
   margin: 0;
   font-size: 13.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   line-height: 1.55;}
 .feedback-full-form {
   display: flex;
@@ -380,7 +380,7 @@
   color: #38BDF8;}
 .category-chip-desc {
   font-size: 10.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   line-height: 1.35;}
 .feedback-textarea-large {
   width: 100%;
@@ -472,7 +472,7 @@
 .feedback-success-card p {
   margin: 0;
   font-size: 13.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   max-width: 44ch;}
 .channels-list {
   display: flex;
@@ -530,11 +530,11 @@
   padding: 1.5px 7px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
-  color: #94A3B8;}
+  color: #a1a1aa;}
 .channel-desc {
   margin: 0;
   font-size: 12px;
-  color: #94A3B8;
+  color: #a1a1aa;
   line-height: 1.4;}
 .channel-external-icon {
   color: #64748B;
@@ -564,7 +564,7 @@ html[data-theme="light"] .digest-view-header-strip {
 html[data-theme="light"] .digest-timestamp-badge {
   background: #F1F5F9;
   border-color: #CBD5E1;
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .digest-view-refresh-btn {
   background: #FAF5FF;
   border-color: #DDD6FE;
@@ -582,18 +582,18 @@ html[data-theme="light"] .digest-executive-summary-card {
 html[data-theme="light"] .executive-badge {
   color: #7E22CE;}
 html[data-theme="light"] .executive-title {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .executive-lede {
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .digest-stats-grid {
   border-top-color: #E2E8F0;}
 html[data-theme="light"] .digest-stat-item {
   background: #F8FAFC;
   border-color: #E2E8F0;}
 html[data-theme="light"] .digest-stat-item .stat-num {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .digest-section-title {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .digest-section-subtitle {
   color: #64748B;}
 html[data-theme="light"] .digest-theme-card {
@@ -607,27 +607,27 @@ html[data-theme="light"] .theme-card-tag {
   border-color: #DDD6FE;
   color: #7C3AED;}
 html[data-theme="light"] .theme-card-title-row h4 {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .theme-card-desc {
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .digest-pillar-box {
   background: #FFFFFF;
   border-color: #E2E8F0;}
 html[data-theme="light"] .digest-pillar-header {
   border-bottom-color: #F1F5F9;}
 html[data-theme="light"] .pillar-header-left h4 {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .pillar-count-badge {
   background: #F1F5F9;
   border-color: #E2E8F0;
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .digest-story-link-item {
   background: #F8FAFC;}
 html[data-theme="light"] .digest-story-link-item:hover {
   background: #F1F5F9;
   border-color: #CBD5E1;}
 html[data-theme="light"] .digest-story-title {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .feedback-console-card {
   background: linear-gradient(145deg, #FFFFFF, #F0F9FF);
   border-color: #BAE6FD;
@@ -637,11 +637,11 @@ html[data-theme="light"] .connect-channels-card {
   border-color: #E2E8F0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);}
 html[data-theme="light"] .console-title {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .console-subtitle {
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .form-label {
-  color: #334155;}
+  color: #18181b;}
 html[data-theme="light"] .category-chip-btn {
   background: #F8FAFC;
   border-color: #E2E8F0;}
@@ -652,13 +652,13 @@ html[data-theme="light"] .category-chip-btn.is-selected {
   background: #E0F2FE;
   border-color: #38BDF8;}
 html[data-theme="light"] .category-chip-title {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .category-chip-desc {
   color: #64748B;}
 html[data-theme="light"] .feedback-textarea-large {
   background: #FFFFFF;
   border-color: #CBD5E1;
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .feedback-textarea-large:focus {
   border-color: #0284C7;
   box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);}
@@ -670,18 +670,18 @@ html[data-theme="light"] .channel-card-link:hover {
   border-color: #CBD5E1;}
 html[data-theme="light"] .channel-icon-wrap {
   background: #E2E8F0;
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .channel-title {
-  color: #0F172A;}
+  color: #18181b;}
 html[data-theme="light"] .channel-badge {
   background: #E2E8F0;
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .channel-desc {
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .community-manifesto-box {
   background: #FAF5FF;
   border-color: #DDD6FE;
-  color: #475569;}
+  color: #18181b;}
 html[data-theme="light"] .community-manifesto-box strong {
   color: #1E1B4B;}
 @media (max-width: 768px) {

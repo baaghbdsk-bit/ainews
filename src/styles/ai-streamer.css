@@ -1,4 +1,4 @@
-/* ai-streamer — extracted from src/app/globals.css (order preserved) */
+﻿/* ai-streamer — extracted from src/app/globals.css (order preserved) */
 /* -------------------------------------------------------------
  * AI EXECUTIVE TELEPROMPTER & STREAMER CARD
  * ----------------------------------------------------------- */
@@ -154,7 +154,7 @@
 
 .stream-counter-label {
   font-size: 12px;
-  color: #94A3B8;
+  color: #a1a1aa;
   font-variant-numeric: tabular-nums;
 }
 
@@ -245,7 +245,7 @@
   border-radius: 6px;
   background: transparent;
   border: none;
-  color: #94A3B8;
+  color: #a1a1aa;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -406,7 +406,7 @@ html[data-theme="light"] .digest-today-briefing-card.is-expanded .today-briefing
 }
 
 html[data-theme="light"] .today-briefing-toggle-title {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .today-title-accent {
@@ -456,7 +456,7 @@ html[data-theme="light"] .stream-counter-label {
 }
 
 html[data-theme="light"] .stream-counter-label strong {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .stream-dot-btn {
@@ -475,7 +475,7 @@ html[data-theme="light"] .stream-dot-btn.is-active {
 html[data-theme="light"] .stream-control-btn {
   background: #FFFFFF !important;
   border-color: #CBD5E1 !important;
-  color: #334155 !important;
+  color: #18181b !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
@@ -501,7 +501,7 @@ html[data-theme="light"] .view-mode-btn {
 }
 
 html[data-theme="light"] .view-mode-btn:hover {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .view-mode-btn.is-active {
@@ -524,7 +524,7 @@ html[data-theme="light"] .stream-badge-num {
 }
 
 html[data-theme="light"] .stream-card-title {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .stream-card-title-link:hover .stream-card-title {
@@ -532,7 +532,7 @@ html[data-theme="light"] .stream-card-title-link:hover .stream-card-title {
 }
 
 html[data-theme="light"] .stream-card-summary {
-  color: #334155 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .stream-card-footer {

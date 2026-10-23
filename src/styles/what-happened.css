@@ -1,4 +1,4 @@
-/* what-happened — extracted from src/app/globals.css (order preserved) */
+﻿/* what-happened — extracted from src/app/globals.css (order preserved) */
 /* -------------------------------------------------------------
  * WHAT HAPPENED TODAY — PLAIN ENGLISH EXECUTIVE BRIEFING
  * ----------------------------------------------------------- */
@@ -51,7 +51,7 @@
 .today-briefing-subtitle {
   margin: 0;
   font-size: 13.5px;
-  color: #94A3B8;
+  color: #a1a1aa;
   line-height: 1.55;
   max-width: 75ch;
 }
@@ -248,7 +248,7 @@
 
 .briefing-keypoints-list li {
   font-size: 12px;
-  color: #94A3B8;
+  color: #a1a1aa;
   line-height: 1.5;
 }
 
@@ -264,7 +264,7 @@ html[data-theme="light"] .digest-today-briefing-card {
 }
 
 html[data-theme="light"] .today-briefing-title {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .today-title-sub {
@@ -272,7 +272,7 @@ html[data-theme="light"] .today-title-sub {
 }
 
 html[data-theme="light"] .today-briefing-subtitle {
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .briefing-item-card {
@@ -287,7 +287,7 @@ html[data-theme="light"] .briefing-item-card:hover {
 }
 
 html[data-theme="light"] .briefing-item-title {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .briefing-item-title-link:hover .briefing-item-title {
@@ -295,13 +295,13 @@ html[data-theme="light"] .briefing-item-title-link:hover .briefing-item-title {
 }
 
 html[data-theme="light"] .briefing-item-summary {
-  color: #334155 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .briefing-company-pill {
   background: #F1F5F9 !important;
   border-color: #E2E8F0 !important;
-  color: #1E293B !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .briefing-takeaway-box {
@@ -314,11 +314,11 @@ html[data-theme="light"] .briefing-takeaway-box .takeaway-label {
 }
 
 html[data-theme="light"] .briefing-takeaway-box .takeaway-text {
-  color: #334155 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .briefing-keypoints-list li {
-  color: #475569 !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .digest-metric-chip {
@@ -327,7 +327,7 @@ html[data-theme="light"] .digest-metric-chip {
 }
 
 html[data-theme="light"] .digest-metric-chip .metric-chip-val {
-  color: #0F172A !important;
+  color: #18181b !important;
 }
 
 html[data-theme="light"] .digest-metric-chip .metric-chip-lbl {

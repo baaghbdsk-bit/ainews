@@ -131,17 +131,13 @@ export function StoryStatsDashboard({ analytics, topicColor = 'blue' }: StorySta
                     }
 
                     const isList =
-                      p.startsWith('- ') ||
-                      p.startsWith('* ') ||
-                      p.startsWith('• ') ||
-                      p.includes('\n- ') ||
-                      p.includes('\n* ') ||
-                      p.includes('\n• ');
+                      /^\s*[-*•]/.test(p) ||
+                      /\n\s*[-*•]/.test(p);
 
                     if (isList) {
                       const bullets = p
-                        .split(/\n?[-*•]\s+/)
-                        .map((b) => b.trim())
+                        .split(/\n+/)
+                        .map((line) => line.replace(/^\s*[-*•]\s*/, '').trim())
                         .filter(Boolean);
                       return (
                         <ul key={pIdx} className="story-bullet-list">

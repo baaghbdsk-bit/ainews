@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 /**
  * 1. HeroLatestArt - NeuBench Quantum Transmission Core (Electric Violet / Neon Cyan)
@@ -888,8 +888,8 @@ export function HeroFeedbackArt() {
             <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="bubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1E293B" />
-            <stop offset="100%" stopColor="#0F172A" />
+            <stop offset="0%" stopColor="#18181b" />
+            <stop offset="100%" stopColor="#18181b" />
           </linearGradient>
           <filter id="feedbackGlow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="3.5" result="blur" />
@@ -934,7 +934,7 @@ export function HeroFeedbackArt() {
             strokeWidth="1.8"
           />
           {/* Bubble tail */}
-          <polygon points="76,124 70,138 90,124" fill="#0F172A" stroke="#38BDF8" strokeWidth="1.5" />
+          <polygon points="76,124 70,138 90,124" fill="#18181b" stroke="#38BDF8" strokeWidth="1.5" />
           {/* Conversation Frequency Bars */}
           <rect x="78" y="82" width="6" height="18" rx="3" fill="#38BDF8">
             <animate attributeName="height" values="12;22;12" dur="1.2s" repeatCount="indefinite" />
@@ -1036,7 +1036,7 @@ export function HeroBenchmarksArt() {
         />
 
         {/* 6 Capability Axis Spoke Lines */}
-        <g stroke="#94A3B8" strokeOpacity="0.22" strokeWidth="1">
+        <g stroke="#a1a1aa" strokeOpacity="0.22" strokeWidth="1">
           <line x1="100" y1="24" x2="100" y2="176" />
           <line x1="35" y1="62" x2="165" y2="138" />
           <line x1="35" y1="138" x2="165" y2="62" />
@@ -1142,7 +1142,7 @@ export function HeroBenchmarksArt() {
         </g>
 
         {/* Central Core Pulse Beacon */}
-        <circle cx="100" cy="100" r="12" fill="#0F172A" stroke="#22D3EE" strokeWidth="1.6" filter="url(#benchCoreGlow)" />
+        <circle cx="100" cy="100" r="12" fill="#18181b" stroke="#22D3EE" strokeWidth="1.6" filter="url(#benchCoreGlow)" />
         <circle cx="100" cy="100" r="5" fill="#A78BFA">
           <animate attributeName="r" values="4;6.5;4" dur="2.4s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.75;1;0.75" dur="2.4s" repeatCount="indefinite" />

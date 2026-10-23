@@ -1,14 +1,14 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    Model Benchmarks Comparator — Dedicated Styling Architecture
    ========================================================================== */
 
 :root {
   --bench-bg: #090b10;
-  --bench-surface: #0e121a;
+  --bench-surface: #18181b;
   --bench-surface-elevated: #151a24;
   --bench-line: rgba(255, 255, 255, 0.08);
   --bench-text: #f8fafc;
-  --bench-muted: #94a3b8;
+  --bench-muted: #a1a1aa;
   --bench-violet: #a78bfa;
   --bench-violet-strong: #c4b5fd;
   --bench-violet-soft: rgba(167, 139, 250, 0.12);
@@ -36,7 +36,7 @@ html[data-theme="light"] {
   --bench-surface: #ffffff;
   --bench-surface-elevated: #f1f5f9;
   --bench-line: #e2e8f0;
-  --bench-text: #0f172a;
+  --bench-text: #18181b;
   --bench-muted: #64748b;
   --bench-violet: #7c3aed;
   --bench-violet-strong: #5b21b6;
@@ -57,7 +57,7 @@ html[data-theme="light"] {
   --bench-dev-pink: #be185d;
   --bench-dev-purple: #7e22ce;
   --bench-dev-red: #b91c1c;
-  --bench-dev-slate: #475569;
+  --bench-dev-slate: #18181b;
 }
 
 .benchmarks-page {
@@ -1939,7 +1939,7 @@ html[data-theme="light"] .bench-guide-panel {
 html[data-theme="light"] .active-model-tag {
   background: #f1f5f9;
   border-color: #e2e8f0;
-  color: #1e293b;
+  color: #18181b;
 }
 
 html[data-theme="light"] .views-segmented-control {
@@ -1949,7 +1949,7 @@ html[data-theme="light"] .views-segmented-control {
 
 html[data-theme="light"] .view-tab-btn.is-active {
   background: #ffffff;
-  color: #0f172a;
+  color: #18181b;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -1975,7 +1975,7 @@ html[data-theme="light"] .table-th-model {
 html[data-theme="light"] .table-td-val,
 html[data-theme="light"] .table-td-feature {
   border-color: #e2e8f0;
-  color: #1e293b;
+  color: #18181b;
 }
 
 html[data-theme="light"] .feature-icon-violet { color: #7c3aed; }
@@ -3143,7 +3143,7 @@ html[data-theme="light"] .bench-card-caveat {
 }
 
 html[data-theme="light"] .table-th-feature {
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .official-verification-link:hover {
@@ -3164,7 +3164,7 @@ html[data-theme="light"] .bench-metric-chip:hover {
 }
 
 html[data-theme="light"] .bench-metric-chip .metric-val {
-  color: #0F172A;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-metric-chip .metric-lbl {
@@ -3198,7 +3198,7 @@ html[data-theme="light"] .bench-unified-filter-panel.is-expanded .bench-unified-
 }
 
 html[data-theme="light"] .bench-unified-header-title .bench-control-label {
-  color: #0F172A;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-highlight-badge.badge-models {
@@ -3240,13 +3240,13 @@ html[data-theme="light"] .bench-highlight-status {
 html[data-theme="light"] .bench-unified-toggle-btn {
   background: #F8FAFC;
   border-color: #CBD5E1;
-  color: #334155;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-unified-toggle-btn:hover {
   background: #F1F5F9;
-  border-color: #94A3B8;
-  color: #0F172A;
+  border-color: #a1a1aa;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-unified-toggle-btn.is-active {
@@ -3256,7 +3256,7 @@ html[data-theme="light"] .bench-unified-toggle-btn.is-active {
 }
 
 html[data-theme="light"] .bench-subsection-label {
-  color: #0F172A;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-control-hint {
@@ -3270,7 +3270,7 @@ html[data-theme="light"] .bench-preset-label {
 html[data-theme="light"] .bench-preset-link {
   background: #F1F5F9;
   border-color: #CBD5E1;
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-preset-link.is-active {
@@ -3435,13 +3435,13 @@ html[data-theme="light"] .bench-category-card.cat-human-preference .bench-picker
 html[data-theme="light"] .bench-picker-chip {
   background: #FFFFFF;
   border-color: #CBD5E1;
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-picker-chip:hover {
   background: #F8FAFC;
-  border-color: #94A3B8;
-  color: #0F172A;
+  border-color: #a1a1aa;
+  color: #18181b;
 }
 
 html[data-theme="light"] .bench-picker-chip-mark {

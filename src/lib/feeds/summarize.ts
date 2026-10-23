@@ -287,21 +287,23 @@ export interface StorySummary {
   providerFailed: boolean;
 }
 
-const MAX_PROMPT_BODY_CHARS = 8000;
+const MAX_PROMPT_BODY_CHARS = 12000;
 const MAX_LLM_DECK_CHARS = 800;
 const MIN_LLM_DECK_CHARS = 40;
-const MAX_KEY_POINTS = 5;
-const MAX_KEY_POINT_CHARS = 200;
+const MAX_KEY_POINTS = 4;
+const MAX_KEY_POINT_CHARS = 160;
 const MAX_WHY_IT_MATTERS_CHARS = 400;
-const MAX_BRIEF_CHARS = 4000;
+const MAX_BRIEF_CHARS = 8000;
 
 const LLM_SYSTEM_PROMPT = [
-  'You are a careful news editor for an AI-industry digest.',
-  'You write tight, factual, neutral summaries and briefs.',
+  'You are a senior technology journalist writing for a professional AI-industry publication.',
+  'You rewrite supplied source material into a polished, accurate, publication-grade article.',
+  'Tone: formal, precise, neutral — never casual, never "notes".',
+  'Structure: a strong lede, then context, key details, and implications.',
   'Use ONLY facts present in the supplied text.',
   'Never invent names, numbers, dates, quotes, or claims.',
   'If the text is thin, write less rather than guessing.',
-  'Never use markdown. Respond with a single JSON object and nothing else.',
+  'Never use markdown, headings, or a title line. Respond with a single JSON object and nothing else.',
 ].join(' ');
 
 function buildUserPrompt(input: SummaryInput): string {
@@ -320,9 +322,9 @@ function buildUserPrompt(input: SummaryInput): string {
     '',
     'Return a single JSON object with exactly these keys:',
     '- "deck": 2-4 plain-text sentences (<= 600 characters) giving a reader the full context of this story.',
-    '- "keyPoints": an array of 3-5 short plain-text bullet strings (<= 140 characters each).',
+    '- "keyPoints": an array of 3-4 short plain-text bullet strings (<= 140 characters each).',
     '- "whyItMatters": 1-2 plain-text sentences on why this matters for the AI industry.',
-    '- "brief": a 150-300 word neutral, professional brief as continuous prose (no markdown, no headings, no title line). Attribute claims to the source where natural.',
+    '- "brief": a 600-900 word professional article as continuous prose (6-10 paragraphs, blank-line separated). Strong lede, context, key details, implications. No markdown, no headings, no title line. Attribute claims to the source where natural.',
     'Use only facts from the text above.',
   ]
     .filter((line) => line !== '')
@@ -411,13 +413,15 @@ export function extractiveSummary(input: SummaryInput): StorySummary {
   // Form a readable continuous brief from high-quality paragraphs
   const cleanParas = paragraphs
     .filter((p) => p.length >= 60 && !isBoilerplate(p))
-    .slice(0, 4);
+    .slice(0, 10);
 
   const brief = cleanParas.length >= 2
     ? cleanParas.join('\n\n')
     : input.summary
       ? `${normalize(input.summary)}\n\n${normalize(input.significance ?? '')}`.trim()
-      : null;
+      : paragraphs.length
+        ? paragraphs.slice(0, 6).join('\n\n')
+        : null;
 
   return {
     deck: fallbackDeck,

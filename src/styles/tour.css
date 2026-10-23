@@ -1,4 +1,4 @@
-/* ── Tour: small, non-blocking onboarding card ── */
+﻿/* ── Tour: small, non-blocking onboarding card ── */
 
 /* The tour floats in the bottom corner. It has no backdrop and the layer
    ignores pointer events, so the rest of the app stays fully usable. */
@@ -37,7 +37,7 @@ html[data-theme="light"] .tour-highlight {
   padding: 26px 24px 22px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.13);
-  background: linear-gradient(160deg, #151b30 0%, #0c1120 100%);
+  background: linear-gradient(160deg, #18181b 0%, #000000 100%);
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
   animation: auth-rise 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -114,7 +114,7 @@ html[data-theme="light"] .tour-highlight {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #94a3b8;
+  color: #a1a1aa;
   margin-bottom: 8px;
 }
 
@@ -129,7 +129,7 @@ html[data-theme="light"] .tour-highlight {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.55;
-  color: #94a3b8;
+  color: #a1a1aa;
 }
 
 .tour-controls {
@@ -168,7 +168,7 @@ html[data-theme="light"] .tour-highlight {
 }
 
 .tour-btn-ghost:hover {
-  color: #94a3b8;
+  color: #a1a1aa;
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -195,11 +195,11 @@ html[data-theme="light"] .tour-card {
 }
 
 html[data-theme="light"] .tour-title {
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .tour-body {
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .tour-step-counter {
@@ -213,13 +213,13 @@ html[data-theme="light"] .tour-close {
 }
 
 html[data-theme="light"] .tour-btn-ghost {
-  color: #475569;
+  color: #18181b;
 }
 
 html[data-theme="light"] .tour-btn {
   border-color: #cbd5e1;
   background: #ffffff;
-  color: #0f172a;
+  color: #18181b;
 }
 
 html[data-theme="light"] .tour-btn:hover {
