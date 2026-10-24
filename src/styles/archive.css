@@ -788,6 +788,8 @@ h1 em {
   width: 100%;
   margin: 0;
   padding: 0 0 24px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
 }
 
 .archive-timeline .timeline-list {

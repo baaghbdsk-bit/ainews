@@ -1364,7 +1364,7 @@ html[data-theme="light"] .archive-timeline .story-expand-footer {
   margin: 6px 0 30px;
   padding: 32px 30px;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   background:
     radial-gradient(130% 170% at 86% 46%, #8B5CF621, transparent 62%),
@@ -1925,7 +1925,7 @@ html[data-theme="light"] .archive-timeline .year-rule {
 }
 
 html[data-theme="light"] .hero-card {
-  border-color: #C9BEDB;
+  border-color: rgba(0, 0, 0, 0.08);
   background:
     radial-gradient(130% 170% at 86% 46%, #7C3AED1f, transparent 62%),
     linear-gradient(135deg, #ffffff, #F5F2FC 74%);
