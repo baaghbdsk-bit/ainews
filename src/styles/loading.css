@@ -95,11 +95,84 @@
   }
 }
 
+/* NeuBench "E" spinner animation */
+
+.neubench-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: neubench-spinner-rotate 2.2s linear infinite;
+}
+
+.neubench-spinner svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.neubench-spinner-bar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: neubench-bar-wave 1.6s ease-in-out infinite;
+  opacity: 0.85;
+}
+
+.neubench-spinner-bar--blue {
+  animation-delay: 0ms;
+}
+
+.neubench-spinner-bar--violet {
+  animation-delay: 200ms;
+}
+
+.neubench-spinner-bar--teal {
+  animation-delay: 400ms;
+}
+
+@keyframes neubench-spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes neubench-bar-wave {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scaleY(0.4) scaleX(1.1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1) scaleX(1);
+  }
+}
+
+/* Glow effect that travels across bars during the wave */
+.neubench-spinner-bar {
+  filter: drop-shadow(0 0 0px rgba(139, 92, 246, 0));
+  transition: filter 0.3s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app-loading-spinner,
   .app-skeleton-node,
   .app-skeleton-line {
     animation: none;
+  }
+
+  .neubench-spinner {
+    animation: none;
+  }
+
+  .neubench-spinner-bar {
+    animation: none;
+    opacity: 1;
+    transform: scaleY(1) scaleX(1);
   }
 }
 

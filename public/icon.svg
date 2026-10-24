@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  NeuBench favicon – the "E" letter from the wordmark.
+  Three coloured bars (blue / violet / teal) with transparent background,
+  matching the inline SVG used by the NeubenchLogo component and the loading spinner.
+-->
+<svg width="64" height="64" viewBox="-10 -10 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue bar -->
+  <rect x="0" y="0" width="60" height="13" rx="6.5" fill="#4777FF"/>
+  <!-- Violet bar -->
+  <rect x="0" y="24" width="60" height="13" rx="6.5" fill="#8055F5"/>
+  <!-- Teal bar -->
+  <rect x="0" y="48" width="60" height="13" rx="6.5" fill="#13DCCB"/>
+</svg>

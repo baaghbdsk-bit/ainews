@@ -24,9 +24,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "./",
   },
+  // The `?v=2` query forces browsers to re-fetch the favicon
+  // instead of serving a stale cached copy from the favicon database.
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icon.svg" }],
+    icon: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg?v=2" }],
   },
   openGraph: {
 title: "NeuBench",

@@ -11,7 +11,7 @@ export default function StoryLoading() {
     <main className="site-frame archive-page story-article-page">
       <SiteHeader className="story-article-topbar" />
       <article className="story-article">
-        <LoadingSpinner label="Opening article" />
+        <LoadingSpinner label="Opening article" size={28} />
       </article>
     </main>
   );
