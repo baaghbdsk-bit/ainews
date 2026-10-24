@@ -1,4 +1,4 @@
-/* ui-layer — extracted from src/app/globals.css (order preserved) */
+/* ui-layer ï¿½ extracted from src/app/globals.css (order preserved) */
 /* ==========================================================================
    RECOVERED UI LAYER (restored from checkpoint 4aa2285)
    Lost when globals.css was reassembled on 2026-10-20 07:04.
@@ -94,7 +94,7 @@ html[data-theme="light"] .story-back-link:hover {
   color: #a1a1aa;
   font-size: 13px;}
 .story-article-readtime::before {
-  content: "GÇó";
+  content: "Gï¿½ï¿½";
   margin-right: 12px;
   opacity: 0.6;}
 .story-article-actions {
@@ -747,19 +747,21 @@ html[data-theme="light"] .svg-mini-dot {
 .story-actions-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-wrap: wrap;}
 .story-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 11px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--rule);
   cursor: pointer;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);

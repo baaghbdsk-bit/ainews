@@ -682,12 +682,12 @@ html[data-theme="light"] .active-filter-chip:hover {
    left accent edge, surface lift over the page bg, and smooth hover elevation. */
 .archive-timeline .story-row {
   position: relative;
-  margin: 0 0 16px;
-  padding: 20px 22px;
+  margin: 0 0 18px;
+  padding: 22px 24px;
   border: 1px solid var(--shell-line);
-  border-radius: 16px;
+  border-radius: 18px;
   background: linear-gradient(180deg, var(--shell-surface-2), var(--shell-surface));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 }
 
@@ -712,10 +712,10 @@ html[data-theme="light"] .active-filter-chip:hover {
 .archive-timeline .story-row:has(.node-amber)::before { background: var(--amber); }
 
 .archive-timeline .story-row:hover {
-  border-color: transparent;
-  box-shadow: inset 3px 0 0 var(--shell-accent, #8B5CF6), 0 0 0 1px rgba(139, 92, 246, 0.25);
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.08), transparent 40%);
-  transform: none;
+  border-color: rgba(139, 92, 246, 0.45);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(139, 92, 246, 0.22);
+  background: linear-gradient(180deg, var(--shell-surface-2), var(--shell-surface));
+  transform: translateY(-2px);
 }
 
 /* Expanded (open) card: accent-tinted border so the open state is obvious. */
@@ -729,13 +729,13 @@ html[data-theme="light"] .active-filter-chip:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px 3px 8px;
+  padding: 4px 12px 4px 9px;
   border-radius: 999px;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   width: fit-content;
   transition: all 160ms ease;
 }
@@ -771,7 +771,10 @@ html[data-theme="light"] .active-filter-chip:hover {
 .archive-timeline .story-title,
 .archive-timeline .story-title-text {
   color: var(--shell-text);
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .archive-timeline .story-title-link:hover .story-title-text {
@@ -1035,11 +1038,11 @@ html[data-theme="light"] .active-filter-chip:hover {
 
 .archive-timeline .story-preview {
   display: -webkit-box;
-  margin: 6px 0 0;
+  margin: 10px 0 0;
   overflow: hidden;
-  color: var(--shell-muted);
-  font-size: 13.5px;
-  line-height: 1.55;
+  color: #CBD5E1;
+  font-size: 14px;
+  line-height: 1.6;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
