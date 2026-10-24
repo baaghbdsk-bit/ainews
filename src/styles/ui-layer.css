@@ -1,4 +1,4 @@
-ï»¿/* ui-layer â€” extracted from src/app/globals.css (order preserved) */
+/* ui-layer — extracted from src/app/globals.css (order preserved) */
 /* ==========================================================================
    RECOVERED UI LAYER (restored from checkpoint 4aa2285)
    Lost when globals.css was reassembled on 2026-10-20 07:04.
@@ -94,7 +94,7 @@ html[data-theme="light"] .story-back-link:hover {
   color: #a1a1aa;
   font-size: 13px;}
 .story-article-readtime::before {
-  content: "Î“Ã‡Ã³";
+  content: "GÇó";
   margin-right: 12px;
   opacity: 0.6;}
 .story-article-actions {
@@ -1356,25 +1356,25 @@ html[data-theme="light"] .feed-mode-tab.is-active {
     radial-gradient(130% 170% at 86% 46%, rgba(168, 85, 247, 0.18), transparent 62%),
     linear-gradient(135deg, #150d24, #0a0614 74%);
   border-color: rgba(168, 85, 247, 0.28);
-  box-shadow: 0 16px 44px rgba(168, 85, 247, 0.08);}
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);}
 .hero-card.hero-mode-trending {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(245, 158, 11, 0.15), transparent 62%),
     linear-gradient(135deg, #161219, #09070D 74%);
   border-color: rgba(245, 158, 11, 0.25);
-  box-shadow: 0 16px 44px rgba(245, 158, 11, 0.08);}
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);}
 .hero-card.hero-mode-saved {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(16, 185, 129, 0.18), transparent 62%),
     linear-gradient(135deg, #0d1a15, #060e0a 74%);
   border-color: rgba(16, 185, 129, 0.28);
-  box-shadow: 0 16px 44px rgba(16, 185, 129, 0.08);}
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);}
 .hero-card.hero-mode-feedback {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(56, 189, 248, 0.16), transparent 62%),
     linear-gradient(135deg, #0d1526, #070c17 74%);
   border-color: rgba(56, 189, 248, 0.28);
-  box-shadow: 0 16px 44px rgba(56, 189, 248, 0.08);}
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);}
 .hero-action-buttons {
   display: flex;
   align-items: center;
@@ -1449,25 +1449,25 @@ html[data-theme="light"] .hero-card.hero-mode-digest {
     radial-gradient(130% 170% at 86% 46%, rgba(168, 85, 247, 0.1), transparent 62%),
     linear-gradient(135deg, #FAF5FF, #F3E8FF 74%);
   border-color: #DDD6FE;
-  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.08);}
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);}
 html[data-theme="light"] .hero-card.hero-mode-trending {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(245, 158, 11, 0.12), transparent 62%),
     linear-gradient(135deg, #FFFDF7, #FDF8EE 74%);
   border-color: #FDE68A;
-  box-shadow: 0 12px 32px rgba(245, 158, 11, 0.08);}
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);}
 html[data-theme="light"] .hero-card.hero-mode-saved {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(16, 185, 129, 0.1), transparent 62%),
     linear-gradient(135deg, #F0FDF4, #ECFDF5 74%);
   border-color: #A7F3D0;
-  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.08);}
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);}
 html[data-theme="light"] .hero-card.hero-mode-feedback {
   background:
     radial-gradient(130% 170% at 86% 46%, rgba(56, 189, 248, 0.1), transparent 62%),
     linear-gradient(135deg, #F0F9FF, #E0F2FE 74%);
   border-color: #BAE6FD;
-  box-shadow: 0 12px 32px rgba(56, 189, 248, 0.08);}
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);}
 html[data-theme="light"] .hero-art.hero-trending-art {
   background: radial-gradient(circle at 50% 55%, rgba(245, 158, 11, 0.16) 0%, rgba(239, 68, 68, 0.05) 50%, transparent 72%);}
 html[data-theme="light"] .hero-art.hero-saved-art {
@@ -2255,7 +2255,7 @@ html[data-theme="light"] .header-filter-chip {
     radial-gradient(130% 170% at 86% 46%, rgba(34, 211, 238, 0.16), transparent 62%),
     linear-gradient(135deg, #0d1527, #070d18 74%);
   border-color: rgba(34, 211, 238, 0.28);
-  box-shadow: 0 16px 44px rgba(34, 211, 238, 0.08);}
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);}
 .hero-title-accent-cyan {
   background: linear-gradient(96deg, #22D3EE, #818CF8 78%);
   background-clip: text;
@@ -2610,7 +2610,7 @@ html[data-theme="light"] .hero-card.hero-mode-about {
     radial-gradient(130% 170% at 86% 46%, rgba(34, 211, 238, 0.12), transparent 62%),
     linear-gradient(135deg, #F0F9FF, #E0F2FE 74%);
   border-color: #BAE6FD;
-  box-shadow: 0 12px 32px rgba(34, 211, 238, 0.08);}
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);}
 html[data-theme="light"] .about-dossier-hero {
   background:
     radial-gradient(120% 160% at 90% 10%, rgba(139, 92, 246, 0.08), transparent 60%),
