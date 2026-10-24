@@ -687,7 +687,7 @@ h1 em {
   gap: 8px;
   border: 1px solid #18181b;
   border-radius: 5px;
-  background: #18181b;
+  background: transparent;
   color: #F4F3FA;
   font-size: 12px;
   font-family: inherit;
@@ -698,6 +698,14 @@ h1 em {
 
 .company-select-trigger:hover {
   border-color: #414967;
+}
+
+/* In the left-pane FILTER group, keep the Year / Month trigger narrower so
+   they don't span the full row width (Company stays full-width). */
+.sidebar-filter-row [aria-label="Filter by year"],
+.sidebar-filter-row [aria-label="Filter by month"] {
+  max-width: 180px;
+  width: auto;
 }
 
 .company-select-trigger:focus-visible {
