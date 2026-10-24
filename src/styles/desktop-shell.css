@@ -691,7 +691,7 @@ html[data-theme="light"] .active-filter-chip:hover {
   position: relative;
   margin: 0 0 20px;
   padding: 20px 20px 20px 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
   backdrop-filter: blur(12px);
@@ -1887,7 +1887,7 @@ html[data-theme="light"] .archive-topbar .wordmark-symbol {
 }
 
 html[data-theme="light"] .archive-timeline .story-row {
-  border-color: #C9BEDB;
+  border-color: rgba(0, 0, 0, 0.13);
   background: linear-gradient(180deg, #ffffff, #F3EFFA);
   box-shadow: 0 10px 26px #1A153014;
 }
