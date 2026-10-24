@@ -1,4 +1,4 @@
-import { cacheLife, cacheTag } from 'next/cache';
+﻿import { cacheLife, cacheTag } from 'next/cache';
 import { fetchAiNews, AI_NEWS_TAG } from '@/lib/feeds/fetch-ai-news';
 import { getPublishedStoriesWithVotes, getUpvoteCounts } from '@/lib/actions/stories';
 import { STORIES_TAG } from '@/lib/cache-tags';
@@ -89,33 +89,23 @@ function formatStoryForDisplay(
  * display shape. Cached under both feed and story tags: a feed refresh or an
  * editorial publish invalidates it.
  */
+/** True during `next build` prerender; skips slow external feeds/DB so builds
+ *  are fast and deterministic. Live data is fetched on first runtime visit. */
+const IS_BUILD_TIME = process.env.NEXT_PHASE === 'phase-production-build';
+
 export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
   'use cache';
   cacheLife('minutes');
   cacheTag(AI_NEWS_TAG, STORIES_TAG);
 
-  // Upstream latency (live RSS + PostgREST) drifts, and slow sources blow the
-  // prerender deadline (~60s) which fails local and CI builds. Race each
-  // source against a hard deadline; whatever arrives in time is used and the
-  // next cache window fills the rest.
-  const withDeadline = <T,>(promise: Promise<T>, label: string, fallback: T): Promise<T> => {
-    const DEADLINE_MS = 30000;
-    return Promise.race([
-      promise,
-      new Promise<T>((resolve) => {
-        setTimeout(() => {
-          console.warn(`${label} exceeded ${DEADLINE_MS}ms during prerender, continuing without it`);
-          resolve(fallback);
-        }, DEADLINE_MS);
-      }),
-    ]);
-  };
-
-  const [liveStories, dbStories, upvoteCounts] = await Promise.all([
-    withDeadline(fetchAiNews(), 'fetchAiNews', [] as Story[]),
-    withDeadline(getPublishedStoriesWithVotes(), 'getPublishedStoriesWithVotes', []),
-    withDeadline(getUpvoteCounts(), 'getUpvoteCounts', {}),
-  ]);
+  // During production build, skip slow external sources so prerender completes
+  // quickly. Seed stories provide a static snapshot; live data fills in on the
+  // first runtime visit once the cache warms. Each source already enforces its
+  // own timeout internally (fetchAiNews: 3s per feed; Supabase: its own timeouts),
+  // so no wrapper deadline is needed here.
+  const liveStories = IS_BUILD_TIME ? [] : await fetchAiNews();
+  const dbStories = IS_BUILD_TIME ? [] : await getPublishedStoriesWithVotes();
+  const upvoteCounts = IS_BUILD_TIME ? {} : await getUpvoteCounts();
   const seedConverted = seedStories.map(convertSeedStory);
 
   const sources = [...liveStories, ...(dbStories ?? []), ...seedConverted];
@@ -157,9 +147,17 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
   const aliasSlugs = new Map<string, string[]>();
   const pushStory = (story: Story) => {
     const urlKey = canonicalizeUrl(story.source_url);
-    const titleDate = `${story.title.trim().toLowerCase()}|${story.event_date}`;
-    if (seenUrls.has(urlKey) || seenTitleDate.has(titleDate)) return;
+    // Primary dedup: canonical URL is the ground truth. Stories covered by
+    // multiple outlets have different titles across feeds, so a title-based
+    // check lets both copies through. URL wins when present.
+    if (seenUrls.has(urlKey)) return;
     seenUrls.add(urlKey);
+    // Secondary dedup: same title + same day catches cross-feed duplicates of
+    // the same news that carry different source URLs (RSS feeds each link to
+    // their own copy of the story). Applies to every story, not only those
+    // without a URL, so syndicated stories don't appear 2–3 times.
+    const titleDate = `${story.title.trim().toLowerCase()}|${story.event_date}`;
+    if (seenTitleDate.has(titleDate)) return;
     seenTitleDate.add(titleDate);
     if (!story.image_url) {
       story.image_url = imageByUrl.get(urlKey) ?? imageByTitleDate.get(titleDate);

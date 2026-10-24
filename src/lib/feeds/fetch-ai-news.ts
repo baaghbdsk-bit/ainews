@@ -32,10 +32,10 @@ export const FEEDS: FeedSource[] = [
   { name: 'TLDR AI', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/tldr-ai.xml', topic: 'Products' },
 ];
 
-const FETCH_TIMEOUT_MS = 6000;
+const FETCH_TIMEOUT_MS = 3000;
 // One retry absorbs transient upstream hiccups without letting a slow or dead
 // feed stall the batch (all feeds load in parallel) for long.
-const MAX_FETCH_ATTEMPTS = 2;
+const MAX_FETCH_ATTEMPTS = 1;
 const RETRY_BACKOFF_MS = 400;
 // Raw feed XML goes into the fetch Data Cache (unlike the in-memory `use cache`
 // entries, it persists across serverless instances and deploys), so timeline
@@ -54,6 +54,12 @@ const HISTORY_YEARS = 4;
 // historical anchors intact.
 const MAX_LIVE_STORIES = 150;
 const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
+
+/** Returns today's date at midnight UTC for future-date validation. */
+function todayMidnight(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
 // Tag used to invalidate the merged timeline after an editorial publish.
 export const AI_NEWS_TAG = 'ai-news';
 
@@ -238,6 +244,12 @@ export function normalizeItem(item: RawItem, feed: FeedSource): Story | null {
 
   if (!title || !link || !eventDate) return null;
 
+  // Reject feed items dated in the future — some RSS feeds publish malformed
+  // pubDate strings (e.g. "Oct 31" without a year defaults to current year,
+  // which is ahead of today) or publisher clock errors. Keep the timeline honest.
+  const eventDay = new Date(eventDate + 'T00:00:00Z');
+  if (eventDay > todayMidnight()) return null;
+
   const publishedDate = eventDate;
 
   // The slug uses the publisher's own date, never the clamped one. Embedding
@@ -412,10 +424,12 @@ export async function fetchAiNews(): Promise<Story[]> {
       if (!urlKey || seenUrls.has(urlKey)) continue;
       seenUrls.add(urlKey);
 
-      // Deduplicate syndicated/cross-outlet reprints of the exact same event
+      // Deduplicate syndicated/cross-outlet reprints of the exact same event.
+      // Use the full normalized title (not just 5 sorted words — that could
+      // falsely merge distinct stories about the same topic) plus the exact
+      // date, so two genuinely different stories on the same day stay separate.
       const normTitle = story.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-      const titleWords = normTitle.split(' ').filter((w) => w.length > 3).slice(0, 5).sort().join(' ');
-      const titleKey = `${titleWords}|${story.event_date.slice(0, 7)}`;
+      const titleKey = `${normTitle}|${story.event_date}`;
 
       const existing = seenTitles.get(titleKey);
       if (existing) {

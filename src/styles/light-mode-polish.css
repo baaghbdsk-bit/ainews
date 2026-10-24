@@ -212,7 +212,7 @@ html[data-theme="light"] .archive-timeline .timeline-list::before {
 
 html[data-theme="light"] .archive-timeline .timeline-node {
   background: #FFFFFF !important;
-  border: 1.5px solid #CBD5E1 !important;
+  border: none !important;
   box-shadow: 0 0 0 5px #F8FAFC, 0 4px 14px rgba(15, 23, 42, 0.08) !important;
 }
 
@@ -251,7 +251,7 @@ html[data-theme="light"] .archive-timeline .story-row {
 
 html[data-theme="light"] .archive-timeline .story-row:hover {
   border-color: transparent !important;
-  box-shadow: inset 3px 0 0 #7C3AED, 0 0 0 1px rgba(124, 58, 237, 0.2) !important;
+  box-shadow: inset 3px 0 0 #7C3AED !important;
   background: linear-gradient(90deg, rgba(124, 58, 237, 0.06), transparent 40%) !important;
   transform: none !important;
 }

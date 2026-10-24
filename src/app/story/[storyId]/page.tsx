@@ -37,7 +37,7 @@ const getCachedExtraction = unstable_cache(
     return Promise.race([
       extractArticle(url),
       new Promise<ExtractOutcome>((resolve) =>
-        setTimeout(() => resolve({ status: "unavailable" }), 2500),
+        setTimeout(() => resolve({ status: "unavailable" }), 6000),
       ),
     ]);
   },

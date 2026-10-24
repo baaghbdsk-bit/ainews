@@ -58,9 +58,10 @@ async function gotoTimeline(page) {
 }
 
 async function shownCount(page) {
-  return page.$eval(".filter-result-count", (el) => {
-    const m = el.textContent.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
-    return m ? { shown: Number(m[1].replace(/,/g, '')), total: Number(m[2].replace(/,/g, '')) } : null;
+  return page.$eval(".timeline-result-count", (el) => {
+    const m = (el.textContent || "").match(/(\d[\d,]*)/);
+    const n = m ? Number(m[1].replace(/,/g, '')) : 0;
+    return { shown: n, total: n };
   });
 }
 
@@ -169,8 +170,8 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       const api = trackApi(page);
       await gotoTimeline(page);
       const before = await shownCount(page);
-      await page.click("#archive-filter-search");
-      await page.type("#archive-filter-search", "anthropic", { delay: 20 });
+      await page.click(".header-search input");
+      await page.type(".header-search input", "anthropic", { delay: 20 });
       // Search matches title/summary/significance/source/topic/date (not just
       // titles), so assert the DOM renders exactly the API's first filtered page.
       const apiPage = await (await fetch(`${BASE}/api/stories?q=anthropic&offset=0&limit=60`)).json();
@@ -180,7 +181,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         (expected, prev) => {
           const els = [...document.querySelectorAll(".timeline-item .story-title-text")];
           const titles = els.map((e) => (e.textContent || "").trim());
-          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+          const m = document.querySelector(".timeline-result-count")?.textContent?.match(/(\d[\d,]*)/);
           const shown = m ? Number(m[1].replace(/,/g, '')) : 0;
           if (shown >= prev || shown === 0) return false;
           if (titles.length !== expected.length) return false;
@@ -221,6 +222,11 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       await gotoTimeline(page);
       const before = await shownCount(page);
       await page.click(".company-select-trigger");
+      // Wait for panel to appear after toggling isOpen state
+      await page.waitForFunction(
+        () => document.querySelector('.company-select-panel') !== null,
+        { timeout: 5000 }
+      );
       await page.waitForSelector(".company-select-panel", { visible: true, timeout: 5000 });
       const geo = await page.evaluate(() => {
         const t = document.querySelector(".company-select-trigger").getBoundingClientRect();
@@ -243,7 +249,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         page,
         (prev) => {
           const label = document.querySelector(".company-select-trigger-label")?.textContent?.trim();
-          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+          const m = document.querySelector(".timeline-result-count")?.textContent?.match(/(\d[\d,]*)/);
           const shown = m ? Number(m[1].replace(/,/g, '')) : 0;
           return label === "Anthropic" && shown > 0 && shown < prev && !document.querySelector(".company-select-panel");
         },
@@ -279,6 +285,11 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       await page.setViewport({ width: 1280, height: 420 }); // short viewport forces flip
       await gotoTimeline(page);
       await page.click(".company-select-trigger");
+      // Wait for panel to appear after toggling isOpen state
+      await page.waitForFunction(
+        () => document.querySelector('.company-select-panel') !== null,
+        { timeout: 5000 }
+      );
       await page.waitForSelector(".company-select-panel", { visible: true, timeout: 5000 });
       const flip = await page.evaluate(() => {
         const panel = document.querySelector(".company-select-panel");
@@ -359,9 +370,14 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       const api = trackApi(page);
       await gotoTimeline(page);
       const baseline = await shownCount(page);
-      await page.type("#archive-filter-search", "gemini");
+      await page.type(".header-search input", "gemini");
       await page.select('select[aria-label="Filter by year"]', "2026");
       await page.click(".company-select-trigger");
+      // Wait for panel to appear after toggling isOpen state
+      await page.waitForFunction(
+        () => document.querySelector('.company-select-panel') !== null,
+        { timeout: 5000 }
+      );
       await page.waitForSelector(".company-select-panel", { visible: true, timeout: 5000 });
       await page.evaluate(() => {
         const b = [...document.querySelectorAll(".company-select-option")].find((x) => x.textContent.trim() === "OpenAI");
@@ -372,7 +388,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       await page.click(".filter-clear-button");
       await waitForApi(api);
       const afterClear = await shownCount(page);
-      const searchVal = await page.$eval("#archive-filter-search", (el) => el.value);
+      const searchVal = await page.$eval(".header-search input", (el) => el.value);
       const yearVal = await page.$eval('select[aria-label="Filter by year"]', (el) => el.value);
       const companyLabel = await page.$eval(".company-select-trigger-label", (el) => el.textContent.trim());
       await page.screenshot({ path: path.join(SHOTS, "t06-clear.png") });
@@ -393,67 +409,54 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       await page.close();
     }
 
-    /* ---------- T07 Row expand / collapse / exclusivity ---------- */
+    /* ---------- T07 Overview visible + Read article link ---------- */
     {
       const page = await browser.newPage();
       await gotoTimeline(page);
-      const expanders = await page.$$(".expand-icon");
-      if (expanders.length < 2) {
-        record("T07", "Row expand/collapse", "FAIL", `only ${expanders.length} expand buttons found`);
-      } else {
-        await expanders[0].click();
-        const opened1 = await waitUntil(page, () => {
-          const open = document.querySelector(".story-detail-wrap.is-open");
-          const btn = document.querySelector(".expand-icon[aria-expanded='true']");
-          return !!open && !!btn && open.getBoundingClientRect().height > 20;
-        });
-        const s1 = await page.evaluate(() => {
-          const open = document.querySelector(".story-detail-wrap.is-open");
-          const btn = document.querySelector(".expand-icon[aria-expanded='true']");
-          return {
-            openId: open ? open.id : null,
-            ariaExpandedTrue: !!btn,
-            detailVisible: open ? open.getBoundingClientRect().height > 20 : false,
-            btnLabel: btn ? btn.getAttribute("aria-label") : null,
-          };
-        });
-        const expanders2 = await page.$$(".expand-icon");
-        await expanders2[1].click();
-        const switched = await waitUntil(page, () => {
-          const opens = [...document.querySelectorAll(".story-detail-wrap.is-open")];
-          return opens.length === 1 && opens[0] !== null;
-        });
-        const s2 = await page.evaluate(() => {
-          const opens = [...document.querySelectorAll(".story-detail-wrap.is-open")];
-          return { openCount: opens.length, openId: opens[0] ? opens[0].id : null };
-        });
-        const openBtn = await page.$(".expand-icon[aria-expanded='true']");
-        if (openBtn) await openBtn.click();
-        const collapsed = await waitUntil(page, () => document.querySelectorAll(".story-detail-wrap.is-open").length === 0 && !document.querySelector(".expand-icon[aria-expanded='true']"));
-        const s3 = await page.evaluate(() => ({
-          openCount: document.querySelectorAll(".story-detail-wrap.is-open").length,
-          anyExpanded: !!document.querySelector(".expand-icon[aria-expanded='true']"),
-        }));
-        await page.screenshot({ path: path.join(SHOTS, "t07-expand.png") });
-        const ok =
-          opened1 &&
-          s1.openId &&
-          s1.ariaExpandedTrue &&
-          s1.detailVisible &&
-          s1.btnLabel &&
-          s1.btnLabel.startsWith("Hide") &&
-          switched &&
-          s2.openCount === 1 &&
-          collapsed &&
-          s3.openCount === 0 &&
-          !s3.anyExpanded;
-        record(
-          "T07",
-          "Row expand/collapse, aria-expanded, single-open exclusivity",
-          ok ? "PASS" : "FAIL",
-          `expand1=${JSON.stringify(s1)} switchTo2=${JSON.stringify(s2)} collapse=${JSON.stringify(s3)}`,
-        );
-      }
+      const state = await page.evaluate(() => {
+        const rows = document.querySelectorAll(".timeline-item").length;
+        const overviews = document.querySelectorAll(".story-overview").length;
+        const summaries = document.querySelectorAll(".story-overview .story-summary").length;
+        const readLinks = [...document.querySelectorAll(".full-story-link-btn")];
+        const originalLinks = [...document.querySelectorAll(".source-link")];
+        const overviewLabels = document.querySelectorAll(".story-overview-label").length;
+        const clamps = [...document.querySelectorAll(".story-overview .story-summary")].map((el) => getComputedStyle(el).webkitLineClamp);
+        const titleHeadings = document.querySelectorAll(".timeline-item h3.story-title .story-title-text").length;
+        return {
+          rows,
+          overviews,
+          summaries,
+          readLinks: readLinks.length,
+          readTexts: readLinks.slice(0, 5).map((a) => (a.textContent || "").trim()),
+          firstHref: readLinks[0] ? readLinks[0].getAttribute("href") : null,
+          originalLinks: originalLinks.length,
+          originalTexts: originalLinks.slice(0, 5).map((a) => (a.textContent || "").trim()),
+          firstOriginalHref: originalLinks[0] ? originalLinks[0].getAttribute("href") : null,
+          overviewLabels,
+          clamps,
+          titleHeadings,
+        };
+      });
+      await page.screenshot({ path: path.join(SHOTS, "t07-overview-read-article.png"), fullPage: false });
+      const problems = [];
+      if (state.rows === 0) problems.push("no timeline rows");
+      if (state.overviews !== state.rows) problems.push(`${state.overviews} overviews for ${state.rows} rows`);
+      if (state.summaries !== state.rows) problems.push(`${state.summaries} overview summaries for ${state.rows} rows`);
+      if (state.readLinks !== state.rows) problems.push(`${state.readLinks} Read article links for ${state.rows} rows`);
+      if (!state.readTexts.every((t) => /Read article/i.test(t))) problems.push("Read article link text mismatch");
+      if (!state.firstHref || !state.firstHref.startsWith("/story/")) problems.push("Read article href invalid");
+      if (state.originalLinks !== state.rows) problems.push(`${state.originalLinks} original article links for ${state.rows} rows`);
+      if (!state.originalTexts.every((t) => /Read original article/i.test(t))) problems.push("Original article link text mismatch");
+      if (!state.firstOriginalHref || !/^https?:/i.test(state.firstOriginalHref)) problems.push("Original article href invalid");
+      if (state.overviewLabels !== 0) problems.push(`${state.overviewLabels} overview labels (expected 0)`);
+      if (!state.clamps.every((c) => c === "none")) problems.push(`overview clamped: ${state.clamps.join(",")}`);
+      if (state.titleHeadings !== state.rows) problems.push(`${state.titleHeadings} title headings for ${state.rows} rows`);
+      record(
+        "T07",
+        "Overview visible + Read article link",
+        problems.length === 0 ? "PASS" : "FAIL",
+        problems.length ? problems.join(" | ") : `${state.rows} rows, ${state.overviews} overviews, ${state.readLinks} Read article links`,
+      );
       await page.close();
     }
 
@@ -501,7 +504,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
           /filter/i.test(b.getAttribute("aria-label") || b.textContent || ""),
         );
         const searchVisible = (() => {
-          const s = document.querySelector("#archive-filter-search");
+          const s = document.querySelector(".header-search input");
           if (!s) return "missing";
           const r = s.getBoundingClientRect();
           return r.width > 0 && r.height > 0;
@@ -525,7 +528,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
       const logs = await collectConsole(page);
       await gotoTimeline(page);
-      await page.type("#archive-filter-search", "zzqqxxnotarealterm9999", { delay: 5 });
+      await page.type(".header-search input", "zzqqxxnotarealterm9999", { delay: 5 });
       const emptyAppeared = await waitUntil(page, () => !!document.querySelector(".empty-state"), [], 20000);
       const empty = await page.evaluate(() => {
         const es = document.querySelector(".empty-state");
@@ -545,7 +548,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
           const b = [...document.querySelectorAll(".empty-state button")].find((x) => /clear/i.test(x.textContent));
           if (b) b.click();
         });
-        clearWorks = await waitUntil(page, () => document.querySelector("#archive-filter-search")?.value === "");
+        clearWorks = await waitUntil(page, () => document.querySelector(".header-search input")?.value === "");
       }
       await page.screenshot({ path: path.join(SHOTS, "t10-empty.png") });
       const domNestingWarnings = logs.filter((l) => /cannot be a descendant|validateDOMNesting|In HTML, <button>/i.test(l));
@@ -575,28 +578,21 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       const panelClosed = await waitUntil(page, () => !document.querySelector(".company-select-panel"));
       const panelAfterEsc = (await page.$(".company-select-panel")) === null;
       const ariaClosed = await page.$eval(".company-select-trigger", (el) => el.getAttribute("aria-expanded"));
-      await page.focus(".expand-icon");
-      const expBefore = await page.$eval(".expand-icon", (el) => el.getAttribute("aria-expanded"));
-      await page.keyboard.press("Enter");
-      const expanded = await waitUntil(page, () => {
-        const btn = document.querySelector(".expand-icon");
-        return btn?.getAttribute("aria-expanded") === "true" && !!document.querySelector(".story-detail-wrap.is-open");
+      const readLinkOk = await page.evaluate(() => {
+        const link = document.querySelector(".full-story-link-btn");
+        return !!link && String(link.getAttribute("href") || "").startsWith("/story/");
       });
-      const expAfter = await page.evaluate(() => ({
-        expanded: document.querySelector(".expand-icon")?.getAttribute("aria-expanded"),
-        open: !!document.querySelector(".story-detail-wrap.is-open"),
-      }));
       const baseline = await page.evaluate(() => {
-        const m = document.querySelector(".filter-result-count").textContent.match(/of\s+(\d+)/);
+        const m = document.querySelector(".timeline-result-count").textContent.match(/(\d[\d,]*)/);
         return m ? Number(m[1].replace(/,/g, '')) : 0;
       });
-      await page.focus("#archive-filter-search");
+      await page.focus(".header-search input");
       await page.keyboard.type("nvidia", { delay: 15 });
       await waitForApi(api);
       const searched = await waitUntil(
         page,
         (base) => {
-          const m = document.querySelector(".filter-result-count")?.textContent?.match(/Showing\s+([\d,]+)\s+of\s+([\d,]+)/);
+          const m = document.querySelector(".timeline-result-count")?.textContent?.match(/(\d[\d,]*)/);
           const shown = m ? Number(m[1].replace(/,/g, '')) : 0;
           return shown > 0 && shown < base;
         },
@@ -611,10 +607,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         panelClosed &&
         panelAfterEsc &&
         ariaClosed === "false" &&
-        expBefore === "false" &&
-        expanded &&
-        expAfter.expanded === "true" &&
-        expAfter.open &&
+        readLinkOk &&
         searched &&
         searchResult.shown > 0 &&
         searchResult.shown < baseline;
@@ -683,6 +676,11 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
       await page.setViewport({ width: 1100, height: 700 });
       await gotoTimeline(page);
       await page.click(".company-select-trigger");
+      // Wait for panel to appear after toggling isOpen state
+      await page.waitForFunction(
+        () => document.querySelector('.company-select-panel') !== null,
+        { timeout: 5000 }
+      );
       await page.waitForSelector(".company-select-panel", { visible: true, timeout: 5000 });
       const inside = await page.evaluate(() => {
         const p = document.querySelector(".company-select-panel").getBoundingClientRect();
@@ -710,7 +708,7 @@ async function waitForApi(state, { quietMs = 500, timeout = WAIT_TIMEOUT } = {})
         const state = await page.evaluate(() => {
           const doc = document.documentElement;
           const overflowPx = Math.max(doc.scrollWidth, document.body.scrollWidth) - window.innerWidth;
-          const search = document.querySelector("#archive-filter-search");
+          const search = document.querySelector(".header-search input");
           const trigger = document.querySelector(".archive-mobile-filter") || document.querySelector(".company-select-trigger");
           const panel = document.querySelector(".archive-filter-panel");
           const rect = (el) => (el ? el.getBoundingClientRect() : null);

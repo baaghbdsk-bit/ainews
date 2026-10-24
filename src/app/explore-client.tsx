@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Cpu,
+  ExternalLink,
   Flame,
   Info,
   Layers,
@@ -120,10 +121,11 @@ function monogramOf(story: StoryDisplay): string {
 }
 
 /**
- * Produces a concise, readable 1-2 sentence preview text for feed cards,
- * capping at ~150-160 characters so news items are immediately scannable.
+ * Produces a 2-4 line insightful preview summary for timeline cards.
+ * Targets ~260-320 characters so each row gives a real sense of why the
+ * story matters, not just a teaser headline.
  */
-function toShortReadableSummary(raw?: string | null, maxLen = 160): string {
+function toShortReadableSummary(raw?: string | null, maxLen = 300): string {
   if (!raw) return "";
   const cleaned = raw.replace(/\s+/g, " ").trim();
   if (cleaned.length <= maxLen) return cleaned;
@@ -170,7 +172,6 @@ const TimelineRow = memo(function TimelineRow({
   onToggle,
   upvoteCount = 0,
   isUpvoted = false,
-  isBookmarked = false,
   onVoteChange,
   onBookmarkChange,
   trendingRank,
@@ -183,7 +184,6 @@ const TimelineRow = memo(function TimelineRow({
   onToggle: (id: string) => void;
   upvoteCount?: number;
   isUpvoted?: boolean;
-  isBookmarked?: boolean;
   onVoteChange?: (slug: string, voted: boolean, newCount: number) => void;
   onBookmarkChange?: (slug: string, bookmarked: boolean) => void;
   trendingRank?: number;
@@ -192,7 +192,10 @@ const TimelineRow = memo(function TimelineRow({
   // sentence. Now that the full summary is shown as the OVERVIEW block above,
   // repeating that sentence under WHY IT MATTERS would just duplicate it — so
   // the why-it-matters block is only rendered when it says something the
-  const previewText = toShortReadableSummary(story.deck || story.summary, 160);
+  // Build a highly insightful 2-4 line preview: significance/why-it-matters first
+  // (it explains *why* this news matters), then the summary fills in the *what*.
+  const insightSource = story.whyItMatters || story.significance || story.summary || story.deck || '';
+  const previewText = toShortReadableSummary(insightSource, 320);
   const whyText = story.whyItMatters || story.significance;
   const hasDistinctSignificance = whyText && !isRedundantWith(story.summary, whyText);
   const words = ((story.summary || "") + (story.deck || "")).split(/\s+/).filter(Boolean).length;
@@ -221,23 +224,6 @@ const TimelineRow = memo(function TimelineRow({
                 <span>#{trendingRank} Trending</span>
               </span>
             )}
-            {isBookmarked && (
-              <span
-                className="story-saved-pill"
-                title="Saved to your bookmarks"
-                style={{
-                  display: "inline-flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                  gap: "5px",
-                }}
-              >
-                <Bookmark size={11} className="fill-current" style={{ flexShrink: 0 }} />
-                <span style={{ whiteSpace: "nowrap", display: "inline" }}>Saved</span>
-              </span>
-            )}
             <span className={`story-meta meta-${story.color}`}>
               <span className={`topic-dot dot-${story.color}`} />
               {story.topic}
@@ -259,36 +245,37 @@ const TimelineRow = memo(function TimelineRow({
             <Link className="story-title story-title-link" href={`/story/${story.slug}`} prefetch={true} title="Read full story">
               <span className="story-title-text">{story.title}</span>
             </Link>
-            <button
-              aria-controls={`story-detail-${story.id}`}
-              aria-expanded={isExpanded}
-              aria-label={`${isExpanded ? "Hide" : "Show"} summary for ${story.title}`}
-              className={`expand-icon ${isExpanded ? "turned" : ""}`}
-              onClick={() => onToggle(story.id)}
-              type="button"
-              title={isExpanded ? "Hide summary" : "Show summary"}
-            >
-              <ChevronDown aria-hidden="true" size={17} />
-            </button>
           </div>
-          {previewText ? <p className="story-preview">{previewText}</p> : null}
+          <p className="story-preview">{previewText}</p>
           <div className="story-actions-bar">
-            <UpvoteButton
-              slug={story.slug}
-              initialCount={upvoteCount}
-              initialVoted={isUpvoted}
-              onVoteChange={onVoteChange}
-            />
-            <BookmarkButton
-              slug={story.slug}
-onBookmarkChange={onBookmarkChange}
+            <div className="story-action-group story-actions-left">
+              <UpvoteButton
+                slug={story.slug}
+                initialCount={upvoteCount}
+                initialVoted={isUpvoted}
+                onVoteChange={onVoteChange}
               />
-            <ShareButton
-              title={story.title}
-              slug={story.slug}
-              summary={previewText}
-              topic={story.topic}
-            />
+              <BookmarkButton
+                slug={story.slug}
+                onBookmarkChange={onBookmarkChange}
+              />
+              <ShareButton
+                title={story.title}
+                slug={story.slug}
+                summary={previewText}
+                topic={story.topic}
+              />
+            </div>
+            <div className="story-action-group story-actions-right">
+              <a href={`/story/${story.slug}`} className="read-link read-article-link" title="Read full story">
+                <span>Read story</span>
+                <ArrowRight size={12} className="read-link-icon" />
+              </a>
+              <a href={story.sourceUrl} className="read-link read-original-link" target="_blank" rel="noreferrer" title="Read original source">
+                <span>Original source</span>
+                <ExternalLink size={12} className="read-link-icon" />
+              </a>
+            </div>
           </div>
           <div className={`story-detail-wrap ${isExpanded ? "is-open" : ""}`} id={`story-detail-${story.id}`}>
             <div>
@@ -373,6 +360,7 @@ function SidebarSelect({
   allLabel = "All",
   ariaLabel = "Filter",
   panelMinWidth = 0,
+  panelMaxWidth = 0,
 }: {
   options: { value: string; label: string }[];
   value: string;
@@ -380,6 +368,7 @@ function SidebarSelect({
   allLabel?: string;
   ariaLabel?: string;
   panelMinWidth?: number;
+  panelMaxWidth?: number;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLUListElement>(null);
@@ -509,7 +498,7 @@ function SidebarSelect({
           role="listbox"
           aria-label={ariaLabel}
           className={`company-select-panel ${position === 'up' ? 'panel-open-up' : ''}`}
-          style={{ minWidth: panelMinWidth || undefined }}
+          style={{ minWidth: panelMinWidth || undefined, maxWidth: panelMaxWidth || undefined }}
         >
           {allOptions.map((option, index) => (
             <li
@@ -1772,7 +1761,8 @@ export function ExploreClient({
                       onChange={(value) => { setActiveYear(value); setActiveTimelineIndex(0); }}
                       allLabel="All years"
                       ariaLabel="Filter by year"
-                      panelMinWidth={200}
+                      panelMinWidth={140}
+                      panelMaxWidth={180}
                     />
                   </div>
 
@@ -1789,7 +1779,8 @@ export function ExploreClient({
                       onChange={(value) => { setActiveMonth(value); setActiveTimelineIndex(0); }}
                       allLabel="All months"
                       ariaLabel="Filter by month"
-                      panelMinWidth={200}
+                      panelMinWidth={140}
+                      panelMaxWidth={180}
                     />
                   </div>
 
@@ -2260,7 +2251,6 @@ export function ExploreClient({
                       trendingRank={feedMode === "trending" ? index + 1 : topTrendingSlugs.get(story.slug)}
                       upvoteCount={upvoteCounts[story.slug] || 0}
                       isUpvoted={userVotes.has(story.slug)}
-                      isBookmarked={bookmarks.has(story.slug)}
                       onVoteChange={handleVoteChange}
                     />
                   ))}

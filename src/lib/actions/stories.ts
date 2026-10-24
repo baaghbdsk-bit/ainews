@@ -160,7 +160,12 @@ export async function getStoryBySlugFresh(slug: string): Promise<Story | null> {
   return queryStoryBySlug(slug);
 }
 
+// Skip Supabase reads during `next build` prerender so slow/unreachable
+// upstream can't stall cold-cache builds. Seed stories still resolve.
+const IS_BUILD_TIME = process.env.NEXT_PHASE === 'phase-production-build';
+
 async function queryStoryBySlug(slug: string): Promise<Story | null> {
+  if (IS_BUILD_TIME) return null;
   const supabase = createPublicClient();
   if (!supabase) return null;
 
@@ -202,6 +207,7 @@ async function queryStoryBySlug(slug: string): Promise<Story | null> {
  */
 export async function getStoryBySlugPrefix(slug: string): Promise<Story | null> {
   'use cache';
+  if (IS_BUILD_TIME) return null;
   cacheLife('minutes');
   cacheTag(STORIES_TAG);
 
