@@ -1,22 +1,20 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { SiteHeader } from '@/app/site-header';
-import { isAdmin } from '@/lib/auth/editor';
-import { getSessionUser } from '@/lib/auth/session-server';
-import { getFeedbackFeed } from '@/lib/admin/feedback';
-import { AdminFeedbackClient } from './admin-client';
-import './admin.css';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { SiteHeader } from "@/app/site-header";
+import { isAdmin } from "@/lib/auth/editor";
+import { getSessionUser } from "@/lib/auth/session-server";
+import { getFeedbackFeed } from "@/lib/admin/feedback";
+import { AdminDashboardClient } from "./dashboard-client";
+import "./admin.css";
 
 export const metadata: Metadata = {
-  title: 'Feedback inbox · NeuBench',
-  description: 'Admin-only feedback inbox for NeuBench.',
+  title: "Admin console",
+  description: "Admin-only console for NeuBench.",
   robots: { index: false, follow: false },
 };
 
-// The session check has to finish before the response starts, otherwise
-// `notFound()` lands in a streamed Suspense hole and cannot set a 404 status.
 export const instant = false;
 
 export default async function AdminPage() {
@@ -38,7 +36,7 @@ export default async function AdminPage() {
           </div>
         }
       />
-      <AdminFeedbackClient feed={feed} reviewerEmail={user.email ?? 'admin'} />
+      <AdminDashboardClient feed={feed} reviewerEmail={user.email ?? "admin"} />
     </main>
   );
 }

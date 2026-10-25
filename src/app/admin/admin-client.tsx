@@ -119,7 +119,7 @@ export function AdminFeedbackClient({
   const refresh = () => startTransition(() => router.refresh());
 
   return (
-    <section className="admin-shell" aria-labelledby="admin-title">
+    <section aria-labelledby="admin-title">
       <header className="admin-hero">
         <div>
           <span className="admin-kicker">
@@ -359,3 +359,4 @@ function FeedbackCard({
     </li>
   );
 }
+
