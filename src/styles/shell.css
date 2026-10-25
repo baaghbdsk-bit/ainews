@@ -402,6 +402,7 @@ h1 em {
 
 .timeline-item {
   position: relative;
+  margin-bottom: 12px;
   content-visibility: auto;
   contain-intrinsic-size: auto 84px;
 }
@@ -442,6 +443,8 @@ h1 em {
   gap: 14px;
   align-items: start;
   padding: 15px 0 17px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
 }
 
 .date-column {
@@ -811,7 +814,7 @@ h1 em {
   .sort-indicator svg { width: 13px; }
   .timeline-list::before { left: 52px; }
   .timeline-scroll-fill { left: 52px; }
-  .story-row { grid-template-columns: 37px 12px minmax(0, 1fr); gap: 11px; padding: 15px 0 17px; }
+  .story-row { grid-template-columns: 37px 12px minmax(0, 1fr); gap: 11px; padding: 15px 10px 17px; border: 1px solid var(--border-strong); border-radius: 8px; }
   .date-day { font-size: 22px; }
   .date-month { font-size: 7px; }
   .year-divider { margin-left: 64px; }

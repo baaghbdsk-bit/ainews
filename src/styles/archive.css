@@ -340,7 +340,7 @@
   top: 27px; bottom: 34px; left: 55px; width: 2px;
   background: linear-gradient(to bottom, var(--secondary-line), var(--border) 88%, transparent);
 }
-.archive-timeline .timeline-item { position: relative; }
+.archive-timeline .timeline-item { position: relative; margin-bottom: 12px; }
 .archive-timeline .year-divider {
   margin: 44px 0 14px; padding: 13px 18px;
   display: flex; align-items: center; gap: 16px;
@@ -355,6 +355,9 @@
 .archive-timeline .year-rule { height: 2px; background: linear-gradient(to right, var(--secondary-line), transparent); }
 .archive-timeline .story-row {
   display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 36px; align-items: start;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 15px 16px 17px;
 }
 .archive-timeline .timeline-node {
   position: relative; z-index: 2;
