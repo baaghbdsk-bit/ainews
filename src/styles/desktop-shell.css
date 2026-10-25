@@ -6,11 +6,12 @@
    ========================================================================== */
 
 .archive-timeline .story-row {
-  grid-template-columns: 74px minmax(0, 1fr) 150px;
+  grid-template-columns: 74px minmax(0, 1fr);
   column-gap: 28px;
 }
 
 .story-thumb {
+  display: none !important;
   align-self: start;
   justify-self: end;
   margin-top: 6px;
@@ -41,6 +42,7 @@
 }
 
 .story-thumb-mono {
+  display: none !important;
   --tone: var(--blue);
   background:
     radial-gradient(120% 120% at 18% 12%, #8B5CF61f, transparent 58%),
@@ -950,40 +952,54 @@ html[data-theme="light"] .active-filter-chip:hover {
   margin-left: auto;
 }
 
-/* Read links as subtle professional buttons */
+/* Read links — primary CTA and ghost icon source link */
 .archive-timeline .read-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border-radius: 10px;
+  padding: 6px 14px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #c4b5fd;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
 .archive-timeline .read-link:hover {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.22);
+  border-color: rgba(139, 92, 246, 0.5);
   color: #fff;
-  transform: translateX(-2px);
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.12);
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.18);
+}
+
+/* Original source — compact icon-only ghost pill */
+.archive-timeline .read-link.read-original-link {
+  padding: 6px 10px;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  font-size: 12px;
 }
 
 .archive-timeline .read-link.read-original-link:hover {
-  background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.3);
-  box-shadow: 0 0 16px rgba(34, 197, 94, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+  box-shadow: none;
+}
+
+.archive-timeline .read-link.read-original-link span {
+  display: none;
 }
 
 .archive-timeline .read-link-icon {
   stroke-width: 2.5;
-  transition: transform 200ms ease;
+  transition: transform 180ms ease;
+  flex-shrink: 0;
 }
 
 .archive-timeline .read-link:hover .read-link-icon {

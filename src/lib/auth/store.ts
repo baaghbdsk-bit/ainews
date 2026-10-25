@@ -25,6 +25,7 @@ export interface AuthState {
    */
   clientId: string;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string) => Promise<SignUpResult>;
   sendMagicLink: (email: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -80,6 +81,7 @@ function buildSnapshot(): AuthState {
     status: !ready ? 'loading' : user ? 'signed-in' : 'guest',
     clientId: user?.id ?? GUEST_ID,
     signIn,
+    signInWithGoogle,
     signUp,
     sendMagicLink,
     resetPassword,
@@ -106,7 +108,8 @@ const SERVER_SNAPSHOT: AuthState = {
   status: 'loading',
   clientId: '',
   signIn,
-  signUp,
+  signInWithGoogle,
+    signUp,
   sendMagicLink,
   resetPassword,
   updatePassword,
@@ -194,6 +197,24 @@ function ensureGuestClaim(userId: string): Promise<void> {
  */
 export function whenAuthSettled(): Promise<void> {
   return claimedFor?.promise ?? Promise.resolve();
+}
+
+
+export async function signInWithGoogle(): Promise<void> {
+  const supabase = createClient();
+  if (!supabase) throw new Error('Authentication is not available.');
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: callbackUrl(),
+    },
+  });
+  if (error) {
+    if (/failed to fetch|network/i.test(error.message)) {
+      throw new Error('Could not reach the server. Check your connection and try again.');
+    }
+    throw new Error(error.message);
+  }
 }
 
 export async function signIn(email: string, password: string): Promise<void> {
@@ -355,19 +376,20 @@ export function useAuth(): AuthState {
 
 /** The account, and the actions a reader can take with it. */
 export function useAccount() {
-  const { user, status, signIn, signUp, sendMagicLink, resetPassword, updatePassword, signOut } =
+  const { user, status, signIn, signInWithGoogle, signUp, sendMagicLink, resetPassword, updatePassword, signOut } =
     useAuth();
   return useMemo(
     () => ({
       user,
       status,
       signIn,
-      signUp,
+      signInWithGoogle,
+    signUp,
       sendMagicLink,
       resetPassword,
       updatePassword,
       signOut,
     }),
-    [user, status, signIn, signUp, sendMagicLink, resetPassword, updatePassword, signOut],
+    [user, status, signIn, signInWithGoogle, signUp, sendMagicLink, resetPassword, updatePassword, signOut],
   );
 }

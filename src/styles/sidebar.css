@@ -482,3 +482,56 @@ html[data-theme="light"] .sidebar-divider {
 .sidebar-filter-head:hover {
   background: rgba(255, 255, 255, 0.06);
 }
+
+
+/* Filter reset button in sidebar */
+.sidebar-filter-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 6px;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1.4;
+}
+
+.sidebar-filter-reset-btn:hover {
+  background: rgba(139, 92, 246, 0.22);
+  color: #ffffff;
+  border-color: rgba(139, 92, 246, 0.45);
+  transform: scale(1.02);
+}
+
+.sidebar-filter-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #a78bfa;
+  box-shadow: 0 0 6px #a78bfa;
+  display: inline-block;
+}
+
+html[data-theme="light"] .sidebar-filter-reset-btn {
+  color: #6d28d9;
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.2);
+}
+
+html[data-theme="light"] .sidebar-filter-reset-btn:hover {
+  background: rgba(109, 40, 217, 0.15);
+  color: #4c1d95;
+  border-color: rgba(109, 40, 217, 0.35);
+}
+
+html[data-theme="light"] .sidebar-filter-active-dot {
+  background: #7c3aed;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.4);
+}

@@ -474,3 +474,8 @@ html[data-theme="light"] .active-filters-label {
 }
 
 
+
+/* Neubench Logo Wordmark Light Mode */
+html[data-theme="light"] .neubench-logo-wordmark {
+  color: #18181b !important;
+}

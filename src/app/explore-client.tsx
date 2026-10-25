@@ -6,6 +6,8 @@ import {
   BarChart2,
   BookOpen,
   Bookmark,
+  Building2,
+  CalendarDays,
   Calendar,
   Check,
   CheckCircle2,
@@ -125,37 +127,38 @@ function monogramOf(story: StoryDisplay): string {
  * Targets ~260-320 characters so each row gives a real sense of why the
  * story matters, not just a teaser headline.
  */
-function toShortReadableSummary(raw?: string | null, maxLen = 300): string {
+function toShortReadableSummary(raw?: string | null, maxLen = 500): string {
   if (!raw) return "";
   const cleaned = raw.replace(/\s+/g, " ").trim();
-  if (cleaned.length <= maxLen) return cleaned;
 
   // Split into sentences
-  const sentenceMatch = cleaned.match(/^(.*?[.!?])(?:\s+|$)/);
-  if (sentenceMatch && sentenceMatch[1]) {
-    const firstSentence = sentenceMatch[1].trim();
-    // If first sentence fits well
-    if (firstSentence.length >= 45 && firstSentence.length <= maxLen) {
-      return firstSentence;
-    }
-    // If first sentence is very short, try to append the second sentence
-    if (firstSentence.length < 45) {
-      const rest = cleaned.slice(firstSentence.length).trim();
-      const secondMatch = rest.match(/^(.*?[.!?])(?:\s+|$)/);
-      if (secondMatch && secondMatch[1]) {
-        const combined = `${firstSentence} ${secondMatch[1].trim()}`;
-        if (combined.length <= maxLen) return combined;
-      }
+  const sentenceRegex = /[^.!?]+[.!?]+/g;
+  const rawSentences: string[] = cleaned.match(sentenceRegex)?.map(s => s.trim()) ?? [];
+
+  // Deduplicate: skip a sentence if its first 50 chars already appear in accumulated
+  const unique: string[] = [];
+  for (const s of rawSentences) {
+    const key = s.slice(0, 50).toLowerCase();
+    if (!unique.some(u => u.slice(0, 50).toLowerCase() === key)) {
+      unique.push(s);
     }
   }
 
-  // Fallback: truncate cleanly at word boundary
+  // Accumulate sentences up to maxLen
+  let accumulated = "";
+  for (const sentence of unique) {
+    const next = accumulated ? `${accumulated} ${sentence}` : sentence;
+    if (next.length > maxLen) break;
+    accumulated = next;
+  }
+
+  if (accumulated.length >= 40) return accumulated;
+
+  // Fallback: word-boundary truncation
+  if (cleaned.length <= maxLen) return cleaned;
   const sliced = cleaned.slice(0, maxLen);
   const lastSpace = sliced.lastIndexOf(" ");
-  if (lastSpace > 40) {
-    return `${sliced.slice(0, lastSpace).trim()}...`;
-  }
-  return `${sliced}...`;
+  return lastSpace > 40 ? `${sliced.slice(0, lastSpace).trim()}...` : `${sliced}...`;
 }
 
 /**
@@ -1633,7 +1636,7 @@ export function ExploreClient({
             <div className="sidebar-sticky-wrapper">
               {/* Group 1: Discover */}
               <div className="sidebar-nav-group">
-                <div className="sidebar-section-title">TOPIC</div>
+                <div className="sidebar-section-title">FEEDS</div>
                 <nav className="sidebar-nav" aria-label="Feeds">
                   {/* 1. Latest */}
                   <button
@@ -1746,7 +1749,30 @@ export function ExploreClient({
 
               {/* Inline filters (year / month / company) */}
               <div className="sidebar-nav-group">
-                <div className="sidebar-section-title" style={{ paddingTop: 18, paddingBottom: 8 }}>FILTER</div>
+                <div className="sidebar-section-title" style={{ paddingTop: 18, paddingBottom: 8 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    FILTER
+                    {(activeYear !== "all" || activeMonth !== "all" || activeCompany !== "all") && (
+                      <span className="sidebar-filter-active-dot" title="Active filters applied" />
+                    )}
+                  </span>
+                  {(activeYear !== "all" || activeMonth !== "all" || activeCompany !== "all") && (
+                    <button
+                      type="button"
+                      className="sidebar-filter-reset-btn"
+                      onClick={() => {
+                        setActiveYear("all");
+                        setActiveMonth("all");
+                        setActiveCompany("all");
+                        setActiveTimelineIndex(0);
+                      }}
+                      title="Reset all filters"
+                    >
+                      <RotateCcw size={11} />
+                      <span>Reset</span>
+                    </button>
+                  )}
+                </div>
                 <nav className="sidebar-nav" aria-label="Filters">
                   <div className="sidebar-filter-row">
                     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -1769,7 +1795,7 @@ export function ExploreClient({
                   <div className="sidebar-filter-row">
                     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                       <div className="sidebar-nav-icon">
-                        <Calendar size={16} />
+                        <CalendarDays size={16} />
                       </div>
                       <span className="sidebar-nav-label">Month</span>
                     </div>
@@ -1787,7 +1813,7 @@ export function ExploreClient({
                   <div className="sidebar-filter-row">
                     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                       <div className="sidebar-nav-icon">
-                        <Layers size={16} />
+                        <Building2 size={16} />
                       </div>
                       <span className="sidebar-nav-label">Company</span>
                     </div>
@@ -2397,23 +2423,21 @@ export function ExploreClient({
           <Info aria-hidden="true" size={19} />
           <span className="nav-label">About</span>
         </button>
+        <button
+          ref={mobileFilterBtnRef}
+          aria-controls="mobile-filter-panel"
+          aria-expanded={isMobileFilterOpen}
+          className={`item-filter ${activeFilterChips.length > 0 ? "has-filters" : ""}`}
+          onClick={handleOpenMobileFilter}
+          type="button"
+        >
+          <div style={{ position: "relative", display: "inline-flex" }}>
+            <SlidersHorizontal aria-hidden="true" size={19} />
+            {activeFilterChips.length > 0 && <span className="mobile-saved-badge">{activeFilterChips.length}</span>}
+          </div>
+          <span className="nav-label">Filter</span>
+        </button>
       </nav>
-
-      {/* Mobile filter trigger — the only entry point to the filter panel on
-          small screens; sits just above the bottom nav and opens a bottom
-          sheet so the page never jumps to the top. */}
-      <button
-        ref={mobileFilterBtnRef}
-        aria-controls="mobile-filter-panel"
-        aria-expanded={isMobileFilterOpen}
-        className="archive-mobile-filter"
-        onClick={handleOpenMobileFilter}
-        type="button"
-      >
-        <SlidersHorizontal aria-hidden="true" size={14} />
-        Filter
-        {activeFilterChips.length > 0 && <span className="filter-mobile-count">{activeFilterChips.length}</span>}
-      </button>
 
       {isMobileFilterOpen && (
         <div
