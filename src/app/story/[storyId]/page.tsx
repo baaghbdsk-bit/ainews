@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { after } from "next/server";
-import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
+import { ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getStoryBySlug, getStoryBySlugFresh, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
 import { getMergedTimeline } from "@/lib/timeline";
@@ -476,17 +476,7 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
   return (
     <main className="site-frame archive-page story-article-page">
       <ReadingProgress />
-      <SiteHeader
-        className="story-article-topbar"
-        right={
-          <div className="header-actions">
-            <Link className="story-back-link" href="/">
-              <ArrowLeft size={17} />
-              <span>Back to timeline</span>
-            </Link>
-          </div>
-        }
-      />
+      <SiteHeader className="story-article-topbar" />
 
       <article className={`story-article article-${story.color}`} data-tour-target="story-page">
         <script
