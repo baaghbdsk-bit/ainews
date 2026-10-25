@@ -34,9 +34,9 @@
 .neubench-logo-bar {
   transform-box: fill-box;
   transform-origin: left center;
-  opacity: 0;
+  opacity: 0.3;
   transform: scaleX(0.3);
-  animation: neubench-bar-expand 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 forwards;
+  animation: neubench-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite;
 }
 
 .neubench-logo-bar--blue {
@@ -53,16 +53,24 @@
 
 @keyframes neubench-bar-expand {
   0% {
-    opacity: 0;
+    opacity: 0.3;
     transform: scaleX(0.3);
   }
-  55% {
+  25% {
     opacity: 1;
     transform: scaleX(1.05);
   }
-  100% {
+  40%, 60% {
     opacity: 1;
     transform: scaleX(1);
+  }
+  75% {
+    opacity: 0.3;
+    transform: scaleX(0.3);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scaleX(0.3);
   }
 }
 
