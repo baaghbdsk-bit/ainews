@@ -862,3 +862,32 @@
   }
 }
 
+/* Article header alignment on mobile/tablet — match story content edges to header edges */
+@media (max-width: 1080px) {
+  .story-article {
+    width: min(100% - 40px, 960px);
+    margin: clamp(40px, 8vh, 96px) auto 100px;
+  }
+}
+
+@media (max-width: 700px) {
+  .story-article-topbar {
+    padding: 0 20px;
+  }
+
+  .story-article {
+    width: 100%;
+    margin: 40px auto 80px;
+    padding: 0 20px;
+  }
+
+  .story-article h1 {
+    max-width: 100%;
+    margin: 20px 0 16px;
+  }
+
+  .story-article-meta {
+    margin-left: 0;
+  }
+}
+
