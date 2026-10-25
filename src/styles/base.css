@@ -218,6 +218,15 @@ input:focus-visible,
   }
 }
 
+/* Exception: Neubench logo E animation always plays */
+@media (prefers-reduced-motion: reduce) {
+  .neubench-logo-bar,
+  .nb-loader-bar {
+    animation-duration: 2.4s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
 /* Selection */
 ::selection {
   background: var(--accent-soft);

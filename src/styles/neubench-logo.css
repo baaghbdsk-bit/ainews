@@ -36,7 +36,7 @@
   transform-origin: left center;
   opacity: 0.3;
   transform: scaleX(0.3);
-  animation: neubench-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  animation: neubench-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important;
 }
 
 .neubench-logo-bar--blue {
@@ -90,8 +90,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .neubench-logo-bar {
-    animation: none;
-    opacity: 1;
-    transform: scaleX(1);
+    animation: neubench-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important;
+    opacity: 0.3;
+    transform: scaleX(0.3);
   }
 }

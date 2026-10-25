@@ -221,7 +221,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           .nb-loader-letters { display: inline-block; }
           .nb-loader-e { display: inline-flex; align-items: center; width: 120px; height: 138px; flex: 0 0 auto; }
           .nb-loader-e svg { width: 100%; height: 100%; display: block; overflow: visible; }
-          .nb-loader-bar { transform-box: fill-box; transform-origin: left center; opacity: 0.3; transform: scaleX(0.3); animation: nb-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
+          .nb-loader-bar { transform-box: fill-box; transform-origin: left center; opacity: 0.3; transform: scaleX(0.3); animation: nb-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important; }
           .nb-loader-bar--blue { animation-delay: 150ms; }
           .nb-loader-bar--violet { animation-delay: 300ms; }
           .nb-loader-bar--teal { animation-delay: 450ms; }
@@ -233,7 +233,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             100% { opacity: 0.3; transform: scaleX(0.3); }
           }
           @media (prefers-reduced-motion: reduce) {
-            .nb-loader-bar { animation: none; opacity: 1; transform: scaleX(1); }
+            .nb-loader-bar { animation: nb-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important; opacity: 0.3; transform: scaleX(0.3); }
           }
         `}</style>
         <div id="neubench-loading">
