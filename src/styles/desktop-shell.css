@@ -280,7 +280,7 @@ html[data-theme="light"] .archive-page {
 .archive-shell {
   width: min(100% - 48px, 1300px);
   margin: 0 auto;
-  zoom: 0.85;
+  /* zoom removed for standard layout behavior */
 }
 
 .topic-tabs-bar {
