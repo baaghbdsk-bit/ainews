@@ -569,8 +569,8 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
           </div>
         ) : null}
 
-        <footer className="story-article-source" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <footer className="story-article-source flex items-center justify-between flex-wrap gap-3">
+          <div className="inline-flex items-center gap-2">
             <BookOpen size={16} />
             <span>
               Source: <strong>{story.source}</strong>
@@ -579,7 +579,7 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
               Read original source <ArrowUpRight size={14} />
             </a>
           </div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <div className="inline-flex items-center gap-2">
             <BookmarkButton slug={story.slug} size="md" />
             <ShareButton
               title={story.title}

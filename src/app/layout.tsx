@@ -48,7 +48,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

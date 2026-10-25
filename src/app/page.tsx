@@ -63,12 +63,8 @@ function TimelineFallback() {
                 </div>
                 <div className="story-content">
                   <div
-                    style={{
-                      height: 14,
-                      width: `${72 - i * 6}%`,
-                      background: "rgba(255,255,255,0.14)",
-                      borderRadius: 3,
-                    }}
+                    className="h-[14px] w-full bg-white/14 rounded-full"
+                    style={{ width: `${72 - i * 6}%` }}
                   />
                 </div>
               </div>

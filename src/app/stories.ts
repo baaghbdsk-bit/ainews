@@ -32,7 +32,7 @@ export const stories: Story[] = [
     source: "Google",
     company: "Google",
     sourceUrl: "https://blog.google/products/gemini/gemini-3/",
-    color: "green",
+    color: "violet",
   },
   {
     id: "gpt-5",
@@ -49,7 +49,7 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/introducing-gpt-5/",
-    color: "blue",
+    color: "cyan",
   },
   {
     id: "claude-4",
@@ -66,7 +66,7 @@ export const stories: Story[] = [
     source: "Anthropic",
     company: "Anthropic",
     sourceUrl: "https://www.anthropic.com/news/claude-4",
-    color: "orange",
+    color: "violet",
   },
   {
     id: "ai-diffusion-rule-rescinded",
@@ -83,7 +83,7 @@ export const stories: Story[] = [
     source: "U.S. Department of Commerce",
     company: "U.S. Department of Commerce",
     sourceUrl: "https://www.bis.gov/",
-    color: "coral",
+    color: "blue",
   },
   {
     id: "gpt-4-1-api",
@@ -100,7 +100,7 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/gpt-4-1/",
-    color: "blue",
+    color: "cyan",
   },
   {
     id: "llama-4",
@@ -134,7 +134,7 @@ export const stories: Story[] = [
     source: "Google",
     company: "Google",
     sourceUrl: "https://blog.google/technology/google-deepmind/gemini-model-thinking-updates-march-2025/",
-    color: "green",
+    color: "violet",
   },
   {
     id: "gpt-4-5-orion",
@@ -151,7 +151,7 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/introducing-gpt-4-5/",
-    color: "blue",
+    color: "violet",
   },
   {
     id: "claude-3-7-sonnet",
@@ -168,7 +168,7 @@ export const stories: Story[] = [
     source: "Anthropic",
     company: "Anthropic",
     sourceUrl: "https://www.anthropic.com/news/claude-3-7-sonnet",
-    color: "orange",
+    color: "violet",
   },
   {
     id: "grok-3",
@@ -202,7 +202,7 @@ export const stories: Story[] = [
     source: "DeepSeek",
     company: "DeepSeek",
     sourceUrl: "https://api-docs.deepseek.com/news/news250120",
-    color: "blue",
+    color: "amber",
   },
   {
     id: "stargate",
@@ -219,7 +219,7 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/announcing-the-stargate-project/",
-    color: "green",
+    color: "cyan",
   },
   {
     id: "eu-ai-act-prohibitions",
@@ -236,7 +236,7 @@ export const stories: Story[] = [
     source: "European Commission",
     company: "European Commission",
     sourceUrl: "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
-    color: "coral",
+    color: "blue",
   },
   {
     id: "ai-act",
@@ -254,7 +254,7 @@ export const stories: Story[] = [
     company: "Council of the European Union",
     sourceUrl:
       "https://www.consilium.europa.eu/en/press/press-releases/2024/05/21/artificial-intelligence-ai-act-council-gives-final-green-light-to-the-first-worldwide-rules-on-ai/",
-    color: "coral",
+    color: "blue",
   },
   {
     id: "gpt-4o",
@@ -271,7 +271,7 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/hello-gpt-4o/",
-    color: "blue",
+    color: "violet",
   },
   {
     id: "alphafold-3",
@@ -288,7 +288,7 @@ export const stories: Story[] = [
     source: "Google DeepMind",
     company: "Google DeepMind",
     sourceUrl: "https://deepmind.google/discover/blog/alphafold-3-predicts-the-structure-and-interactions-of-all-of-lifes-molecules/",
-    color: "green",
+    color: "amber",
   },
   {
     id: "sora",
@@ -322,7 +322,7 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/introducing-the-gpt-store/",
-    color: "orange",
+    color: "cyan",
   },
   {
     id: "gemini",
@@ -339,7 +339,7 @@ export const stories: Story[] = [
     source: "Google",
     company: "Google",
     sourceUrl: "https://blog.google/technology/ai/google-gemini-ai/",
-    color: "blue",
+    color: "violet",
   },
   {
     id: "llama-2",
@@ -356,7 +356,7 @@ export const stories: Story[] = [
     source: "Meta AI",
     company: "Meta",
     sourceUrl: "https://ai.meta.com/blog/llama-2/",
-    color: "green",
+    color: "violet",
   },
   {
     id: "gpt-4",
@@ -390,6 +390,6 @@ export const stories: Story[] = [
     source: "OpenAI",
     company: "OpenAI",
     sourceUrl: "https://openai.com/index/chatgpt/",
-    color: "orange",
+    color: "cyan",
   },
 ];

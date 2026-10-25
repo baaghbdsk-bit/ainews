@@ -54,8 +54,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
- input:focus {
-  outline: none;}
+
+
 .archive-timeline .timeline-item:first-child .year-divider {
   margin-top: 4px;}
 .story-article-topbar .header-actions {
@@ -413,9 +413,9 @@ html[data-theme="light"] .story-code-block {
   align-items: center;
   gap: 14px;
   flex-shrink: 0;}
-.header-search input:focus,  .header-search input:focus-visible {
-  outline: none;
-  box-shadow: none;}
+
+
+
 .header-theme-toggle {
   margin-left: auto;}
 .hero-stats-strip {
@@ -1419,7 +1419,7 @@ html[data-theme="light"] .feed-mode-tab.is-active {
   transform: translateY(-1px);}
 .hero-action-btn.btn-primary {
   background: linear-gradient(135deg, #8B5CF6, #6366F1);
-  border-color: #8B5CF6;
+
   color: #FFFFFF;
   box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);}
 .hero-action-btn.btn-primary:hover {
@@ -1728,7 +1728,7 @@ html[data-theme="light"] .timeline-company-pill {
   border: 1px solid var(--shell-line);
   color: var(--shell-text);
   padding: 5px 8px;
-  outline: none;
+
   transition: border-color 150ms ease, box-shadow 150ms ease;
   font-family: inherit;}
 .sidebar-field-select {
@@ -1964,7 +1964,7 @@ html[data-theme="light"] .timeline-company-pill {
   border-radius: 6px;
   transition: border-color 140ms ease, box-shadow 140ms ease;}
 .filter-popover-input-wrap:focus-within {
-  border-color: #8b5cf6;
+
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.22);}
 .filter-popover-icon {
   color: var(--shell-faint);
@@ -1974,7 +1974,7 @@ html[data-theme="light"] .timeline-company-pill {
   min-width: 0;
   height: 100%;
   border: none;
-  outline: none;
+
   background: transparent;
   color: var(--shell-text);
   font-size: 12px;}
@@ -1999,12 +1999,12 @@ html[data-theme="light"] .timeline-company-pill {
   background: #151a2d;
   color: var(--shell-text);
   font-size: 12px;
-  outline: none;
+
   cursor: pointer;
   transition: border-color 140ms ease;
   width: 100%;}
 .filter-popover-select:focus {
-  border-color: #8b5cf6;
+
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.22);}
 .filter-popover-select option {
   background: #18181b;
@@ -2537,12 +2537,12 @@ from {
   padding: 8px 12px;
   font-size: 13px;
   color: var(--shell-text);
-  outline: none;
+
   transition: border-color 160ms ease, box-shadow 160ms ease;
   font-family: inherit;}
-.tip-input-group input:focus,  .tip-input-group select:focus,  .tip-input-group textarea:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);}
+
+
+
 .tip-form-foot {
   display: flex;
   justify-content: flex-end;
@@ -2670,7 +2670,7 @@ html[data-theme="light"] .hero-stat-pill:hover {
   color: #18181b;}
 html[data-theme="light"] .hero-stat-pill.is-active {
   background: #EDE9FE;
-  border-color: #8B5CF6;
+
   color: #6D28D9;
   box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2);}
 .story-expand-footer {
