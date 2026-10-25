@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { LogIn, LogOut, User as UserIcon, Sparkles } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth/store';
 
 /**
@@ -46,7 +46,13 @@ export function AccountButton() {
   }
 
   const label = user.email ?? 'Account';
-  const emailVerified = user.user_metadata?.neubench_email_verified === true;
+  const displayName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Account';
+  const emailVerified =
+    user.user_metadata?.neubench_email_verified === true || Boolean(user.email_confirmed_at);
 
   return (
     <div className="account-wrap" ref={wrapRef}>
@@ -56,9 +62,11 @@ export function AccountButton() {
         onClick={() => setMenuOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
+        title={label}
         data-tour-target="account"
       >
-        <UserIcon size={16} />
+        <UserIcon size={14} />
+        <span className="account-email">{displayName}</span>
       </button>
 
       {menuOpen && (
@@ -72,7 +80,19 @@ export function AccountButton() {
               {emailVerified ? 'Email verified' : 'Email not verified'}
             </span>
           </div>
-          
+
+          <button
+            type="button"
+            role="menuitem"
+            className="account-menu-item account-menu-logout"
+            onClick={async () => {
+              setMenuOpen(false);
+              await signOut();
+            }}
+          >
+            <LogOut size={14} />
+            <span>Sign out</span>
+          </button>
         </div>
       )}
     </div>

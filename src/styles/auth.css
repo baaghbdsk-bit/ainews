@@ -852,3 +852,9 @@ html[data-theme="light"] .auth-divider::before,
 html[data-theme="light"] .auth-divider::after {
   background: #e2e8f0;
 }
+
+.account-menu-logout { color: #f87171 !important; transition: all 140ms ease; }
+.account-menu-logout:hover { background: rgba(239, 68, 68, 0.12) !important; color: #ef4444 !important; }
+html[data-theme='light'] .account-menu-logout { color: #dc2626 !important; }
+html[data-theme='light'] .account-menu-logout:hover { background: rgba(220, 38, 38, 0.08) !important; color: #b91c1c !important; }
+
