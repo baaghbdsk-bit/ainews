@@ -917,8 +917,8 @@ html[data-theme="light"] .active-filter-chip:hover {
   font-size: 13.5px;
   line-height: 1.65;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
   display: -webkit-box;
   letter-spacing: -0.005em;
 }
@@ -1493,8 +1493,8 @@ html[data-theme="light"] .archive-timeline .story-expand-footer {
   font-size: 14px;
   line-height: 1.6;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
 }
 
 .archive-timeline .story-overview .story-summary {

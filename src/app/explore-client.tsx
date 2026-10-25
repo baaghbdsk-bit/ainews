@@ -198,7 +198,7 @@ const TimelineRow = memo(function TimelineRow({
   // Build a highly insightful 2-4 line preview: significance/why-it-matters first
   // (it explains *why* this news matters), then the summary fills in the *what*.
   const insightSource = story.whyItMatters || story.significance || story.summary || story.deck || '';
-  const previewText = toShortReadableSummary(insightSource, 320);
+  const previewText = toShortReadableSummary(insightSource, 480);
   const whyText = story.whyItMatters || story.significance;
   const hasDistinctSignificance = whyText && !isRedundantWith(story.summary, whyText);
   const words = ((story.summary || "") + (story.deck || "")).split(/\s+/).filter(Boolean).length;
