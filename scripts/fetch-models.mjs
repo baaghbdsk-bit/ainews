@@ -9,7 +9,10 @@
  *    results): SWE-bench Verified, SWE-bench Pro, Terminal-Bench 4.0,
  *    FrontierMath v2, ARC-AGI-2, GPQA Diamond, HLE.
  *
- * Usage: node scripts/fetch-models.mjs [--since 2025-07-01] [--refresh]
+ * The catalogue is a rolling 6-month window: a model drops out once it is
+ * older than six months, so the file never accumulates years of history.
+ *
+ * Usage: node scripts/fetch-models.mjs [--since YYYY-MM-DD] [--refresh]
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,10 +22,20 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = path.join(ROOT, 'scratch', 'models.json');
 const BENCH_CACHE = path.join(ROOT, 'scratch', 'benchlm.json');
 const OUT = path.join(ROOT, 'src', 'lib', 'benchmarks', 'data.ts');
+const TODAY = new Date().toISOString().slice(0, 10);
+
+/** The catalogue is a rolling window: old models drop out as they age. */
+const WINDOW_MONTHS = 6;
+
+function monthsAgo(date, months) {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() - months);
+  return d.toISOString().slice(0, 10);
+}
+
 const SINCE = process.argv.includes('--since')
   ? process.argv[process.argv.indexOf('--since') + 1]
-  : '2025-07-01';
-const TODAY = new Date().toISOString().slice(0, 10);
+  : monthsAgo(TODAY, WINDOW_MONTHS);
 const REFRESH = process.argv.includes('--refresh');
 
 const BENCHLM_BENCHMARKS = [
@@ -32,6 +45,7 @@ const BENCHLM_BENCHMARKS = [
   { id: 'arc-agi', slug: 'arc-agi-2', name: 'ARC-AGI-2', category: 'Reasoning' },
   { id: 'gpqa-diamond', slug: 'gpqa-diamond', name: 'GPQA Diamond', category: 'Reasoning' },
   { id: 'hle', slug: 'hle', name: "Humanity's Last Exam", category: 'Reasoning' },
+  { id: 'aa-coding-agent', slug: 'aacodingagents', name: 'AA Coding Agent Index v2.0', category: 'Coding' },
 ];
 
 const VENDORS = {
@@ -468,7 +482,7 @@ function buildRecords(models, benchlm, benchlmModels) {
           datasetVersion: `${bench.name} (BenchLM snapshot ${TODAY})`,
           lastVerifiedDate: TODAY,
         };
-      }
+}
     }
 
     const aa = m.benchmarks?.artificial_analysis;
@@ -552,6 +566,77 @@ function buildRecords(models, benchlm, benchlmModels) {
   }
 
   out.sort((a, b) => b.specs.releaseDate.localeCompare(a.specs.releaseDate));
+
+  // AA Coding Agent Index (system-level: model + harness)
+  // Map system entries like "Claude Code - Opus 5.5 (max)" to base models
+  const aaCodingAgentMap = benchlm['aa-coding-agent'];
+  if (aaCodingAgentMap?.size) {
+    const modelBest = new Map();
+    for (const [, entry] of aaCodingAgentMap) {
+      const systemName = entry.model || '';
+      const match = systemName.match(/[-–]\s*([^\(]+)\s*(?:\([^)]+\))?$/);
+      const baseName = match ? match[1].trim() : systemName;
+      const norm = normKey(baseName);
+      if (!norm) continue;
+      const score = entry.score;
+      if (typeof score !== 'number' || !Number.isFinite(score)) continue;
+      const prev = modelBest.get(norm);
+      if (!prev || score > prev.score) {
+        modelBest.set(norm, { score, system: systemName, harness: entry.creator });
+      }
+    }
+    for (const rec of out) {
+      const idPart = rec.id.split('/')[1] || '';
+      const baseId = idPart.replace(/^[a-z]+-/, ''); // remove vendor prefix
+      const candidates = [
+        normKey(rec.name),
+        normKey(idPart),
+        normKey(rec.specs.versionIdentifier),
+        normKey(baseId), // vendor-less: "opus-5.5" -> "55opsu"
+      ].filter(Boolean);
+      for (const cand of candidates) {
+        const hit = modelBest.get(cand);
+        if (hit) {
+          rec.benchmarks['aa-coding-agent'] = {
+            benchmarkId: 'aa-coding-agent',
+            name: 'AA Coding Agent Index v2.0',
+            category: 'Coding',
+            score: +hit.score.toFixed(1),
+            displayValue: `${hit.score.toFixed(1)}%`,
+            unit: '%',
+            evaluationType: 'Independent Evaluation',
+            evaluator: `Artificial Analysis (${hit.harness || 'agent system'})`,
+            evaluationDate: TODAY.slice(0, 7),
+            sourceUrl: 'https://artificialanalysis.ai/agents/coding-agents',
+            methodologyNotes: `System: ${hit.system}. ${benchlmMethodology('display-only mirror', 'AA Coding Agents')}`,
+            lastVerifiedDate: TODAY,
+          };
+          break;
+        }
+        // Fallback: substring match for cases like "opus55" in "claudeopus55"
+        for (const [key, val] of modelBest) {
+          if (cand.includes(key) || key.includes(cand)) {
+            rec.benchmarks['aa-coding-agent'] = {
+              benchmarkId: 'aa-coding-agent',
+              name: 'AA Coding Agent Index v2.0',
+              category: 'Coding',
+              score: +val.score.toFixed(1),
+              displayValue: `${val.score.toFixed(1)}%`,
+              unit: '%',
+              evaluationType: 'Independent Evaluation',
+              evaluator: `Artificial Analysis (${val.harness || 'agent system'})`,
+              evaluationDate: TODAY.slice(0, 7),
+              sourceUrl: 'https://artificialanalysis.ai/agents/coding-agents',
+              methodologyNotes: `System: ${val.system}. ${benchlmMethodology('display-only mirror', 'AA Coding Agents')}`,
+              lastVerifiedDate: TODAY,
+            };
+            break;
+          }
+        }
+      }
+    }
+  }
+
   return out;
 }
 
@@ -559,6 +644,7 @@ const DEFINITIONS = [
   { id: 'aa-intelligence', name: 'Artificial Analysis Intelligence Index', shortName: 'AA Intelligence', category: 'General Knowledge', unit: '%', description: 'Composite index aggregating 10+ evaluations of general reasoning and knowledge.', whatItMeasures: 'Broad capability across reasoning, science, coding, and instruction following.', realWorldSignificance: 'Best single proxy for general-purpose model quality.', limitations: 'Composite weighting is proprietary; not directly comparable to vendor-reported scores.' },
   { id: 'aa-coding', name: 'Artificial Analysis Coding Index', shortName: 'AA Coding', category: 'Coding', unit: '%', description: 'Composite index of coding and software-engineering evaluations.', whatItMeasures: 'Code generation, debugging, and repository-level task performance.', realWorldSignificance: 'Indicates suitability for development tooling and agentic coding.', limitations: 'Scaffold and language coverage vary between underlying evaluations.' },
   { id: 'aa-agentic', name: 'Artificial Analysis Agentic Index', shortName: 'AA Agentic', category: 'Agentic', unit: '%', description: 'Composite index of tool-use and long-horizon agentic tasks.', whatItMeasures: 'Multi-step planning, tool invocation, and task completion.', realWorldSignificance: 'Predicts reliability in autonomous workflows.', limitations: 'Agent harnesses differ; results are not directly comparable across scaffolds.' },
+  { id: 'aa-coding-agent', name: 'Artificial Analysis Coding Agent Index v2.0', shortName: 'AA Coding Agent', category: 'Coding', unit: '%', description: 'Composite index of coding-agent systems (model + harness) across FrontierCode v1.1, SWE-Atlas-QnA, and Terminal-Bench v4.', whatItMeasures: 'Real-world software engineering capability of model+harness combinations.', realWorldSignificance: 'Indicates suitability for agentic coding workflows; scores are for systems, not base models alone.', limitations: 'Scores combine model and agent harness; not directly comparable to base-model coding benchmarks. Source is display-only mirror from Artificial Analysis.' },
   { id: 'swe-bench-pro', name: 'SWE-bench Pro', shortName: 'SWE Pro', category: 'Coding', unit: '%', description: 'Harder, contamination-resistant successor to SWE-bench spanning multiple languages.', whatItMeasures: 'Long-horizon repository repair on professional tasks.', realWorldSignificance: 'Current frontier coding signal now that Verified is saturating.', limitations: 'Newer benchmark with fewer independent replications.' },
   { id: 'terminal-bench', name: 'Terminal-Bench 4.0', shortName: 'Terminal 4.0', category: 'Agentic', unit: '%', description: 'Sandboxed command-line tasks requiring shell and file-system operation.', whatItMeasures: 'Autonomous terminal operation and environment debugging.', realWorldSignificance: 'Measures readiness for DevOps and coding-agent deployments.', limitations: 'Agent harness strongly affects results; version 4.0 differs from earlier releases.' },
   { id: 'arc-agi', name: 'ARC-AGI-2', shortName: 'ARC-AGI-2', category: 'Reasoning', unit: '%', description: 'Novel visual grid puzzles requiring abstract rule induction.', whatItMeasures: 'Few-shot abstraction without memorized knowledge.', realWorldSignificance: 'Evidence of genuine generalization rather than recall.', limitations: 'Narrow puzzle format; expensive to run; scores depend on effort setting.' },
@@ -570,6 +656,10 @@ const DEFINITIONS = [
 
 function render(records, definitions) {
   const q = (v) => JSON.stringify(String(v));
+  // null means "price unknown" and must stay a real null, not the string
+  // "null" - the validator and the UI both treat those differently.
+  const priceLiteral = (v) =>
+    typeof v === 'number' ? String(v) : v === null ? 'null' : q(v);
 
   const defs = definitions
     .map(
@@ -628,8 +718,8 @@ ${b.methodologyNotes ? `        methodologyNotes: ${q(b.methodologyNotes)},\n` :
       architecture: ${r.specs.architecture ? q(r.specs.architecture) : 'undefined'},
     },
     pricing: {
-      inputPerMillion: ${typeof r.pricing.inputPerMillion === 'number' ? r.pricing.inputPerMillion : q(r.pricing.inputPerMillion)},
-      outputPerMillion: ${typeof r.pricing.outputPerMillion === 'number' ? r.pricing.outputPerMillion : q(r.pricing.outputPerMillion)},
+      inputPerMillion: ${priceLiteral(r.pricing.inputPerMillion)},
+      outputPerMillion: ${priceLiteral(r.pricing.outputPerMillion)},
       unit: ${q(r.pricing.unit)},
     },
     benchmarks: {

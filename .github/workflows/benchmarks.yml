@@ -37,7 +37,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22 is the first LTS line that ships --experimental-strip-types,
+          # which the benchmark integrity suite runs with.
+          node-version: 22
           cache: npm
 
       - run: npm ci --no-audit --no-fund
