@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ExternalLink, HelpCircle, AlertCircle, Award } from 'lucide-react';
+import { ExternalLink, HelpCircle, AlertCircle, Trophy, TrendingUp } from 'lucide-react';
 import type { AIModelRecord, BenchmarkDefinition } from '@/lib/benchmarks/types';
 
 interface BenchmarkGridCardProps {
@@ -53,9 +53,14 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
       {/* Card Header */}
       <div className="bench-card-head">
         <div className="bench-card-title-group">
-          <span className={`bench-domain-badge cat-${catSlug}`}>{benchmark.category}</span>
+          <div className="bench-card-meta-line">
+            <span className={`bench-domain-badge cat-${catSlug}`}>
+              <span className="domain-badge-dot" aria-hidden="true" />
+              {benchmark.category}
+            </span>
+            <span className="bench-card-unit">{isElo ? 'ELO Rating' : '% Benchmark Score'}</span>
+          </div>
           <h4 className="bench-card-title">{benchmark.name}</h4>
-          <span className="bench-card-unit">{isElo ? 'ELO' : '% Score'}</span>
         </div>
 
         <button
@@ -66,7 +71,7 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
           aria-label={`About ${benchmark.name}`}
           aria-expanded={isExplaining}
         >
-          <HelpCircle size={14} />
+          <HelpCircle size={13} />
           <span>Explain</span>
         </button>
       </div>
@@ -74,12 +79,14 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
       {/* Collapsible Info Drawer */}
       {isExplaining && (
         <div className="bench-card-explanation" role="region" aria-label="Benchmark details">
-          <p>
-            <strong>Measures:</strong> {benchmark.whatItMeasures}
-          </p>
-          <p>
-            <strong>Significance:</strong> {benchmark.realWorldSignificance}
-          </p>
+          <div className="bench-explanation-row">
+            <span className="bench-explanation-label">Measures</span>
+            <p className="bench-explanation-text">{benchmark.whatItMeasures}</p>
+          </div>
+          <div className="bench-explanation-row">
+            <span className="bench-explanation-label">Significance</span>
+            <p className="bench-explanation-text">{benchmark.realWorldSignificance}</p>
+          </div>
           <div className="bench-card-caveat">
             <AlertCircle size={12} className="flex-shrink-0" />
             <span>
@@ -92,13 +99,22 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
       {/* Leader Callout Banner */}
       {leaderModel && (leaderDeltaText || isTie) && (
         <div className="bench-card-leader-strip">
-          <Award size={13} className="text-amber-400 flex-shrink-0" />
-          <span className="leader-label">{isTie ? 'Co-Leader:' : 'Leader:'}</span>
-          <span className="leader-name">{leaderModel.name}</span>
-          <span className="leader-score">
-            ({leaderModel.benchmarks[benchmark.id].displayValue})
-          </span>
-          <span className="leader-delta">{leaderDeltaText}</span>
+          <div className="leader-strip-left">
+            <div className="leader-trophy-wrap">
+              <Trophy size={12} className="leader-trophy-icon" />
+            </div>
+            <span className="leader-tag">{isTie ? 'Co-Leader' : 'Leader'}</span>
+            <span className="leader-name">{leaderModel.name}</span>
+            <span className="leader-score">
+              {leaderModel.benchmarks[benchmark.id].displayValue}
+            </span>
+          </div>
+          {leaderDeltaText && (
+            <div className="leader-delta-badge">
+              <TrendingUp size={10} className="leader-delta-icon" />
+              <span>{leaderDeltaText}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -124,7 +140,9 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
             >
               {/* Rank & Identity */}
               <div className="bench-bar-identity">
-                <span className="bench-bar-rank">{idx + 1}</span>
+                <span className={`bench-bar-rank ${isLeader ? 'is-rank-first' : ''}`}>
+                  {idx + 1}
+                </span>
                 <span
                   className={`model-color-dot fill-${model.developerColor}`}
                   aria-hidden="true"
@@ -179,4 +197,3 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
     </div>
   );
 }
-

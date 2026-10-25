@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LogIn, LogOut, User as UserIcon, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/auth/store';
-import { resetTour, showPrompt } from '@/components/tour/tour-store';
 
 /**
  * The header affordance for the account.
@@ -73,31 +72,7 @@ export function AccountButton() {
               {emailVerified ? 'Email verified' : 'Email not verified'}
             </span>
           </div>
-          <button
-            type="button"
-            role="menuitem"
-            className="account-menu-item"
-            onClick={async () => {
-              setMenuOpen(false);
-              await signOut();
-            }}
-          >
-            <LogOut size={13} />
-            <span>Sign out</span>
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            className="account-menu-item"
-            onClick={() => {
-              setMenuOpen(false);
-              resetTour();
-              showPrompt();
-            }}
-          >
-            <Sparkles size={13} />
-            <span>Replay Tour</span>
-          </button>
+          
         </div>
       )}
     </div>

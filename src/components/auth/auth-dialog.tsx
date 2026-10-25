@@ -13,8 +13,6 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth, startAuth } from '@/lib/auth/store';
-import { useTour, startTour, dismissTour, showPrompt } from '@/components/tour/tour-store';
-import { TourPromptDialog } from '@/components/tour/tour-prompt-dialog';
 
 type Mode = 'signin' | 'signup' | 'magic' | 'forgot';
 
@@ -62,7 +60,6 @@ const COPY = {
  */
 export function AuthDialog() {
   const { authOpen, closeAuth } = useAuth();
-  const { status: tourStatus, promptOpen } = useTour();
   // Starting the session here keeps the page out of a client wrapper, which
   // is what lets a missing story still answer with a real 404.
   useEffect(() => {
@@ -77,19 +74,12 @@ export function AuthDialog() {
         <AuthDialogPanel
           onClose={closeAuth}
           onComplete={() => {
-            if (tourStatus === 'not-started') showPrompt();
+            // tour prompt removed
           }}
         />
       )}
       {promptOpen && (
-        <TourPromptDialog
-          onAccept={() => {
-            startTour();
-          }}
-          onRefuse={() => {
-            dismissTour();
-          }}
-        />
+        
       )}
     </>
   );
