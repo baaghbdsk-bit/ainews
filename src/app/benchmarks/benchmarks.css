@@ -2,62 +2,64 @@
    Model Benchmarks Comparator — Dedicated Styling Architecture
    ========================================================================== */
 
+/* ── Unified Brand Color Aliases (P0) ── */
 :root {
-  --bench-bg: #090b10;
-  --bench-surface: #18181b;
-  --bench-surface-elevated: #151a24;
-  --bench-line: rgba(255, 255, 255, 0.08);
-  --bench-text: #f8fafc;
-  --bench-muted: #a1a1aa;
-  --bench-violet: #a78bfa;
-  --bench-violet-strong: #c4b5fd;
-  --bench-violet-soft: rgba(167, 139, 250, 0.12);
-  --bench-violet-line: rgba(167, 139, 250, 0.28);
-  --bench-violet-hover: rgba(139, 92, 246, 0.2);
-  --bench-dev-violet: #a855f7;
-  --bench-dev-blue: #3b82f6;
-  --bench-dev-cyan: #06b6d4;
-  --bench-dev-amber: #f59e0b;
-  --bench-dev-emerald: #10b981;
-  --bench-dev-rose: #f43f5e;
-  --bench-dev-indigo: #6366f1;
-  --bench-dev-sky: #0ea5e9;
-  --bench-dev-teal: #14b8a6;
-  --bench-dev-lime: #84cc16;
-  --bench-dev-orange: #f97316;
-  --bench-dev-pink: #db2777;
-  --bench-dev-purple: #9333ea;
-  --bench-dev-red: #dc2626;
-  --bench-dev-slate: #64748b;
+  /* Map all --bench-* tokens to unified brand tokens */
+  --bench-bg: var(--bg);
+  --bench-surface: var(--surface);
+  --bench-surface-elevated: var(--surface-elevated);
+  --bench-line: var(--border);
+  --bench-text: var(--fg);
+  --bench-muted: var(--fg-muted);
+  --bench-violet: var(--brand-violet);
+  --bench-violet-strong: var(--brand-violet-hover);
+  --bench-violet-soft: var(--brand-violet-soft);
+  --bench-violet-line: var(--brand-violet-line);
+  --bench-violet-hover: var(--brand-violet-hover);
+  --bench-dev-violet: var(--brand-violet);
+  --bench-dev-blue: var(--brand-electric);
+  --bench-dev-cyan: var(--brand-teal);
+  --bench-dev-amber: var(--brand-amber);
+  --bench-dev-emerald: var(--brand-teal);
+  --bench-dev-rose: #EF4444;
+  --bench-dev-indigo: var(--brand-violet);
+  --bench-dev-sky: var(--brand-electric);
+  --bench-dev-teal: var(--brand-teal);
+  --bench-dev-lime: #84CC16;
+  --bench-dev-orange: #F97316;
+  --bench-dev-pink: #DB2777;
+  --bench-dev-purple: var(--brand-violet);
+  --bench-dev-red: #DC2626;
+  --bench-dev-slate: #64748B;
 }
 
 html[data-theme="light"] {
-  --bench-bg: #f8fafc;
-  --bench-surface: #ffffff;
-  --bench-surface-elevated: #f1f5f9;
-  --bench-line: #e2e8f0;
-  --bench-text: #18181b;
-  --bench-muted: #64748b;
-  --bench-violet: #7c3aed;
-  --bench-violet-strong: #5b21b6;
-  --bench-violet-soft: #ede9fe;
-  --bench-violet-line: #c4b5fd;
-  --bench-violet-hover: #ddd6fe;
-  --bench-dev-violet: #7c3aed;
-  --bench-dev-blue: #1d4ed8;
-  --bench-dev-cyan: #0e7490;
-  --bench-dev-amber: #b45309;
-  --bench-dev-emerald: #047857;
-  --bench-dev-rose: #be123c;
-  --bench-dev-indigo: #4338ca;
-  --bench-dev-sky: #0369a1;
-  --bench-dev-teal: #0f766e;
-  --bench-dev-lime: #4d7c0f;
-  --bench-dev-orange: #c2410c;
-  --bench-dev-pink: #be185d;
-  --bench-dev-purple: #7e22ce;
-  --bench-dev-red: #b91c1c;
-  --bench-dev-slate: #18181b;
+  --bench-bg: var(--bg);
+  --bench-surface: var(--surface);
+  --bench-surface-elevated: var(--surface-elevated);
+  --bench-line: var(--border);
+  --bench-text: var(--fg);
+  --bench-muted: var(--fg-muted);
+  --bench-violet: var(--brand-violet);
+  --bench-violet-strong: var(--brand-violet-hover);
+  --bench-violet-soft: var(--brand-violet-soft);
+  --bench-violet-line: var(--brand-violet-line);
+  --bench-violet-hover: var(--brand-violet-hover);
+  --bench-dev-violet: var(--brand-violet);
+  --bench-dev-blue: var(--brand-electric);
+  --bench-dev-cyan: var(--brand-teal);
+  --bench-dev-amber: var(--brand-amber);
+  --bench-dev-emerald: var(--brand-teal);
+  --bench-dev-rose: #DC2626;
+  --bench-dev-indigo: var(--brand-violet);
+  --bench-dev-sky: var(--brand-electric);
+  --bench-dev-teal: var(--brand-teal);
+  --bench-dev-lime: #4D7C0F;
+  --bench-dev-orange: #C2410C;
+  --bench-dev-pink: #BE185D;
+  --bench-dev-purple: var(--brand-violet);
+  --bench-dev-red: #B91C1C;
+  --bench-dev-slate: #18181B;
 }
 
 .benchmarks-page {
@@ -111,9 +113,8 @@ html[data-theme="light"] {
 /* ── 01. Header Panel ── */
 .bench-header-panel {
   position: relative;
-  background: radial-gradient(120% 160% at 85% 40%, rgba(244, 114, 182, 0.16) 0%, rgba(219, 39, 119, 0.08) 45%, transparent 68%),
-              linear-gradient(135deg, rgba(20, 25, 40, 0.96) 0%, rgba(11, 15, 25, 0.98) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 32px 36px;
   display: flex;

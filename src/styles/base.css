@@ -1,68 +1,128 @@
-﻿/* base — extracted from src/app/globals.css (order preserved) */
+﻿/* base — unified color system for NEUBENCH */
 
 :root {
-  /* Article dark template — default */
-  --paper: #000000;
-  --paper-raised: #18181b;
-  --panel-bg: #18181b;
-  --card-bg: #18181b;
-  --surface: #18181b;
-  --ink: #F8FAFC;
-  --muted: #FFFFFF;
-  --faint: #A1A1AA;
-  --rule: #18181b;
-  --rule-strong: #18181b;
-  --rule-hover: #A1A1AA;
-  --rule-focus: #71717A;
-  --hover: #18181b;
-  /* Main brand — neutral grey */
-  --accent: #A1A1AA;
-  --accent-2: #F8FAFC;
-  /* Trending accent — single accent color for trending/hot items only */
-  --trending: #F59E0B;
-  --trending-light: #451A03;
-  --highlight: #F59E0B;
-  /* Category hues — muted slate/blue family only (no rainbow) */
-  --blue: #71717A;
-  --blue-light: #A1A1AA;
-  --slate: #A1A1AA;
-  --slate-light: #18181b;
-  --violet: #8055F5;
-  --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  /* ── Brand Colors (single source of truth) ── */
+  --brand-bg: #08090B;
+  --brand-fg: #F5F5F5;
+  --brand-muted: #A1A1AA;
+  --brand-electric: #4777FF;
+  --brand-electric-hover: #2D5EE8;
+  --brand-electric-soft: rgba(71, 119, 255, 0.12);
+  --brand-electric-line: rgba(71, 119, 255, 0.28);
+  --brand-violet: #8055F5;
+  --brand-violet-hover: #6B3FD8;
+  --brand-violet-soft: rgba(128, 85, 245, 0.12);
+  --brand-violet-line: rgba(128, 85, 245, 0.28);
+  --brand-teal: #13DCCB;
+  --brand-teal-hover: #0FC4B3;
+  --brand-teal-soft: rgba(19, 220, 203, 0.12);
+  --brand-teal-line: rgba(19, 220, 203, 0.28);
+  --brand-amber: #F59E0B;
+  --brand-amber-hover: #D97706;
+  --brand-amber-soft: rgba(245, 158, 11, 0.12);
+  --brand-amber-line: rgba(245, 158, 11, 0.28);
+
+  /* ── Semantic Surface Tokens (dark mode default) ── */
+  --bg: var(--brand-bg);
+  --bg-elevated: #111317;
+  --bg-raised: #18181B;
+  --surface: #18181B;
+  --surface-elevated: #1A1D23;
+  --surface-hover: #1E2229;
+  --border: #272930;
+  --border-strong: #33363D;
+  --border-hover: var(--brand-electric);
+  --border-focus: var(--brand-electric);
+
+  --fg: var(--brand-fg);
+  --fg-muted: var(--brand-muted);
+  --fg-faint: #6B7280;
+
+  /* ── Semantic Role Tokens ── */
+  --accent: var(--brand-electric);
+  --accent-hover: var(--brand-electric-hover);
+  --accent-soft: var(--brand-electric-soft);
+  --accent-line: var(--brand-electric-line);
+
+  --secondary: var(--brand-violet);
+  --secondary-hover: var(--brand-violet-hover);
+  --secondary-soft: var(--brand-violet-soft);
+  --secondary-line: var(--brand-violet-line);
+
+  --success: var(--brand-teal);
+  --success-hover: var(--brand-teal-hover);
+  --success-soft: var(--brand-teal-soft);
+  --success-line: var(--brand-teal-line);
+
+  --warning: var(--brand-amber);
+  --warning-hover: var(--brand-amber-hover);
+  --warning-soft: var(--brand-amber-soft);
+  --warning-line: var(--brand-amber-line);
+
+  --danger: #EF4444;
+  --danger-hover: #DC2626;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --danger-line: rgba(239, 68, 68, 0.28);
+
+  /* ── Focus System ── */
+  --focus-ring: 2px solid var(--accent);
+  --focus-offset: 3px;
+
+  /* ── Motion ── */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Typography ── */
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
 html[data-theme="light"] {
-  /* Corporate light mode */
-  --paper: #FFFFFF;
-  --paper-raised: #F8FAFC;
-  --panel-bg: #F1F5F9;
-  --card-bg: #FFFFFF;
+  /* ── Light Mode (WCAG AA compliant) ── */
+  --brand-bg: #FAFAFA;
+  --brand-fg: #0F1115;
+  --brand-muted: #52525B;
+  --brand-electric: #1E40A0;
+  --brand-electric-hover: #173486;
+  --brand-electric-soft: rgba(30, 64, 160, 0.1);
+  --brand-electric-line: rgba(30, 64, 160, 0.24);
+  --brand-violet: #5B21B6;
+  --brand-violet-hover: #4C1D95;
+  --brand-violet-soft: rgba(91, 33, 182, 0.1);
+  --brand-violet-line: rgba(91, 33, 182, 0.24);
+  --brand-teal: #0D9488;
+  --brand-teal-hover: #0F766E;
+  --brand-teal-soft: rgba(13, 148, 136, 0.1);
+  --brand-teal-line: rgba(13, 148, 136, 0.24);
+  --brand-amber: #B45309;
+  --brand-amber-hover: #92400E;
+  --brand-amber-soft: rgba(180, 83, 9, 0.1);
+  --brand-amber-line: rgba(180, 83, 9, 0.24);
+
+  --bg: var(--brand-bg);
+  --bg-elevated: #FFFFFF;
+  --bg-raised: #F4F4F5;
   --surface: #FFFFFF;
-  --ink: #18181b;
-  --muted: #18181b;
-  --faint: #a1a1aa;
-  --rule: #E2E8F0;
-  --rule-strong: #CBD5E1;
-  --rule-hover: #3B82F6;
-  --rule-focus: #1E3A8A;
-  --hover: #F1F5F9;
-  --accent: #1E3A8A;
-  --accent-2: #3B82F6;
-  --trending: #B45309;
-  --trending-light: #FEF3C7;
-  --highlight: #B45309;
-  --blue: #1E3A8A;
-  --blue-light: #DBEAFE;
-  --slate: #18181b;
-  --slate-light: #E2E8F0;
+  --surface-elevated: #FAFAFA;
+  --surface-hover: #F4F4F5;
+  --border: #E4E4E7;
+  --border-strong: #D4D4D8;
+  --border-hover: var(--brand-electric);
+  --border-focus: var(--brand-electric);
+
+  --fg: var(--brand-fg);
+  --fg-muted: var(--brand-muted);
+  --fg-faint: #A1A1AA;
 }
 
 @theme inline {
-  --color-background: var(--paper);
-  --color-foreground: var(--ink);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
   --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-mono);
 }
 
 * {
@@ -71,13 +131,19 @@ html[data-theme="light"] {
 
 html {
   scroll-behavior: smooth;
-  background: var(--paper);
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-geist-sans), sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
@@ -98,13 +164,29 @@ a {
   text-decoration: none;
 }
 
+/* Unified focus system */
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
+input:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
-/* Consistent focus + reduced motion */
-button:focus-visible, a:focus-visible, input:focus-visible, [role="button"]:focus-visible, [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+/* Reduced motion — kills CSS animations & transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-soft);
+  color: var(--fg);
+}

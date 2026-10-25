@@ -3,6 +3,7 @@
  * src/app/globals.css and therefore the compiled cascade order. */
 @import "tailwindcss";
 @import "../styles/base.css";
+@import "../styles/timeline.css";
 @import "../styles/shell.css";
 @import "../styles/archive.css";
 @import "../styles/story-article.css";
@@ -10,7 +11,6 @@
 @import "../styles/about.css";
 @import "../styles/sidebar.css";
 @import "../styles/ui-layer.css";
-@import "../styles/benchmark-legacy.css";
 @import "../styles/daily-digest.css";
 @import "../styles/sidebar-definitive.css";
 @import "../styles/about-enhancements.css";

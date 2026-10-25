@@ -22,6 +22,11 @@ export function SiteHeader({
       <Link className="wordmark" href="/" aria-label="NEUBENCH, home">
         <NeubenchLogo size={22} />
       </Link>
+      <nav className="global-nav" aria-label="Primary navigation">
+        <Link className="global-nav-link" href="/">Timeline</Link>
+        <Link className="global-nav-link" href="/benchmarks">Benchmarks</Link>
+        <Link className="global-nav-link" href="/about">About</Link>
+      </nav>
       {children}
       <div className="account-slot">
         <AccountButton />

@@ -94,25 +94,25 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col">
         <style>{`
-          .skip-to-stories {
-            position: fixed;
-            top: -80px;
-            left: 12px;
-            z-index: 300;
-            padding: 10px 16px;
-            border-radius: 8px;
-            background: #8b5cf6;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 650;
-            text-decoration: none;
-            transition: top 120ms ease;
-          }
-          .skip-to-stories:focus {
-            top: 12px;
-            outline: 2px solid #ffffff;
-            outline-offset: 2px;
-          }
+.skip-to-stories {
+  position: fixed;
+  top: -80px;
+  left: 12px;
+  z-index: 300;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: top 120ms ease;
+}
+.skip-to-stories:focus {
+  top: 12px;
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
           .timeline-result-bar {
             display: flex;
             justify-content: flex-end;

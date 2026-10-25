@@ -994,6 +994,46 @@ export function ExploreClient({
   const isNarrowLayout = useNarrowLayout();
   const [isLight, toggleTheme] = useTheme();
   const [feedMode, setFeedMode] = useState<FeedMode>("latest");
+
+  // Keyboard shortcuts (P1)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>(".archive-search input, .search-box input");
+        searchInput?.focus();
+        return;
+      }
+      if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+        e.preventDefault();
+        const existing = document.getElementById("kb-shortcuts");
+        if (existing) { existing.remove(); return; }
+        const div = document.createElement("div");
+        div.id = "kb-shortcuts";
+        div.style.cssText = "position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;z-index:999;font-size:13px;color:var(--fg);box-shadow:0 8px 32px rgba(0,0,0,0.4);";
+        div.innerHTML = "<strong style='display:block;margin-bottom:8px'>Keyboard Shortcuts</strong><div>Cmd+K - Focus search</div><div>G then L - Latest</div><div>G then T - Trending</div><div>G then B - Benchmarks</div><div>? - Toggle help</div>";
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 6000);
+        return;
+      }
+      if (e.key === "g" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+        const onSecond = (e2: KeyboardEvent) => {
+          document.removeEventListener("keydown", onSecond);
+          if (e2.key === "l") { setFeedMode("latest"); setActiveTimelineIndex(0); }
+          if (e2.key === "t") { setFeedMode("trending"); setActiveTimelineIndex(0); }
+          if (e2.key === "b") { window.location.href = "/benchmarks"; }
+        };
+        document.addEventListener("keydown", onSecond, { once: true });
+        setTimeout(() => document.removeEventListener("keydown", onSecond), 1500);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
   const [upvoteCounts, setUpvoteCounts] = useState<Record<string, number>>({});
   const [userVotes, setUserVotes] = useState<Set<string>>(new Set());
   const [bookmarks, , replaceBookmarks] = useBookmarks();
@@ -2311,8 +2351,25 @@ export function ExploreClient({
                     <>
                       <Search size={19} />
                       <p>No moments found.</p>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", margin: "8px 0 12px" }}>
+                        {activeTopic !== "all" && (
+                          <span className="active-filter-chip" onClick={() => setActiveTopic("all")}>{activeTopic} ×</span>
+                        )}
+                        {activeYear !== "all" && (
+                          <span className="active-filter-chip" onClick={() => setActiveYear("all")}>{activeYear} ×</span>
+                        )}
+                        {activeMonth !== "all" && (
+                          <span className="active-filter-chip" onClick={() => setActiveMonth("all")}>{activeMonth} ×</span>
+                        )}
+                        {activeCompany !== "all" && (
+                          <span className="active-filter-chip" onClick={() => setActiveCompany("all")}>{activeCompany} ×</span>
+                        )}
+                        {search.trim() !== "" && (
+                          <span className="active-filter-chip" onClick={() => setSearch("")}>&ldquo;{search}&rdquo; ×</span>
+                        )}
+                      </div>
                       <button type="button" onClick={clearFilters}>
-                        Clear filters
+                        Clear all filters
                       </button>
                     </>
                   )}
