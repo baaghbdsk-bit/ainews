@@ -30,6 +30,11 @@ export const FEEDS: FeedSource[] = [
   { name: 'Cohere Blog', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/cohere-blog.xml', topic: 'Products' },
   { name: 'Mistral News', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/mistral-news.xml', topic: 'Products' },
   { name: 'TLDR AI', url: 'https://raw.githubusercontent.com/alan-turing-institute/ai-rss-feeds/main/feeds/tldr-ai.xml', topic: 'Products' },
+  { name: 'Google DeepMind', url: 'https://deepmind.google/blog/rss.xml', topic: 'Research' },
+  { name: 'Apple Machine Learning Research', url: 'https://machinelearning.apple.com/rss.xml', topic: 'Research' },
+  { name: 'Microsoft (AI & tech news)', url: 'https://blogs.microsoft.com/feed/', topic: 'Products' },
+  { name: 'Meta News', url: 'https://about.fb.com/news/feed/', topic: 'Products' },
+  { name: 'Mistral News (official)', url: 'https://mistral.ai/news/rss', topic: 'Products' },
 ];
 
 const FETCH_TIMEOUT_MS = 3000;
@@ -39,7 +44,7 @@ const MAX_FETCH_ATTEMPTS = 1;
 const RETRY_BACKOFF_MS = 400;
 // Raw feed XML goes into the fetch Data Cache (unlike the in-memory `use cache`
 // entries, it persists across serverless instances and deploys), so timeline
-// reads never wait on 21 live upstream fetches. Stale entries refresh in the
+// reads never wait on 26 live upstream fetches. Stale entries refresh in the
 // background; the cron ingest bypasses the cache with `{ fresh: true }` so it
 // always reads live XML.
 const FEED_REVALIDATE_SECONDS = 300;
@@ -336,7 +341,10 @@ async function fetchFeedXmlOnce(url: string, fresh: boolean): Promise<string | n
     const res = await fetch(url, {
       signal: controller.signal,
       redirect: 'follow',
-      headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9' },
+      headers: {
+        Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9',
+        'User-Agent': 'ainews-ingest/1.0',
+      },
       ...(fresh
         ? { cache: 'no-store' as const }
         : { next: { revalidate: FEED_REVALIDATE_SECONDS, tags: [AI_NEWS_TAG] } }),
