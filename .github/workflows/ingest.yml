@@ -52,7 +52,7 @@ jobs:
           # redirects: an unexpected 3xx must fail the job instead of being
           # silently accepted.
           ENDPOINT="https://neubench.vercel.app/api/cron/ingest"
-          TIMEOUT_SECONDS=300
+          TIMEOUT_SECONDS=590
 
           ingest() {
             local url="$1"
