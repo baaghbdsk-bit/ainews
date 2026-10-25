@@ -8,11 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "npm run test:categories && npm run test:benchmarks && npm run test:http && npm run test:browser",
+    "test": "npm run test:categories && npm run test:benchmarks && npm run test:http && npm run test:browser && npm run test:admin-auth",
     "test:categories": "node --experimental-strip-types tests/category-classification.mjs",
     "test:benchmarks": "node --experimental-strip-types tests/benchmarks.mjs",
     "test:http": "node tests/http.mjs",
     "test:browser": "node tests/browser.mjs",
+    "test:admin-auth": "node --experimental-strip-types tests/admin-authorization.mjs",
+    "test:news-review": "node tests/news-review-http.mjs",
+    "test:discovery": "node --experimental-strip-types tests/search-discovery.mjs",
+    "discover:google-news": "node --experimental-strip-types scripts/discover-google-news.mjs",
+    "test:pilot": "node --experimental-strip-types tests/news-review-pilot.mjs",
+    "pilot:google-news": "node --experimental-strip-types scripts/run-google-news-pilot.mjs",
     "benchmarks:refresh": "node scripts/fetch-models.mjs",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
     "summarize:backfill": "node --env-file=.env.local scripts/backfill-summaries.mjs",
@@ -43,3 +49,4 @@
     "typescript": "^5"
   }
 }
+

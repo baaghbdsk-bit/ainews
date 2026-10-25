@@ -27,7 +27,7 @@ async function main() {
   });
   record('A03', 'POST /api/news-review without session → 401', postReview.status === 401, `status=${postReview.status}`);
 
-  for (const path of ['/api/admin/news-review', '/api/admin/review', '/api/review']) {
+  for (const path of ['/api/admin/news-review', '/api/admin/news-review/pilot', '/api/admin/review', '/api/news-review/pilot', '/api/review']) {
     const res = await fetch(BASE + path);
     record(`A04-${path}`, `GET ${path} without session → 401`, res.status === 401, `status=${res.status}`);
   }
