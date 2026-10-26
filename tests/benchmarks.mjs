@@ -107,6 +107,19 @@ assert(
   `Found: ${AI_MODELS_DATA.length} models`
 );
 
+const terra = AI_MODELS_DATA.find((model) => model.id === 'openai/gpt-6.1-terra');
+assert(Boolean(terra), 'GPT-6.1 Terra is present in the catalogue', 'openai/gpt-6.1-terra');
+assert(
+  Boolean(terra?.benchmarks?.['terminal-bench']),
+  'GPT-6.1 Terra has source-backed tracked benchmark data',
+  terra?.benchmarks?.['terminal-bench']?.sourceUrl ?? 'missing'
+);
+assert(
+  terra?.benchmarks?.['terminal-bench']?.score === 50.3,
+  'GPT-6.1 Terra Terminal-Bench score is current',
+  `score=${terra?.benchmarks?.['terminal-bench']?.score ?? 'missing'}`
+);
+
 // Generation is derived from the release date at read time, so the split
 // tracks reality instead of whatever the snapshot recorded.
 const currentGenCount = AI_MODELS_DATA.filter((m) => generationFor(m) === 'current').length;

@@ -35,7 +35,12 @@ import { HeroBenchmarksArt } from './hero-arts';
 
 type ViewMode = 'grid' | 'radar' | 'quadrant' | 'specs';
 
-const rankedBy = (benchmarkId: string, models: typeof AI_MODELS_DATA = AI_MODELS_DATA) =>
+// A model with no tracked score cannot participate in a comparison. Keep it in
+// the audit totals so the coverage ledger remains honest, but do not present an
+// empty model as if it were comparable to scored records.
+const SCORED_MODELS = AI_MODELS_DATA.filter((model) => Object.keys(model.benchmarks).length > 0);
+
+const rankedBy = (benchmarkId: string, models: typeof AI_MODELS_DATA = SCORED_MODELS) =>
   models
     .filter((m) => m.benchmarks && m.benchmarks[benchmarkId])
     .sort((a, b) => b.benchmarks[benchmarkId].score - a.benchmarks[benchmarkId].score);
@@ -45,7 +50,7 @@ const topIds = (
   count = 4,
   predicate?: (m: (typeof AI_MODELS_DATA)[number]) => boolean
 ) => {
-  const pool = predicate ? AI_MODELS_DATA.filter(predicate) : AI_MODELS_DATA;
+  const pool = predicate ? SCORED_MODELS.filter(predicate) : SCORED_MODELS;
   const ranked = rankedBy(benchmarkId, pool).slice(0, count).map((m) => m.id);
   if (ranked.length > 0) return ranked;
   const fallback = rankedBy('aa-intelligence', pool).slice(0, count).map((m) => m.id);
@@ -91,7 +96,7 @@ const CATEGORY_ORDER: BenchmarkCategory[] = [
 
 const ALL_BENCHMARKS = Object.values(BENCHMARK_DEFINITIONS);
 
-const DEVELOPER_COUNTS = AI_MODELS_DATA.reduce<Record<string, number>>((acc, m) => {
+const DEVELOPER_COUNTS = SCORED_MODELS.reduce<Record<string, number>>((acc, m) => {
   acc[m.developer] = (acc[m.developer] ?? 0) + 1;
   return acc;
 }, {});
@@ -217,11 +222,11 @@ export function ModelBenchmarksComparator({
   };
 
   const selectedModels = useMemo(() => {
-    const list = AI_MODELS_DATA.filter((m) => selectedModelIds.includes(m.id));
+    const list = SCORED_MODELS.filter((m) => selectedModelIds.includes(m.id));
     if (list.length > 0) return list;
     const defaultIds = topIds('aa-intelligence');
-    const fallbackList = AI_MODELS_DATA.filter((m) => defaultIds.includes(m.id));
-    return fallbackList.length > 0 ? fallbackList.slice(0, 4) : AI_MODELS_DATA.slice(0, 4);
+    const fallbackList = SCORED_MODELS.filter((m) => defaultIds.includes(m.id));
+    return fallbackList.length > 0 ? fallbackList.slice(0, 4) : SCORED_MODELS.slice(0, 4);
   }, [selectedModelIds]);
 
   const benchmarkList = useMemo(
@@ -261,7 +266,7 @@ export function ModelBenchmarksComparator({
   const selectAllBenchmarks = () => setSelectedBenchmarkIds(ALL_BENCHMARKS.map((b) => b.id));
 
   const filteredDrawerModels = useMemo(() => {
-    let list = AI_MODELS_DATA;
+    let list = SCORED_MODELS;
 
     if (activeLabFilter === 'OpenWeights') {
       list = list.filter((m) => m.specs.isOpenWeights);
@@ -309,7 +314,7 @@ export function ModelBenchmarksComparator({
               <span className="bench-title-accent">Living Capability Radar.</span>
             </h1>
             <p className="bench-lede">
-              Side-by-side empirical performance across {AI_MODELS_DATA.length} frontier reasoning, coding, and open-weights models. Scores are sourced from provider reports, benchmark owners, Artificial Analysis, Design Arena, and BenchLM; unreported results stay visible instead of being inferred.
+              Side-by-side empirical performance across {SCORED_MODELS.length} frontier reasoning, coding, and open-weights models with at least one published score. {AI_MODELS_DATA.length - SCORED_MODELS.length} catalogue records without tracked benchmark evidence are withheld from comparison; individual unreported results remain blank rather than inferred.
             </p>
 
             {/* Brought down below the description */}
@@ -737,7 +742,7 @@ export function ModelBenchmarksComparator({
         {viewMode === 'quadrant' && (
           <ModelQuadrantChart
             selectedModels={selectedModels}
-            allModels={AI_MODELS_DATA}
+            allModels={SCORED_MODELS}
           />
         )}
 

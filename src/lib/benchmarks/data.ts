@@ -6,7 +6,7 @@ import type { AIModelRecord, BenchmarkDefinition } from './types';
  *
  * Sources: OpenRouter public catalogue + BenchLM published benchmark boards.
  * Window: models released on or after 2026-04-26. Snapshot: 2026-10-26.
- * Models: 135
+ * Models: 136
  */
 
 export const BENCHMARK_DEFINITIONS: Record<string, BenchmarkDefinition> = {
@@ -145,6 +145,64 @@ export const BENCHMARK_DEFINITIONS: Record<string, BenchmarkDefinition> = {
 };
 
 export const AI_MODELS_DATA: AIModelRecord[] = [
+  {
+    id: "openai/gpt-6.1-terra",
+    name: "GPT-6.1 Terra",
+    developer: "OpenAI",
+    developerColor: "emerald",
+    tagline: "GPT-6.1 Terra is the mid-tier model in OpenAI's GPT-6.1 series, priced below GPT-6.1 Sol.",
+    specs: {
+      contextWindowTokens: 1050000,
+      displayContext: "1.1M tokens",
+      license: "Proprietary Cloud API",
+      isOpenWeights: false,
+      releaseDate: "2026-10-26",
+      versionIdentifier: "openai/gpt-6.1-terra",
+      generation: "current",
+      availability: "Generally Available",
+      capabilities: ["General", "Reasoning", "Coding", "Multimodal"],
+      architecture: "text+image+file->text",
+    },
+    pricing: {
+      inputPerMillion: 1,
+      outputPerMillion: 5,
+      unit: "USD per 1M tokens",
+    },
+    benchmarks: {
+      "terminal-bench": {
+        benchmarkId: "terminal-bench",
+        name: "Terminal-Bench 4.0",
+        category: "Agentic",
+        score: 50.3,
+        displayValue: "50.3%",
+        unit: "%",
+        evaluationType: "Official Report",
+        evaluator: "OpenAI (vendor-reported)",
+        evaluationDate: "2026-10-26",
+        sourceUrl: "https://openai.com/index/introducing-gpt-6-1-terra/",
+        methodologyNotes: "The interactive Terminal-Bench 4.0 chart reports GPT-6.1 Terra at 50.3% and $1.84 per task at Max effort. Provider-run agent harness; display-only. Evaluation date not published by source; snapshot date shown.",
+        datasetVersion: "Terminal-Bench 4.0 (BenchLM snapshot 2026-10-26)",
+        lastVerifiedDate: "2026-10-26",
+      },
+      "aa-coding-agent": {
+        benchmarkId: "aa-coding-agent",
+        name: "AA Coding Agent Index v2.0",
+        category: "Coding",
+        score: 48.2,
+        displayValue: "48.2%",
+        unit: "%",
+        evaluationType: "Independent Evaluation",
+        evaluator: "Artificial Analysis (Codex)",
+        evaluationDate: "2026-10",
+        sourceUrl: "https://artificialanalysis.ai/agents/coding-agents",
+        methodologyNotes: "System: Codex - GPT-6.1 Terra (xhigh). display-only mirror Evaluation date not published by source; snapshot date shown.",
+        lastVerifiedDate: "2026-10-26",
+      },
+    },
+    officialSourceUrl: "https://openrouter.ai/openai/gpt-6.1-terra",
+    lastAuditedDate: "2026-10-26",
+    aliases: ["gpt-6.1-terra", "openai/gpt-6.1-terra-20261026"],
+  },
   {
     id: "moonshotai/kimi-k3.1-pro",
     name: "Kimi K3.1 Pro",

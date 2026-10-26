@@ -1,13 +1,13 @@
 export type Topic = 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
 
 const POLICY_PATTERNS = [
-  /\b(?:antitrust|ftc|fcc|sec|eu ai act|copyright|infringement|lawsuit|sued|suing|court|judge|injunction)\b/i,
+  /\b(?:antitrust|ftc|fcc|sec|eu ai act|copyright|infringement|lawsuit|sued|suing|court|judicial|injunction)\b/i,
   /\b(?:regulation|regulator|regulatory|compliance|legislation|legislature|bill|statute|treaty|banned?)\b/i,
   /\b(?:export controls?|tariffs?|sanctions?|chips act|executive order|white house|senate|congress)\b/i,
   /\b(?:ai safety institute|aisi|cetas|bureau of industry and security|commerce department)\b/i,
   /\b(?:national security|sovereign ai|surveillance|subpoena|monopoly|prohibitions?)\b/i,
   /\b(?:legal liability|defamation|privacy violation|data protection|gdpr)\b/i,
-  /\b(?:ai safety|alignment research|aligned ai|misalignment|existential risk|x-risk|takeover risk|control problem)\b/i,
+  /\b(?:ai safety(?!\s+research)|aligned ai|existential risk|x-risk|takeover risk|control problem)\b/i,
   /\b(?:red team(?:ing)?|responsible ai|model spec|constitutional ai safety|ai ethics)\b/i,
 ];
 
@@ -17,6 +17,7 @@ const RESEARCH_PATTERNS = [
   /\b(?:reinforcement learning|rlhf|rlaif|direct preference optimization|dpo|grpo|self-play)\b/i,
   /\b(?:benchmark dataset|evaluation framework|scaling laws|synthetic data generation)\b/i,
   /\b(?:mathematical proof|theorem|neurosymbolic|computational biology|alphafold|protein structure)\b/i,
+  /\b(?:misalignment|alignment research|alignment evaluations?|safety cases?|managing risks?|risk management|llm as a judge|rag evaluation)\b/i,
 ];
 
 // Strict Model Patterns: specifically about model weights, architecture, checkpoints, or new foundation models
@@ -67,6 +68,7 @@ const DEVTOOLS_PATTERNS = [
   /\b(?:sdk|api|apis|cli|framework|library|open-source library|ide (?:integration|plugin|extension)|vs ?code|cursor|jetbrains|github copilot|code interpreter|mcp|model context protocol|agent skills|openresponses|open responses)\b/i,
   /\b(?:api pricing|api cost|per-token|token pricing|inference cost|price per (?:million )?tokens?)\b/i,
   /\b(?:kubernetes|cuda|pytorch|tensorflow|jax|onnx|vllm|inference stack|mlops|vector database|fine-?tuning platform)\b/i,
+  /\b(?:auditing tool|evaluation tool|agent skills|mcp server)\b/i,
 ];
 
 // Strong product/business signals that override accidental model keyword matches
@@ -121,10 +123,10 @@ export function classifyStoryTopic(input: {
   const maxScore = Math.max(policyScore, researchScore, modelScore, productScore, businessScore, devtoolsScore);
 
   if (maxScore >= 2) {
+    if (researchScore === maxScore) return 'Research';
     if (policyScore === maxScore) return 'Policy';
     if (businessScore === maxScore) return 'Business';
     if (modelScore === maxScore) return 'Models';
-    if (researchScore === maxScore) return 'Research';
     if (devtoolsScore === maxScore) return 'Dev Tools & Infra';
     if (productScore === maxScore) return 'Products';
   }

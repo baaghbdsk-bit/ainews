@@ -27,6 +27,7 @@ for (;;) {
     .from('stories')
     .select('id, slug, title, summary, topic')
     .order('created_at', { ascending: true })
+    .order('id', { ascending: true })
     .range(from, from + PAGE - 1);
   if (error) { console.error('fetch error:', error.message); process.exit(1); }
   if (!rows || rows.length === 0) break;

@@ -134,6 +134,20 @@ const testCases = [
     expected: 'Models',
     reason: 'Model launch should outrank a pricing mention',
   },
+  {
+    title: 'Introducing Agent Skills',
+    summary: 'A developer tool for reusable capabilities in AI agent workflows.',
+    fallbackTopic: 'Models',
+    expected: 'Dev Tools & Infra',
+    reason: 'Agent tooling should not remain in the legacy Models bucket',
+  },
+  {
+    title: 'Petri: An open-source auditing tool to accelerate AI safety research',
+    summary: 'An open-source auditing tool for evaluating language-model behavior.',
+    fallbackTopic: 'Models',
+    expected: 'Dev Tools & Infra',
+    reason: 'A safety auditing tool is infrastructure, not a model release',
+  },
 
   // ==========================================
   // 3. POLICY, LEGAL & REGULATORY (MUST BE 'Policy')
@@ -184,6 +198,34 @@ const testCases = [
     expected: 'Research',
     reason: 'Ablation study, scaling laws, and DPO evaluation',
   },
+  {
+    title: 'Investigating models for misalignment',
+    summary: 'Insights from alignment evaluations of frontier models.',
+    fallbackTopic: 'Products',
+    expected: 'Research',
+    reason: 'Alignment evaluation is research rather than a policy announcement',
+  },
+  {
+    title: 'How can safety cases be used to help with frontier AI safety?',
+    summary: 'New papers show how safety cases can help AI developers turn safety frameworks into action.',
+    fallbackTopic: 'Products',
+    expected: 'Research',
+    reason: 'Safety-case papers are research evidence',
+  },
+  {
+    title: 'Managing risks from increasingly capable open-weight AI systems',
+    summary: 'Current methods and open problems in open-weight model risk management.',
+    fallbackTopic: 'Products',
+    expected: 'Research',
+    reason: 'Risk-management methods should not be classified as a model release',
+  },
+  {
+    title: 'Evaluating RAG with LLM as a Judge',
+    summary: 'An evaluation study of retrieval-augmented generation systems.',
+    fallbackTopic: 'Products',
+    expected: 'Research',
+    reason: 'LLM-as-a-judge evaluation is research',
+  },
 
   // ==========================================
   // 5. AMBIGUOUS / FALLBACK HANDLING
@@ -194,6 +236,27 @@ const testCases = [
     fallbackTopic: 'Products',
     expected: 'Products',
     reason: 'Ambiguous general text safely defaults to fallback topic',
+  },
+  {
+    title: 'Anthropic appoints Hidetoshi Tojo as Head of Japan and announces hiring plans',
+    summary: 'Anthropic appoints a regional leader and announces hiring plans.',
+    fallbackTopic: 'Models',
+    expected: 'Business',
+    reason: 'Executive appointment and hiring are business activity',
+  },
+  {
+    title: 'Anthropic partners with Google Cloud',
+    summary: 'Anthropic announces a strategic cloud partnership.',
+    fallbackTopic: 'Models',
+    expected: 'Business',
+    reason: 'Partnership news belongs to Business',
+  },
+  {
+    title: 'The all new le Chat: Your AI assistant for life and work',
+    summary: 'Mistral introduces a consumer-facing AI assistant product.',
+    fallbackTopic: 'Models',
+    expected: 'Products',
+    reason: 'An assistant application is a product, not a foundation-model release',
   },
 ];
 
