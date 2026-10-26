@@ -120,6 +120,20 @@ const testCases = [
     expected: 'Models',
     reason: 'MoE architecture and open-weights checkpoint release',
   },
+  {
+    title: 'Introducing GPT-6.1 Terra',
+    summary: 'OpenAI introduces GPT-6.1 Terra, a new model in the GPT-6 family.',
+    fallbackTopic: 'Products',
+    expected: 'Models',
+    reason: 'Versioned model name in a direct release announcement',
+  },
+  {
+    title: 'OpenAI launches GPT-6.1 Terra at half the price of GPT-6.1 Sol',
+    summary: 'The new model delivers frontier capability at a lower token cost.',
+    fallbackTopic: 'Products',
+    expected: 'Models',
+    reason: 'Model launch should outrank a pricing mention',
+  },
 
   // ==========================================
   // 3. POLICY, LEGAL & REGULATORY (MUST BE 'Policy')

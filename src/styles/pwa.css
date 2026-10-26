@@ -1,0 +1,102 @@
+.pwa-install-prompt {
+  position: fixed;
+  right: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  z-index: 180;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: min(390px, calc(100vw - 32px));
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 94%, var(--accent) 6%);
+  color: var(--fg);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42), 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+  animation: pwa-install-in 260ms var(--ease) both;
+}
+
+.pwa-install-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pwa-install-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.pwa-install-copy strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pwa-install-copy span {
+  overflow: hidden;
+  color: var(--fg-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pwa-install-action {
+  flex: 0 0 auto;
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background var(--motion-fast) var(--ease), transform var(--motion-fast) var(--ease);
+}
+
+.pwa-install-action:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.pwa-install-dismiss {
+  display: grid;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.pwa-install-dismiss:hover {
+  background: var(--surface-hover);
+  color: var(--fg);
+}
+
+@keyframes pwa-install-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+  .pwa-install-prompt {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    width: calc(100vw - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pwa-install-prompt { animation: none; }
+}

@@ -15,10 +15,10 @@ export function HeroLatestArt() {
       >
         <defs>
           <radialGradient id="latestOuterNebula" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.38" />
-            <stop offset="50%" stopColor="#6366F1" stopOpacity="0.12" />
-            <stop offset="85%" stopColor="#22D3EE" stopOpacity="0.04" />
-            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
+            <stop offset="0%" stopColor="#4777FF" stopOpacity="0.38" />
+            <stop offset="50%" stopColor="#2D5EE8" stopOpacity="0.12" />
+            <stop offset="85%" stopColor="#13DCCB" stopOpacity="0.04" />
+            <stop offset="100%" stopColor="#4777FF" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="latestDiamondGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#1E1B4B" />
@@ -26,8 +26,8 @@ export function HeroLatestArt() {
             <stop offset="100%" stopColor="#0B0914" />
           </linearGradient>
           <linearGradient id="latestBeamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#C084FC" />
-            <stop offset="100%" stopColor="#22D3EE" />
+            <stop offset="0%" stopColor="#8055F5" />
+            <stop offset="100%" stopColor="#13DCCB" />
           </linearGradient>
           <filter id="latestGlow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -50,7 +50,7 @@ export function HeroLatestArt() {
         </circle>
 
         {/* Minimal Precision Crosshairs */}
-        <g stroke="#8B5CF6" strokeWidth="1.4" strokeLinecap="round" opacity="0.45">
+        <g stroke="#4777FF" strokeWidth="1.4" strokeLinecap="round" opacity="0.45">
           <line x1="100" y1="12" x2="100" y2="22" />
           <line x1="100" y1="178" x2="100" y2="188" />
           <line x1="12" y1="100" x2="22" y2="100" />
@@ -58,9 +58,9 @@ export function HeroLatestArt() {
         </g>
 
         {/* Rhythmic Broadcast Radar Waves (Broadcasting Outward) */}
-        <circle cx="100" cy="100" fill="none" stroke="#C084FC" strokeWidth="1.4">
+        <circle cx="100" cy="100" fill="none" stroke="#8055F5" strokeWidth="1.4">
         </circle>
-        <circle cx="100" cy="100" fill="none" stroke="#22D3EE" strokeWidth="1.4">
+        <circle cx="100" cy="100" fill="none" stroke="#13DCCB" strokeWidth="1.4">
         </circle>
 
         {/* Single Sleek Telemetry Orbit Track */}
@@ -68,7 +68,7 @@ export function HeroLatestArt() {
           cx="100"
           cy="100"
           r="80"
-          stroke="#8B5CF6"
+          stroke="#4777FF"
           strokeOpacity="0.28"
           strokeWidth="1.2"
           strokeDasharray="4 8 24 8"
@@ -88,8 +88,8 @@ export function HeroLatestArt() {
             opacity="0.6"
           />
           {/* Cyan Photon Beacon */}
-          <circle cx="180" cy="100" r="7" fill="none" stroke="#22D3EE" strokeWidth="0.8" opacity="0.4" />
-          <circle cx="180" cy="100" r="4.2" fill="#22D3EE" filter="url(#latestCoreGlow)" />
+            <circle cx="180" cy="100" r="7" fill="none" stroke="#13DCCB" strokeWidth="0.8" opacity="0.4" />
+            <circle cx="180" cy="100" r="4.2" fill="#13DCCB" filter="url(#latestCoreGlow)" />
           <circle cx="180" cy="100" r="1.6" fill="#FFFFFF" />
         </g>
 
@@ -100,7 +100,7 @@ export function HeroLatestArt() {
           <polygon
             points="100,52 138,100 100,148 62,100"
             fill="none"
-            stroke="#8B5CF6"
+            stroke="#4777FF"
             strokeWidth="2.4"
             strokeOpacity="0.4"
             filter="url(#latestGlow)"
@@ -116,15 +116,15 @@ export function HeroLatestArt() {
           />
 
           {/* Facet Reflection Lines */}
-          <line x1="100" y1="54" x2="100" y2="146" stroke="#C084FC" strokeWidth="0.8" strokeOpacity="0.45" />
-          <line x1="64" y1="100" x2="136" y2="100" stroke="#22D3EE" strokeWidth="0.8" strokeOpacity="0.35" />
+            <line x1="100" y1="54" x2="100" y2="146" stroke="#8055F5" strokeWidth="0.8" strokeOpacity="0.45" />
+            <line x1="64" y1="100" x2="136" y2="100" stroke="#13DCCB" strokeWidth="0.8" strokeOpacity="0.35" />
 
           {/* Concentric Broadcasting Radar Wave Arcs */}
           {/* Wave Arc Top */}
           <path
             d="M 88 84 A 18 18 0 0 1 112 84"
             fill="none"
-            stroke="#C084FC"
+              stroke="#8055F5"
             strokeWidth="1.6"
             strokeLinecap="round"
             filter="url(#latestGlow)"
@@ -133,7 +133,7 @@ export function HeroLatestArt() {
           <path
             d="M 80 74 A 32 32 0 0 1 120 74"
             fill="none"
-            stroke="#22D3EE"
+              stroke="#13DCCB"
             strokeWidth="1.6"
             strokeLinecap="round"
             filter="url(#latestGlow)"
@@ -144,7 +144,7 @@ export function HeroLatestArt() {
           <path
             d="M 88 116 A 18 18 0 0 0 112 116"
             fill="none"
-            stroke="#C084FC"
+              stroke="#8055F5"
             strokeWidth="1.6"
             strokeLinecap="round"
             filter="url(#latestGlow)"
@@ -153,7 +153,7 @@ export function HeroLatestArt() {
           <path
             d="M 80 126 A 32 32 0 0 0 120 126"
             fill="none"
-            stroke="#22D3EE"
+              stroke="#13DCCB"
             strokeWidth="1.6"
             strokeLinecap="round"
             filter="url(#latestGlow)"
@@ -161,8 +161,8 @@ export function HeroLatestArt() {
           </path>
 
           {/* Pulsing Luminous NeuBench Core Nucleus */}
-          <circle cx="100" cy="100" r="10" fill="#151226" stroke="#8B5CF6" strokeWidth="1.5" />
-          <circle cx="100" cy="100" r="6" fill="#C084FC" filter="url(#latestCoreGlow)">
+            <circle cx="100" cy="100" r="10" fill="#18181B" stroke="#4777FF" strokeWidth="1.5" />
+            <circle cx="100" cy="100" r="6" fill="#8055F5" filter="url(#latestCoreGlow)">
           </circle>
           <circle cx="100" cy="100" r="2.6" fill="#FFFFFF" />
         </g>

@@ -31,6 +31,15 @@ const MODEL_PATTERNS = [
   /\b(?:pre-training|post-training|context window expansion to|native multimodal training)\b/i,
 ];
 
+// New model families appear more often than this classifier can be manually
+// enumerated. Recognize a versioned model name when it is used in a release
+// announcement, without turning ordinary articles that merely mention a model
+// into Models stories.
+const NAMED_MODEL_RELEASE_PATTERNS = [
+  /\b(?:introduc(?:es|ing)|unveils?|releases?|launches?|announces?|debut(?:s|ed)?|ships?|rolls?\s+out)\b[\s\S]{0,100}\b(?:gpt|claude|gemini|llama|qwen|mistral|deepseek|grok|kimi)[-\s]?\d+(?:\.\d+)*(?:\s+[a-z][a-z0-9-]*)?\b/i,
+  /\b(?:gpt|claude|gemini|llama|qwen|mistral|deepseek|grok|kimi)[-\s]?\d+(?:\.\d+)*(?:\s+[a-z][a-z0-9-]*)?\b[\s\S]{0,80}\b(?:introduced|unveiled|released|launched|announced|debuted|new\s+model|model\s+release|weights?|checkpoint)\b/i,
+];
+
 // Product Patterns: consumer-facing applications and features
 const PRODUCT_PATTERNS = [
   /\b(?:app\b|desktop app|mobile app|ios app|android app|windows app|mac app)\b/i,
@@ -95,6 +104,8 @@ export function classifyStoryTopic(input: {
   const policyScore = scorePatterns(title, POLICY_PATTERNS) * 2 + scorePatterns(text, POLICY_PATTERNS);
   const researchScore = scorePatterns(title, RESEARCH_PATTERNS) * 2 + scorePatterns(text, RESEARCH_PATTERNS);
   let modelScore = scorePatterns(title, MODEL_PATTERNS) * 2 + scorePatterns(text, MODEL_PATTERNS);
+  modelScore += scorePatterns(title, NAMED_MODEL_RELEASE_PATTERNS) * 2;
+  modelScore += scorePatterns(text, NAMED_MODEL_RELEASE_PATTERNS);
   let productScore = scorePatterns(title, PRODUCT_PATTERNS) * 2 + scorePatterns(text, PRODUCT_PATTERNS);
   const businessScore = scorePatterns(title, BUSINESS_PATTERNS) * 2 + scorePatterns(text, BUSINESS_PATTERNS);
   const devtoolsScore = scorePatterns(title, DEVTOOLS_PATTERNS) * 2 + scorePatterns(text, DEVTOOLS_PATTERNS);

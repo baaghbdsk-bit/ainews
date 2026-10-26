@@ -1,0 +1,172 @@
+/* app-palette — the application-wide palette used by the landing page */
+
+:root {
+  /* Legacy semantic aliases used by the older timeline and article styles. */
+  --blue: var(--brand-electric);
+  --blue-soft: var(--brand-electric-soft);
+  --violet: var(--brand-violet);
+  --violet-soft: var(--brand-violet-soft);
+  --cyan: var(--brand-teal);
+  --cyan-soft: var(--brand-teal-soft);
+  --amber: var(--brand-amber);
+  --amber-soft: var(--brand-amber-soft);
+  --green: var(--brand-teal);
+  --rose: var(--brand-violet);
+}
+
+/* The archive is the older screen opened from the landing page. Give it the
+   same surfaces, borders, type, and primary blue so the transition feels like
+   one product instead of two separate themes. */
+.archive-page {
+  --shell-bg: var(--bg) !important;
+  --shell-surface: var(--surface) !important;
+  --shell-surface-2: var(--surface-elevated) !important;
+  --shell-line: var(--border) !important;
+  --shell-line-2: var(--border-strong) !important;
+  --shell-line-hover: var(--border-hover) !important;
+  --shell-line-focus: var(--border-focus) !important;
+  --shell-text: var(--fg) !important;
+  --shell-muted: var(--fg-muted) !important;
+  --shell-faint: var(--fg-faint) !important;
+  --shell-accent: var(--accent) !important;
+  --shell-accent-2: var(--accent) !important;
+  --shell-accent-soft: var(--accent-soft) !important;
+  background-color: var(--bg) !important;
+  color: var(--fg) !important;
+}
+
+.archive-page.mode-digest {
+  --shell-accent: var(--secondary) !important;
+  --shell-accent-2: var(--secondary) !important;
+  --shell-accent-soft: var(--secondary-soft) !important;
+}
+
+.archive-page.mode-trending {
+  --shell-accent: var(--warning) !important;
+  --shell-accent-2: var(--warning) !important;
+  --shell-accent-soft: var(--warning-soft) !important;
+}
+
+.archive-page.mode-saved,
+.archive-page.mode-feedback {
+  --shell-accent: var(--success) !important;
+  --shell-accent-2: var(--success) !important;
+  --shell-accent-soft: var(--success-soft) !important;
+}
+
+.archive-page.mode-about,
+.archive-page.mode-benchmarks {
+  --shell-accent: var(--secondary) !important;
+  --shell-accent-2: var(--secondary) !important;
+  --shell-accent-soft: var(--secondary-soft) !important;
+}
+
+/* Keep the live timeline hero visually tied to the landing page instead of
+   inheriting the older purple-only treatment. */
+.archive-page .hero-card {
+  border-color: var(--border) !important;
+  background:
+    radial-gradient(130% 170% at 86% 46%, color-mix(in srgb, var(--secondary) 14%, transparent), transparent 62%),
+    linear-gradient(135deg, var(--surface), var(--bg) 74%) !important;
+}
+
+.archive-page .hero-title-accent {
+  background: linear-gradient(96deg, var(--accent), var(--secondary) 78%) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+}
+
+.archive-page .hero-globe {
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 60%, transparent) 1px, transparent 1.5px) !important;
+}
+
+/* The navigation rail uses the same quiet surface treatment as the landing
+   page; only the active state gets a restrained color wash. */
+.archive-page .sidebar-nav-item {
+  color: var(--fg-muted) !important;
+}
+
+.archive-page .sidebar-nav-item:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--border) !important;
+  color: var(--fg) !important;
+}
+
+.archive-page .sidebar-nav-item.is-active,
+.archive-page .sidebar-nav-item.item-latest.is-active {
+  background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--secondary) 8%, transparent)) !important;
+  border-color: var(--accent-line) !important;
+  box-shadow: 0 3px 14px -3px color-mix(in srgb, var(--accent) 28%, transparent) !important;
+  color: var(--fg) !important;
+}
+
+.archive-page .sidebar-nav-item.item-digest.is-active,
+.archive-page .sidebar-nav-item.item-about.is-active,
+.archive-page .sidebar-nav-item.item-benchmarks.is-active {
+  background: linear-gradient(135deg, var(--secondary-soft), color-mix(in srgb, var(--accent) 8%, transparent)) !important;
+  border-color: var(--secondary-line) !important;
+  box-shadow: 0 3px 14px -3px color-mix(in srgb, var(--secondary) 28%, transparent) !important;
+}
+
+.archive-page .sidebar-nav-item.item-trending.is-active {
+  background: linear-gradient(135deg, var(--warning-soft), color-mix(in srgb, var(--accent) 8%, transparent)) !important;
+  border-color: var(--warning-line) !important;
+}
+
+.archive-page .sidebar-nav-item.item-saved.is-active,
+.archive-page .sidebar-nav-item.item-feedback.is-active {
+  background: linear-gradient(135deg, var(--success-soft), color-mix(in srgb, var(--accent) 8%, transparent)) !important;
+  border-color: var(--success-line) !important;
+}
+
+.archive-page .sidebar-nav-item.is-active .sidebar-nav-icon {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.archive-page .sidebar-badge-pill {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent-line) !important;
+  color: var(--accent) !important;
+}
+
+.archive-page .sidebar-badge-pill.pill-hot {
+  background: var(--warning-soft) !important;
+  border-color: var(--warning-line) !important;
+  color: var(--warning) !important;
+}
+
+/* Replace the older purple-only atmosphere with the landing page's restrained
+   blue / violet / teal observatory glow. */
+.archive-page::before,
+.archive-page.mode-latest::before,
+.archive-page.mode-digest::before,
+.archive-page.mode-trending::before,
+.archive-page.mode-saved::before,
+.archive-page.mode-feedback::before,
+.archive-page.mode-about::before,
+.archive-page.mode-benchmarks::before {
+  background-image:
+    radial-gradient(1100px 520px at 15% -5%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%),
+    radial-gradient(900px 480px at 85% -10%, color-mix(in srgb, var(--secondary) 10%, transparent), transparent 60%),
+    radial-gradient(color-mix(in srgb, var(--success) 12%, transparent) 0.7px, transparent 0.7px) !important;
+}
+
+/* Benchmark-specific pink accents now sit inside the same violet/blue system. */
+.bench-header-panel::before {
+  background: linear-gradient(90deg, transparent 0%, var(--secondary) 35%, var(--accent) 70%, transparent 100%) !important;
+}
+
+.bench-badge-chip {
+  background: var(--secondary-soft) !important;
+  border-color: var(--secondary-line) !important;
+  color: var(--secondary) !important;
+}
+
+.bench-headline {
+  background: linear-gradient(96deg, var(--secondary), var(--accent) 78%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}

@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { WelcomeGate } from "@/components/auth/welcome-gate";
 import { GuestNotice } from "@/components/auth/guest-notice";
+import { PwaRegister } from "@/components/pwa-register";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,6 +46,10 @@ title: "NeuBench",
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#08090B" },
+    { media: "(prefers-color-scheme: light)", color: "#FAFAFA" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -236,7 +242,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             .nb-loader-bar { animation: nb-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important; opacity: 0.3; transform: scaleX(0.3); }
           }
         `}</style>
-        <div id="neubench-loading">
+        <div id="neubench-loading" suppressHydrationWarning>
           <span className="nb-loader-e">
             <svg viewBox="0 0 65 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <rect className="nb-loader-bar nb-loader-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#4777FF" />
@@ -250,6 +256,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <WelcomeGate />
         <AuthDialog />
         <GuestNotice />
+        <PwaRegister />
+        <PwaInstallPrompt />
         <Analytics />
       </body>
     </html>

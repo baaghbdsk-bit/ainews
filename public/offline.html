@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#08090B" />
+    <title>NeuBench — Offline</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #08090b; color: #f5f5f5; }
+      body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, #182343, #08090b 52%); }
+      main { width: min(90vw, 420px); padding: 32px; border: 1px solid #272930; border-radius: 24px; background: #18181b; text-align: center; box-shadow: 0 24px 80px #0008; }
+      img { width: 56px; height: 56px; margin-bottom: 16px; }
+      h1 { margin: 0 0 10px; font-size: 26px; }
+      p { margin: 0; color: #a1a1aa; line-height: 1.6; }
+      button { margin-top: 24px; padding: 11px 18px; border: 0; border-radius: 999px; background: #4777ff; color: #fff; font-weight: 700; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icon.svg" alt="NeuBench" />
+      <h1>You’re offline</h1>
+      <p>NeuBench could not reach the latest intelligence feed. Reconnect and try again.</p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>
