@@ -279,6 +279,48 @@ html[data-theme="light"] .archive-page {
   /* zoom removed for standard layout behavior */
 }
 
+/* Huge desktops (32–36" monitors, ≥1600px viewport): let the shell breathe
+   past the 1300px comfort cap and scale the timeline type a notch so the
+   extra width doesn't read as sparse. */
+@media (min-width: 1600px) {
+  .archive-shell {
+    width: min(100% - 64px, 1720px);
+  }
+
+  .archive-timeline .story-title,
+  .archive-timeline .story-title-text {
+    font-size: 20px;
+  }
+
+  .archive-timeline .story-preview {
+    font-size: 15px;
+  }
+
+  .archive-timeline .story-meta {
+    font-size: 11.5px;
+  }
+
+  .archive-timeline .story-company-tag {
+    font-size: 13px;
+  }
+
+  .archive-timeline .story-read-time {
+    font-size: 12.5px;
+  }
+
+  .archive-timeline .read-link {
+    font-size: 14px;
+  }
+
+  .archive-timeline .year-divider span:first-child {
+    font-size: 30px;
+  }
+
+  .hero-title {
+    font-size: 42px;
+  }
+}
+
 .topic-tabs-bar {
   flex: 0 0 auto;
   padding: 18px 0 2px;
