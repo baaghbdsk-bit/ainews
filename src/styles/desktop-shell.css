@@ -57,12 +57,8 @@
 .thumb-amber { --tone: var(--amber); }
 
 /* Below the two-column layout the comp drops the tile: the text column needs
-   the width more than the image does. */
-@media (max-width: 860px) {
-  .archive-timeline .story-row {
-    grid-template-columns: 74px minmax(0, 1fr);
-  }
-
+   the width more than the image does. Tablet and phone both go text-only. */
+@media (max-width: 1080px) {
   .story-thumb {
     display: none;
   }
@@ -974,24 +970,20 @@ html[data-theme="light"] .active-filter-chip:hover {
   box-shadow: 0 0 14px rgba(139, 92, 246, 0.18);
 }
 
-/* Original source — compact icon-only ghost pill */
+/* Original article — sole CTA in the row (the title already links to the
+   in-app story), so it inherits the primary purple pill treatment and shows
+   its label. */
 .archive-timeline .read-link.read-original-link {
-  padding: 6px 10px;
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  font-size: 12px;
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
 }
 
 .archive-timeline .read-link.read-original-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #e2e8f0;
-  box-shadow: none;
-}
-
-.archive-timeline .read-link.read-original-link span {
-  display: none;
+  background: rgba(139, 92, 246, 0.22);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.18);
 }
 
 .archive-timeline .read-link-icon {
@@ -1240,15 +1232,16 @@ html[data-theme="light"] .archive-timeline .story-thumb-mono {
 }
 
 html[data-theme="light"] .archive-timeline .read-link {
-  background: #f1f5f9;
-  border-color: rgba(0, 0, 0, 0.06);
-  color: #334155;
+  background: #EDE9FE;
+  border-color: #C4B5FD;
+  color: #5B21B6;
 }
 
 html[data-theme="light"] .archive-timeline .read-link:hover {
-  background: #e0e7ff;
-  border-color: #c7d2fe;
-  color: #1e3a8a;
+  background: #DDD6FE;
+  border-color: #A78BFA;
+  color: #4C1D95;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.22);
 }
 
 html[data-theme="light"] .archive-timeline .story-actions-bar {
@@ -2212,5 +2205,112 @@ html[data-theme="light"] .story-article-source {
 
 html[data-theme="light"] .story-article-source strong {
   color: #1A1530;
+}
+
+/* ==========================================================================
+   MOBILE & TABLET TIMELINE — text-first cards.
+   The date node shrinks to a compact chip, the thumbnail is gone, and the
+   sole CTA ("Original article") becomes a full-width tap target on phones.
+   ========================================================================== */
+
+@media (max-width: 1080px) {
+  /* .story-thumb-mono sets display:flex at equal specificity — restate with
+     both selectors so the later rule in this file wins. */
+  .archive-timeline .story-thumb,
+  .archive-timeline .story-thumb-mono {
+    display: none;
+  }
+
+  .archive-timeline .story-row {
+    padding: 16px 16px 16px 18px;
+    gap: 14px;
+  }
+
+  .archive-timeline .timeline-node {
+    width: 48px;
+    height: 48px;
+  }
+
+  .archive-timeline .timeline-node .date-day {
+    font-size: 17px;
+  }
+
+  .archive-timeline .timeline-node .date-month {
+    font-size: 9px;
+  }
+
+  .archive-timeline .timeline-node.node-latest::after {
+    top: -10px;
+    font-size: 7px;
+  }
+
+  .archive-timeline .story-preview {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  .archive-timeline .read-link {
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .archive-timeline .story-row {
+    padding: 14px 14px 14px 16px;
+    gap: 12px;
+    margin-bottom: 14px;
+    border-radius: 16px;
+  }
+
+  .archive-timeline .timeline-node {
+    width: 42px;
+    height: 42px;
+  }
+
+  .archive-timeline .timeline-node .date-day {
+    font-size: 15px;
+  }
+
+  .archive-timeline .timeline-node .date-month {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  .archive-timeline .story-title,
+  .archive-timeline .story-title-text {
+    font-size: 16px;
+  }
+
+  .archive-timeline .story-preview {
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    margin: 8px 0 12px;
+  }
+
+  /* Socials wrap onto their own row; the CTA takes the full width below them. */
+  .archive-timeline .story-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .archive-timeline .story-actions-left {
+    justify-content: flex-start;
+  }
+
+  .archive-timeline .story-actions-right {
+    margin-left: 0;
+  }
+
+  .archive-timeline .read-link {
+    justify-content: center;
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .archive-timeline .year-divider span:first-child {
+    font-size: 24px;
+  }
 }
 

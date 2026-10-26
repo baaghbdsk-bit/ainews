@@ -121,7 +121,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             min-height: 20px;
           }
           .timeline-result-count {
-            color: var(--muted, #a3a8bf);
+            color: var(--fg-muted);
             font-size: 12px;
             font-variant-numeric: tabular-nums;
           }

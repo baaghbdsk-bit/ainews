@@ -270,12 +270,8 @@ const TimelineRow = memo(function TimelineRow({
               />
             </div>
             <div className="story-action-group story-actions-right">
-              <a href={`/story/${story.slug}`} className="read-link read-article-link" title="Read full story">
-                <span>Read story</span>
-                <ArrowRight size={12} className="read-link-icon" />
-              </a>
-              <a href={story.sourceUrl} className="read-link read-original-link" target="_blank" rel="noreferrer" title="Read original source">
-                <span>Original source</span>
+              <a href={story.sourceUrl} className="read-link read-original-link" target="_blank" rel="noreferrer" title="Read original article">
+                <span>Original article</span>
                 <ExternalLink size={12} className="read-link-icon" />
               </a>
             </div>
