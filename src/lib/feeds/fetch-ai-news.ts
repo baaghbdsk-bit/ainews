@@ -3,6 +3,31 @@ import { XMLParser } from 'fast-xml-parser';
 import type { Story } from '@/lib/schemas/story';
 import { canonicalizeUrl, slugify } from '@/lib/slug';
 import { classifyStoryTopic } from './classify-topic';
+import { DISCOVERY_QUERIES, buildGoogleNewsUrl } from '../discovery/google-news';
+
+// Selected Google News discovery queries for the merged RSS feed.
+// We skip the pure-policy / general AI queries that produce too much noise
+// (ai-research, ai-funding, ai-policy, ai-general, ai-security) because those
+// yield too many non-article / low-quality results.
+const GOOGLE_NEWS_QUERY_IDS = [
+  'anthropic-claude',
+  'anthropic-claude-duet',
+  'moonshot-kimi',
+  'openai',
+  'openai-gpt6-astra',
+  'google-deepmind',
+  'meta-ai',
+  'deepseek',
+  'mistral',
+  'cohere',
+  'hugging-face',
+  'ai-tag-filtered',
+];
+
+const GOOGLE_NEWS_QUERIES = GOOGLE_NEWS_QUERY_IDS
+  .map((id) => DISCOVERY_QUERIES.find((q) => q.id === id))
+  .filter((q): q is (typeof DISCOVERY_QUERIES)[number] => Boolean(q))
+  .map((q) => ({ name: `Google News — ${q.label}`, url: buildGoogleNewsUrl(q.query), topic: 'Products' as const }));
 
 export type { Story };
 export type Topic = Story['topic'];
@@ -12,8 +37,8 @@ export const FEEDS: FeedSource[] = [
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', topic: 'Products' },
   { name: 'Google AI Blog', url: 'https://blog.google/technology/ai/rss/', topic: 'Research' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', topic: 'Products' },
-  { name: 'AWS Machine Learning', url: 'https://aws.amazon.com/blogs/machine-learning/feed/', topic: 'Research' },
-  { name: 'NVIDIA AI', url: 'https://blogs.nvidia.com/feed/', topic: 'Products' },
+  { name: 'AWS Machine Learning', url: 'https://aws.amazon.com/blogs/machine-learning/feed/', topic: 'Dev Tools & Infra' },
+  { name: 'NVIDIA AI', url: 'https://blogs.nvidia.com/feed/', topic: 'Dev Tools & Infra' },
   { name: 'The Batch (DeepLearning.AI)', url: 'https://www.deeplearning.ai/the-batch/feed/', topic: 'Research' },
   { name: 'Import AI', url: 'https://importai.substack.com/feed', topic: 'Research' },
   { name: 'VentureBeat AI', url: 'https://venturebeat.com/ai/feed/', topic: 'Products' },
@@ -35,6 +60,9 @@ export const FEEDS: FeedSource[] = [
   { name: 'Microsoft (AI & tech news)', url: 'https://blogs.microsoft.com/feed/', topic: 'Products' },
   { name: 'Meta News', url: 'https://about.fb.com/news/feed/', topic: 'Products' },
   { name: 'Mistral News (official)', url: 'https://mistral.ai/news/rss', topic: 'Products' },
+  // Google News merged feeds — derived from DISCOVERY_QUERIES, filtered for quality.
+  // Each query becomes a live Google News RSS search feed.
+  ...GOOGLE_NEWS_QUERIES,
 ];
 
 const FETCH_TIMEOUT_MS = 3000;

@@ -26,6 +26,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Sun,
+  Wrench,
   X,
   Send,
 } from "lucide-react";
@@ -547,8 +548,10 @@ function FilterFields({
     { value: "all", label: "All categories" },
     { value: "Models", label: "Models" },
     { value: "Products", label: "Products" },
+    { value: "Business", label: "Business" },
     { value: "Research", label: "Research" },
-    { value: "Policy", label: "Policy" },
+    { value: "Policy", label: "Policy & Safety" },
+    { value: "Dev Tools & Infra", label: "Dev Tools & Infra" },
   ];
 
   return (
@@ -892,8 +895,10 @@ function AboutBriefingView({
                 >
                   <option value="Models">Models</option>
                   <option value="Products">Products</option>
+                  <option value="Business">Business</option>
                   <option value="Research">Research</option>
-                  <option value="Policy">Policy</option>
+                  <option value="Policy">Policy &amp; Safety</option>
+                  <option value="Dev Tools & Infra">Dev Tools &amp; Infra</option>
                 </select>
               </div>
 
@@ -1949,7 +1954,7 @@ export function ExploreClient({
                     <span className="hero-title-accent">The pulse of AI.</span>
                   </h1>
                   <p className="hero-lede">
-                    Explore the companies, models, products and research shaping the future of AI.
+                    Explore the companies, models, products, research, business moves, and developer tools shaping the future of AI.
                   </p>
                   <div className="hero-stats-strip" aria-label="AI Moments by Category">
                     <button
@@ -1970,6 +1975,14 @@ export function ExploreClient({
                     </button>
                     <button
                       type="button"
+                      className={`hero-stat-pill ${activeTopic === "Business" ? "is-active" : ""}`}
+                      onClick={() => setActiveTopic(activeTopic === "Business" ? "all" : "Business")}
+                    >
+                      <Building2 size={15} />
+                      <strong>{topicCounts["Business"] ?? 0}</strong> Business
+                    </button>
+                    <button
+                      type="button"
                       className={`hero-stat-pill ${activeTopic === "Research" ? "is-active" : ""}`}
                       onClick={() => setActiveTopic(activeTopic === "Research" ? "all" : "Research")}
                     >
@@ -1982,7 +1995,15 @@ export function ExploreClient({
                       onClick={() => setActiveTopic(activeTopic === "Policy" ? "all" : "Policy")}
                     >
                       <BookOpen size={15} />
-                      <strong>{topicCounts["Policy"] ?? 0}</strong> Policy
+                      <strong>{topicCounts["Policy"] ?? 0}</strong> Policy &amp; Safety
+                    </button>
+                    <button
+                      type="button"
+                      className={`hero-stat-pill ${activeTopic === "Dev Tools & Infra" ? "is-active" : ""}`}
+                      onClick={() => setActiveTopic(activeTopic === "Dev Tools & Infra" ? "all" : "Dev Tools & Infra")}
+                    >
+                      <Wrench size={15} />
+                      <strong>{topicCounts["Dev Tools & Infra"] ?? 0}</strong> Dev Tools
                     </button>
                   </div>
                 </>
@@ -2079,6 +2100,13 @@ export function ExploreClient({
                     </button>
                     <button
                       type="button"
+                      className={`hero-stat-pill ${activeTopic === "Business" ? "is-active" : ""}`}
+                      onClick={() => setActiveTopic(activeTopic === "Business" ? "all" : "Business")}
+                    >
+                      <Building2 size={15} /> Business
+                    </button>
+                    <button
+                      type="button"
                       className={`hero-stat-pill ${activeTopic === "Research" ? "is-active" : ""}`}
                       onClick={() => setActiveTopic(activeTopic === "Research" ? "all" : "Research")}
                     >
@@ -2089,7 +2117,14 @@ export function ExploreClient({
                       className={`hero-stat-pill ${activeTopic === "Policy" ? "is-active" : ""}`}
                       onClick={() => setActiveTopic(activeTopic === "Policy" ? "all" : "Policy")}
                     >
-                      <BookOpen size={15} /> Policy
+                      <BookOpen size={15} /> Policy &amp; Safety
+                    </button>
+                    <button
+                      type="button"
+                      className={`hero-stat-pill ${activeTopic === "Dev Tools & Infra" ? "is-active" : ""}`}
+                      onClick={() => setActiveTopic(activeTopic === "Dev Tools & Infra" ? "all" : "Dev Tools & Infra")}
+                    >
+                      <Wrench size={15} /> Dev Tools
                     </button>
                   </div>
                 </>

@@ -485,6 +485,10 @@ h1 em {
 .dot-cyan { color: var(--success); }
 .node-amber,
 .dot-amber { color: var(--warning); }
+.node-green,
+.dot-green { color: #34D399; }
+.node-rose,
+.dot-rose { color: #FB7185; }
 
 .story-content { min-width: 0; }
 

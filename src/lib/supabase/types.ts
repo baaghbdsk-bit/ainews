@@ -30,7 +30,7 @@ export type Database = {
           summary_attempts: number;
           source: string;
           source_url: string;
-          topic: 'Models' | 'Products' | 'Research' | 'Policy';
+          topic: 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
           event_date: string; // YYYY-MM-DD
           published_at: string | null;
           status: 'draft' | 'published';
@@ -59,7 +59,7 @@ export type Database = {
           summary_attempts?: number;
           source: string;
           source_url: string;
-          topic: 'Models' | 'Products' | 'Research' | 'Policy';
+          topic: 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
           event_date: string;
           published_at?: string | null;
           status: 'draft' | 'published';
@@ -88,7 +88,7 @@ export type Database = {
           summary_attempts?: number;
           source?: string;
           source_url?: string;
-          topic?: 'Models' | 'Products' | 'Research' | 'Policy';
+          topic?: 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
           event_date?: string;
           published_at?: string | null;
           status?: 'draft' | 'published';

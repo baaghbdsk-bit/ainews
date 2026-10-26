@@ -59,11 +59,15 @@
 .article-violet .story-article-topic { background: rgba(192, 132, 252, 0.1); border-color: rgba(192, 132, 252, 0.25); }
 .article-cyan .story-article-topic { background: rgba(45, 212, 191, 0.1); border-color: rgba(45, 212, 191, 0.25); }
 .article-amber .story-article-topic { background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.25); }
+.article-green .story-article-topic { background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.25); }
+.article-rose .story-article-topic { background: rgba(251, 113, 133, 0.1); border-color: rgba(251, 113, 133, 0.25); }
 
 .article-blue { --story-accent: var(--blue); }
 .article-violet { --story-accent: var(--violet); }
 .article-cyan { --story-accent: var(--cyan); }
 .article-amber { --story-accent: var(--amber); }
+.article-green { --story-accent: #34D399; }
+.article-rose { --story-accent: #FB7185; }
 
 .story-article h1 {
   max-width: 920px;

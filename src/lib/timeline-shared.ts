@@ -18,7 +18,7 @@ export interface StoryDisplay {
   deck?: string | null;
   keyPoints?: string[] | null;
   whyItMatters?: string | null;
-  topic: "Models" | "Products" | "Research" | "Policy";
+  topic: "Models" | "Products" | "Business" | "Research" | "Policy" | "Dev Tools & Infra";
   date: string;
   day: string;
   month: string;

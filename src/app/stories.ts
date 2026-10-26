@@ -1,4 +1,4 @@
-export type Topic = "Models" | "Products" | "Research" | "Policy";
+export type Topic = "Models" | "Products" | "Business" | "Research" | "Policy" | "Dev Tools & Infra";
 
 export type Story = {
   id: string;

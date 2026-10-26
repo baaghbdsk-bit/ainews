@@ -29,6 +29,8 @@ import {
   Bot,
   Mail,
   Braces,
+  Building2,
+  Wrench,
 } from 'lucide-react';
 import type { StoryDisplay } from '@/lib/timeline-shared';
 import { useAuth } from '@/lib/auth/store';
@@ -50,8 +52,8 @@ export function computeDailyDigest(stories: StoryDisplay[]): DailyDigestData | n
   }
 
   const recent = stories.slice(0, 30);
-  const topicCounts: Record<string, number> = { Models: 0, Products: 0, Research: 0, Policy: 0 };
-  const topicStories: Record<string, StoryDisplay[]> = { Models: [], Products: [], Research: [], Policy: [] };
+  const topicCounts: Record<string, number> = { Models: 0, Products: 0, Business: 0, Research: 0, Policy: 0, 'Dev Tools & Infra': 0 };
+  const topicStories: Record<string, StoryDisplay[]> = { Models: [], Products: [], Business: [], Research: [], Policy: [], 'Dev Tools & Infra': [] };
   const companySet = new Set<string>();
 
   for (const story of recent) {
@@ -563,7 +565,7 @@ export function DailyDigestMainView({
               <div className="section-badge">High-NeuBench Milestones</div>
               <h3 className="digest-section-title">Key Developments by Pillar</h3>
               <p className="digest-section-subtitle">
-                Direct entry points into the most critical stories across our four intelligence tracks:
+                Direct entry points into the most critical stories across our six intelligence tracks:
               </p>
             </div>
 
@@ -668,6 +670,58 @@ export function DailyDigestMainView({
                   ))}
                   {(!digest.topicStories.Policy || digest.topicStories.Policy.length === 0) && (
                     <p className="digest-none-text">No regulatory shifts logged today.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Business */}
+              <div className="digest-pillar-box pillar-business">
+                <div className="digest-pillar-header">
+                  <div className="pillar-header-left">
+                    <Building2 size={16} className="text-emerald-400" />
+                    <h4>Business &amp; Funding</h4>
+                  </div>
+                  <span className="pillar-count-badge">{digest.topicCounts.Business || 0}</span>
+                </div>
+                <div className="digest-pillar-stories">
+                  {(digest.topicStories.Business || []).slice(0, 3).map((st) => (
+                    <Link key={st.id} href={`/story/${st.slug}`} className="digest-story-link-item">
+                      <div className="digest-story-dot" />
+                      <div className="digest-story-info">
+                        <span className="digest-story-title">{st.title}</span>
+                        {st.company && <span className="digest-story-company">{st.company}</span>}
+                      </div>
+                      <ArrowRight size={13} className="digest-story-arrow" />
+                    </Link>
+                  ))}
+                  {(!digest.topicStories.Business || digest.topicStories.Business.length === 0) && (
+                    <p className="digest-none-text">No funding or M&amp;A moves logged today.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Dev Tools & Infra */}
+              <div className="digest-pillar-box pillar-devtools">
+                <div className="digest-pillar-header">
+                  <div className="pillar-header-left">
+                    <Wrench size={16} className="text-rose-400" />
+                    <h4>Dev Tools &amp; Infra</h4>
+                  </div>
+                  <span className="pillar-count-badge">{digest.topicCounts['Dev Tools & Infra'] || 0}</span>
+                </div>
+                <div className="digest-pillar-stories">
+                  {(digest.topicStories['Dev Tools & Infra'] || []).slice(0, 3).map((st) => (
+                    <Link key={st.id} href={`/story/${st.slug}`} className="digest-story-link-item">
+                      <div className="digest-story-dot" />
+                      <div className="digest-story-info">
+                        <span className="digest-story-title">{st.title}</span>
+                        {st.company && <span className="digest-story-company">{st.company}</span>}
+                      </div>
+                      <ArrowRight size={13} className="digest-story-arrow" />
+                    </Link>
+                  ))}
+                  {(!digest.topicStories['Dev Tools & Infra'] || digest.topicStories['Dev Tools & Infra'].length === 0) && (
+                    <p className="digest-none-text">No SDK, platform, or hardware drops logged today.</p>
                   )}
                 </div>
               </div>

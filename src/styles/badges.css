@@ -30,6 +30,8 @@
 .story-saved-icon.node-violet { color: var(--violet); }
 .story-saved-icon.node-cyan { color: var(--cyan); }
 .story-saved-icon.node-amber { color: var(--amber); }
+.story-saved-icon.node-green { color: var(--green); }
+.story-saved-icon.node-rose { color: var(--rose); }
 
 /* Trending Rank Badge: Flame icon & clean text */
 .trending-rank-badge {

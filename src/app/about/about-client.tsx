@@ -130,9 +130,9 @@ export function AboutClient() {
         {/* Stats Grid */}
         <section className="about-stats-grid" aria-label="NeuBench at a glance">
           <div className="about-stat-card">
-            <div className="about-stat-value">4 Pillars</div>
+            <div className="about-stat-value">6 Pillars</div>
             <div className="about-stat-label">Systematic taxonomy</div>
-            <div className="about-stat-desc">Models, Products, Research, and Policy covering the full spectrum.</div>
+            <div className="about-stat-desc">Models, Products, Business, Research, Policy &amp; Safety, and Dev Tools &amp; Infra covering the full spectrum.</div>
           </div>
           <div className="about-stat-card">
             <div className="about-stat-value">20+ Feeds</div>
@@ -267,7 +267,7 @@ export function AboutClient() {
             <div className="about-pillar-card pillar-policy">
               <div className="about-pillar-header">
                 <span className="about-pillar-badge">
-                  <ShieldCheck size={14} /> Policy
+                  <ShieldCheck size={14} /> Policy &amp; Safety
                 </span>
               </div>
               <h3 className="about-pillar-title">Governance, Treaties &amp; Compute Geopolitics</h3>
@@ -405,8 +405,10 @@ export function AboutClient() {
                     >
                       <option value="Models">Models</option>
                       <option value="Products">Products</option>
+                      <option value="Business">Business</option>
                       <option value="Research">Research</option>
-                      <option value="Policy">Policy</option>
+                      <option value="Policy">Policy &amp; Safety</option>
+                      <option value="Dev Tools & Infra">Dev Tools &amp; Infra</option>
                     </select>
                   </div>
 

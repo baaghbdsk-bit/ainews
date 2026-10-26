@@ -3,9 +3,11 @@
  *
  * Verifies that AI news stories are accurately categorized into:
  *   - Models: Only genuine foundation model checkpoints, weights, and architecture releases.
- *   - Products: Applications, desktop/mobile apps, IDE tools, cloud integrations, corporate partnerships, pricing, executive hires.
+ *   - Products: Consumer-facing applications, desktop/mobile apps, workspace features, pricing.
+ *   - Business: Funding, M&A, executive hires, partnerships, revenue, layoffs.
  *   - Research: Scientific papers, mechanistic interpretability, training algorithms, loss functions.
- *   - Policy: Legal lawsuits, FTC/antitrust, EU AI Act, export controls, copyright claims.
+ *   - Policy: Legal lawsuits, FTC/antitrust, EU AI Act, export controls, copyright claims, AI safety.
+ *   - Dev Tools & Infra: SDKs, APIs, frameworks, IDEs, cloud/ML platforms, hardware, GPU clusters.
  *
  * Run with:
  *   node --experimental-strip-types tests/category-classification.mjs
@@ -15,7 +17,8 @@ import { classifyStoryTopic } from '../src/lib/feeds/classify-topic.ts';
 
 const testCases = [
   // ==========================================
-  // 1. INCIDENTAL MENTIONS (MUST NOT BE 'Models' -> MUST BE 'Products')
+  // 1. INCIDENTAL MENTIONS (MUST NOT BE 'Models')
+  //    → Products, Business, or Dev Tools & Infra
   // ==========================================
   {
     title: 'OpenAI launches ChatGPT desktop app for Windows',
@@ -38,19 +41,19 @@ const testCases = [
   {
     title: 'OpenAI acquires Rockset to power search and retrieval infrastructure',
     summary: 'The database acquisition will strengthen enterprise retrieval capabilities.',
-    expected: 'Products',
+    expected: 'Business',
     reason: 'Corporate acquisition',
   },
   {
     title: 'OpenAI lowers GPT-4o API pricing by 50% for all developers',
     summary: 'New token costs reduce developer input and output pricing significantly.',
-    expected: 'Products',
-    reason: 'Pricing reduction and API commercial tiers',
+    expected: 'Dev Tools & Infra',
+    reason: 'API/token pricing for developers',
   },
   {
     title: 'Anthropic hires former Instagram co-founder Mike Krieger as Chief Product Officer',
     summary: 'Krieger will oversee product engineering and enterprise applications for Claude.',
-    expected: 'Products',
+    expected: 'Business',
     reason: 'Executive hiring announcement',
   },
   {
@@ -62,19 +65,19 @@ const testCases = [
   {
     title: 'TwelveLabs Pegasus 1.5 is now available in Amazon Bedrock',
     summary: 'AWS customers can now deploy the multimodal video understanding model through Bedrock API console.',
-    expected: 'Products',
-    reason: 'Cloud platform deployment/integration override',
+    expected: 'Dev Tools & Infra',
+    reason: 'Cloud platform deployment/integration (Bedrock, API)',
   },
   {
     title: 'Cursor AI raises $60 million to expand AI code editor',
     summary: 'The funding round values the developer tooling startup at over $400 million.',
-    expected: 'Products',
+    expected: 'Business',
     reason: 'Venture funding round',
   },
   {
     title: 'Nvidia unveils Blackwell B200 GPU supercomputer cluster for datacenters',
     summary: 'New hardware architecture delivers 20 petaflops of compute for enterprise clusters.',
-    expected: 'Products',
+    expected: 'Dev Tools & Infra',
     reason: 'Hardware datacenter platform',
   },
 

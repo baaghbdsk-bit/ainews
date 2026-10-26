@@ -19,7 +19,7 @@ export const StorySchema = z.object({
   company: z.string().nullable().optional(),
   image_url: z.string().url().nullable().optional(),
   image_attempts: z.number().optional(),
-  topic: z.enum(['Models', 'Products', 'Research', 'Policy']),
+  topic: z.enum(['Models', 'Products', 'Business', 'Research', 'Policy', 'Dev Tools & Infra']),
   event_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   published_at: z.string().datetime().nullable().optional(),
   status: z.enum(['draft', 'published']),
