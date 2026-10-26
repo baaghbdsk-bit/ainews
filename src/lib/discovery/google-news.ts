@@ -8,7 +8,7 @@ import { canonicalizeUrl } from '../slug.ts';
 import { extractCompany } from '../story-company.ts';
 import { classifyStoryTopic } from '../feeds/classify-topic.ts';
 
-export type Topic = 'Models' | 'Products' | 'Research' | 'Policy';
+export type Topic = 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
 
 export interface DiscoveryQuery {
   id: string;
@@ -18,8 +18,10 @@ export interface DiscoveryQuery {
 
 export const DISCOVERY_QUERIES: DiscoveryQuery[] = [
   { id: 'anthropic-claude', label: 'Anthropic / Claude', query: 'Anthropic OR Claude AI' },
+  { id: 'anthropic-claude-duet', label: 'Anthropic / Claude Duet', query: '"Claude Duet"' },
   { id: 'moonshot-kimi', label: 'Moonshot / Kimi', query: 'Moonshot AI OR Kimi AI' },
   { id: 'openai', label: 'OpenAI', query: 'OpenAI' },
+  { id: 'openai-gpt6-astra', label: 'OpenAI / GPT-6 Astra', query: '"GPT-6 Astra"' },
   { id: 'google-deepmind', label: 'Google DeepMind', query: '"Google DeepMind" OR Gemini AI' },
   { id: 'meta-ai', label: 'Meta AI', query: 'Meta AI OR Llama' },
   { id: 'deepseek', label: 'DeepSeek', query: 'DeepSeek' },
@@ -29,6 +31,9 @@ export const DISCOVERY_QUERIES: DiscoveryQuery[] = [
   { id: 'ai-research', label: 'AI research', query: 'AI research model benchmark' },
   { id: 'ai-funding', label: 'AI funding', query: 'AI startup funding raises' },
   { id: 'ai-policy', label: 'AI policy', query: 'AI policy regulation safety' },
+  { id: 'ai-general', label: 'General AI news (all outlets)', query: 'AI' },
+  { id: 'ai-security', label: 'AI security and data leaks', query: 'AI (leak OR breach OR vulnerability OR "data exposure")' },
+  { id: 'ai-tag-filtered', label: 'AI tag-filtered (launch/release/unveils/announces)', query: 'AI (launch OR release OR unveils OR announces OR introduces OR "open-source" OR model OR GPT OR reasoning OR weapon OR defense OR policy OR regulation OR benchmark) -layoff -layoffs -intitle:"how to" -intitle:"tutorial"' },
 ];
 
 export interface UtcWindow {
@@ -147,6 +152,8 @@ const RELEVANCE_KEYWORDS = [
   /\b(?:policy|regulation|safety|export control|lawsuit|antitrust)\b/i,
   /\b(?:research|paper|arxiv|study|benchmark)\b/i,
   /\b(?:claude|kimi|gemini|llama|gpt|deepseek|mistral|cohere)\b/i,
+  /\bai\b/i,
+  /\b(?:leak|breach|vulnerability|security|privacy|incident|exposed|disclose(?:s|d)?)\b/i,
 ];
 
 const COMBINED_DIGEST_PATTERNS = [
@@ -263,8 +270,28 @@ export function isRelevant(title: string, source: string | null, company: string
 
 function isPrivateAddress(address: string): boolean {
   // Lightweight guard; production extraction module has a fuller version.
-  if (/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(address)) return true;
-  if (address === '::1' || address.toLowerCase().startsWith('fc') || address.toLowerCase().startsWith('fd')) return true;
+  const lower = address.toLowerCase().replace(/^\[|\]$/g, '');
+  if (!lower || lower === 'localhost' || lower.endsWith('.local')) return true;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(lower)) {
+    const parts = lower.split('.').map((part) => Number(part));
+    if (parts.some((part) => !Number.isFinite(part) || part < 0 || part > 255)) return true;
+    if (parts[0] === 0 || parts[0] === 10 || parts[0] === 127) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true;
+    if (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19 || parts[1] === 51)) return true;
+    if (parts[0] >= 224) return true;
+    return false;
+  }
+  if (lower === '::' || lower === '::1') return true;
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true;
+  if (lower.startsWith('fe80') || lower.startsWith('fec0')) return true;
+  if (lower.startsWith('::ffff:')) {
+    const mapped = lower.slice('::ffff:'.length);
+    return isPrivateAddress(mapped);
+  }
+  if (lower.startsWith('64:ff9b:')) return true;
   return false;
 }
 
@@ -305,6 +332,7 @@ export interface FetchWithRetryOptions {
   timeoutMs: number;
   maxAttempts: number;
   baseBackoffMs: number;
+  cookieHeader?: string;
 }
 
 export async function fetchWithRetry(
@@ -346,17 +374,71 @@ export async function fetchWithRetry(
   throw lastError instanceof Error ? lastError : new Error('Fetch failed');
 }
 
+function getHeader(response: Response, name: string): string | null {
+  try {
+    if (typeof response.headers?.get === 'function') {
+      return response.headers.get(name);
+    }
+  } catch {
+    // Fall through to property access for simple mock responses.
+  }
+  const headers = response.headers as unknown as Record<string, unknown> | undefined;
+  if (!headers) return null;
+  const direct = headers[name] ?? headers[name.toLowerCase()];
+  return typeof direct === 'string' ? direct : null;
+}
+
 export async function fetchText(
   url: string,
   options: FetchWithRetryOptions,
   maxBytes: number,
 ): Promise<{ response: Response; text: string }> {
-  const response = await fetchWithRetry(url, options, {
-    headers: { 'user-agent': USER_AGENT, accept: 'text/html,application/xhtml+xml' },
-    redirect: 'follow',
-  });
-  const raw = await response.text();
-  return { response, text: raw.slice(0, maxBytes) };
+  if (!isSafePublicHttpsUrl(url)) {
+    throw new Error('Unsafe or non-HTTPS URL');
+  }
+  let current = url;
+  const visited = new Set<string>();
+  for (let hop = 0; hop < 5; hop += 1) {
+    if (visited.has(current)) {
+      throw new Error('Redirect loop');
+    }
+    visited.add(current);
+    const headers: Record<string, string> = {
+      'user-agent': USER_AGENT,
+      accept: 'text/html,application/xhtml+xml',
+    };
+    if (options.cookieHeader) headers.cookie = options.cookieHeader;
+    let response: Response;
+    try {
+      response = await fetchWithRetry(current, options, {
+        headers,
+        redirect: 'manual',
+      });
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Fetch failed');
+    }
+    if (response.status >= 300 && response.status < 400) {
+      const location = getHeader(response, 'location');
+      if (!location) {
+        const raw = await response.text().catch(() => '');
+        return { response, text: raw.slice(0, maxBytes) };
+      }
+      let next: string;
+      try {
+        next = new URL(location, current).toString();
+      } catch {
+        throw new Error('Malformed redirect location');
+      }
+      if (!isSafePublicHttpsUrl(next)) {
+        throw new Error('Unsafe redirect destination');
+      }
+      current = next;
+      continue;
+    }
+    const raw = await response.text();
+    return { response, text: raw.slice(0, maxBytes) };
+  }
+  throw new Error('Too many redirects');
 }
 
 function collectMeta(html: string): Map<string, string> {
@@ -458,8 +540,8 @@ export function extractArticleId(url: string): string | null {
 }
 
 export function parseSignature(html: string): { signature: string; timestamp: string } | null {
-  const sgMatch = html.match(/data-n-a-sg="([^"]+)"/);
-  const tsMatch = html.match(/data-n-a-ts="([^"]+)"/);
+  const sgMatch = html.match(/data-n-a-sg="([^"]+)"/) ?? html.match(/data-n-a-sg='([^']+)'/);
+  const tsMatch = html.match(/data-n-a-ts="([^"]+)"/) ?? html.match(/data-n-a-ts='([^']+)'/);
   if (sgMatch?.[1] && tsMatch?.[1]) {
     return { signature: sgMatch[1], timestamp: tsMatch[1] };
   }
@@ -494,6 +576,14 @@ export function parseBatchexecute(text: string): string | null {
     return null;
   }
   if (!Array.isArray(rows)) return null;
+  while (Array.isArray(rows) && rows.length > 0) {
+    const last = rows[rows.length - 1];
+    if (Array.isArray(last) && last.length > 0 && (last[0] === 'di' || last[0] === 'e')) {
+      rows.pop();
+    } else {
+      break;
+    }
+  }
   for (const row of rows) {
     if (!Array.isArray(row) || row.length < 3) continue;
     if (row[0] !== 'wrb.fr' && row[1] !== 'Fbv4je') continue;
@@ -506,7 +596,14 @@ export function parseBatchexecute(text: string): string | null {
       }
     }
     if (Array.isArray(payload) && payload[0] === 'garturlres' && typeof payload[1] === 'string') {
-      return payload[1];
+      const decoded = payload[1];
+      try {
+        if (isSafePublicHttpsUrl(decoded) && !new URL(decoded).hostname.toLowerCase().includes('news.google.com')) {
+          return decoded;
+        }
+      } catch {
+        // Ignore malformed decoded candidates and continue.
+      }
     }
   }
   return null;
@@ -516,27 +613,43 @@ export async function resolvePublisherUrl(
   googleUrl: string,
   articleHtml: string,
   fetchOptions: FetchWithRetryOptions,
+  cookieHeader?: string | { cookieHeader?: string } | null,
 ): Promise<string | null> {
-  let finalUrl: string | null = null;
-  try {
-    finalUrl = new URL(googleUrl).toString();
-  } catch {
-    return null;
-  }
-  // If the article fetch already resolved to a publisher URL, keep it.
-  // (Handled by caller; this helper focuses on decoding.)
+  let resolvedCookieHeader: string | undefined;
+  if (typeof cookieHeader === 'string') resolvedCookieHeader = cookieHeader;
+  else if (cookieHeader && typeof cookieHeader === 'object') resolvedCookieHeader = cookieHeader.cookieHeader;
+  if (!resolvedCookieHeader) resolvedCookieHeader = fetchOptions.cookieHeader;
+
+  if (!isSafePublicHttpsUrl(googleUrl)) return null;
   const articleId = extractArticleId(googleUrl);
   const signature = parseSignature(articleHtml);
   if (!articleId || !signature) return null;
+
+  const effectiveOptions: FetchWithRetryOptions = {
+    ...fetchOptions,
+    cookieHeader: resolvedCookieHeader ?? fetchOptions.cookieHeader,
+  };
+
   try {
     const body = buildBatchexecuteBody(articleId, signature.timestamp, signature.signature);
-    const response = await fetchWithRetry('https://news.google.com/_/DotsSplashUi/data/batchexecute', fetchOptions, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-      body,
-    });
+    const response = await fetchWithRetry(
+      'https://news.google.com/_/DotsSplashUi/data/batchexecute',
+      effectiveOptions,
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          ...(resolvedCookieHeader ? { cookie: resolvedCookieHeader } : {}),
+        },
+        body,
+      },
+    );
+    if (!response.ok) return null;
     const text = await response.text();
-    return parseBatchexecute(text);
+    const decoded = parseBatchexecute(text);
+    if (!decoded || !isSafePublicHttpsUrl(decoded)) return null;
+    if (new URL(decoded).hostname.toLowerCase().includes('news.google.com')) return null;
+    return decoded;
   } catch {
     return null;
   }
@@ -588,12 +701,20 @@ export async function validatePublisherPage(
     return { publisherUrl: validation.finalUrl, canonicalUrl: null, validation };
   }
 
+  const articleCookies = typeof articleResponse.headers?.getSetCookie === 'function'
+    ? articleResponse.headers.getSetCookie()
+    : [];
+  const cookieHeader = articleCookies.map((cookie) => cookie.split(';')[0]).filter(Boolean).join('; ');
+  if (cookieHeader) {
+    fetchOptions.cookieHeader = cookieHeader;
+  }
+
   let publisherUrl = validation.finalUrl;
   const articleHost = new URL(publisherUrl).hostname;
   if (articleHost.includes('news.google.com')) {
     validation.decoderAttempted = true;
-    const decoded = await resolvePublisherUrl(googleUrl, articleHtml, fetchOptions);
-    if (decoded && isSafePublicHttpsUrl(decoded)) {
+    const decoded = await resolvePublisherUrl(googleUrl, articleHtml, fetchOptions, cookieHeader || fetchOptions.cookieHeader);
+    if (decoded && isSafePublicHttpsUrl(decoded) && !new URL(decoded).hostname.toLowerCase().includes('news.google.com')) {
       publisherUrl = decoded;
       validation.decoderSucceeded = true;
     } else {
