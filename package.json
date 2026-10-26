@@ -20,6 +20,7 @@
     "test:pilot": "node --experimental-strip-types tests/news-review-pilot.mjs",
     "pilot:google-news": "node --experimental-strip-types scripts/run-google-news-pilot.mjs",
     "benchmarks:refresh": "node scripts/fetch-models.mjs",
+    "benchmarks:audit-sources": "node --experimental-strip-types scripts/verify-benchmark-sources.mjs",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
     "summarize:backfill": "node --env-file=.env.local scripts/backfill-summaries.mjs",
     "images:backfill": "node --env-file=.env.local scripts/backfill-images.mjs"

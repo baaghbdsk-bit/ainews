@@ -104,7 +104,7 @@ export function BenchmarkSpecsTable({ selectedModels }: BenchmarkSpecsTableProps
               const sourceUrl = m.benchmarks['aa-intelligence']?.sourceUrl;
               return (
                 <td key={m.id} className="table-td-val table-td-numeric">
-                  {score ? (
+                  {typeof score === 'number' ? (
                     <a href={sourceUrl} target="_blank" rel="noreferrer">
                       {score} / 100
                     </a>
@@ -148,10 +148,10 @@ export function BenchmarkSpecsTable({ selectedModels }: BenchmarkSpecsTableProps
             ))}
           </tr>
 
-          {/* Group 3: Licensing & Verification */}
+          {/* Group 3: Licensing & Catalogue Links */}
           <tr className="table-group-row">
             <th colSpan={selectedModels.length + 1} scope="colgroup">
-              Licensing &amp; Official Citations
+              Licensing &amp; Catalogue Links
             </th>
           </tr>
 
@@ -192,7 +192,7 @@ export function BenchmarkSpecsTable({ selectedModels }: BenchmarkSpecsTableProps
             <th scope="row" className="table-td-feature">
               <div className="feature-title-wrap">
                 <ShieldCheck size={13} className="feature-icon feature-icon-emerald" />
-                <span>Official Verification</span>
+                  <span>Catalogue &amp; Documentation</span>
               </div>
             </th>
             {selectedModels.map((m) => (
@@ -203,9 +203,9 @@ export function BenchmarkSpecsTable({ selectedModels }: BenchmarkSpecsTableProps
                     target="_blank"
                     rel="noreferrer"
                     className="official-verification-link"
-                    title={`View official report: ${m.name}`}
+                    title={`View OpenRouter catalogue record: ${m.name}`}
                   >
-                    <span>Report</span>
+                    <span>Catalogue</span>
                     <ExternalLink size={10} />
                   </a>
                   {m.officialDocumentationUrl && (

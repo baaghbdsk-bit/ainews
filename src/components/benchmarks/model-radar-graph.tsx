@@ -16,7 +16,7 @@ interface RadarDimension {
 
 const RADAR_DIMENSIONS: RadarDimension[] = [
   { key: 'reasoning', label: 'Reasoning', sub: 'GPQA / ARC', sourceDesc: 'GPQA Diamond, ARC-AGI-2, HLE' },
-  { key: 'coding', label: 'Coding', sub: 'SWE-bench', sourceDesc: 'SWE-bench Pro & Verified' },
+  { key: 'coding', label: 'Coding', sub: 'SWE Pro / AA', sourceDesc: 'SWE-bench Pro, AA Coding' },
   { key: 'agentic', label: 'Agentic', sub: 'Terminal 4.0', sourceDesc: 'Terminal-Bench 4.0 & AA Agentic' },
   { key: 'math', label: 'Mathematics', sub: 'FrontierMath', sourceDesc: 'FrontierMath v2 (Tiers 1-3)' },
   { key: 'preference', label: 'Preference', sub: 'Design ELO', sourceDesc: 'Design Arena human preference' },
@@ -70,38 +70,36 @@ function getModelDimensionScore(model: AIModelRecord, dimKey: string): { score: 
       const arc = b['arc-agi']?.score;
       const hle = b['hle']?.score;
       const aaInt = b['aa-intelligence']?.score;
-      if (gpqa) return { score: Math.round(gpqa), rawText: `GPQA: ${gpqa}%`, hasData: true };
-      if (arc) return { score: Math.round(arc), rawText: `ARC-AGI-2: ${arc}%`, hasData: true };
-      if (hle) return { score: Math.min(100, Math.round(hle * 1.4)), rawText: `HLE: ${hle}%`, hasData: true };
-      if (aaInt) return { score: Math.round(aaInt), rawText: `AA Index: ${aaInt}%`, hasData: true };
+      if (typeof gpqa === 'number') return { score: Math.round(gpqa), rawText: `GPQA: ${gpqa}%`, hasData: true };
+      if (typeof arc === 'number') return { score: Math.round(arc), rawText: `ARC-AGI-2: ${arc}%`, hasData: true };
+      if (typeof hle === 'number') return { score: Math.round(hle), rawText: `HLE: ${hle}%`, hasData: true };
+      if (typeof aaInt === 'number') return { score: Math.round(aaInt), rawText: `AA Index: ${aaInt}%`, hasData: true };
       return { score: 0, rawText: 'Not reported', hasData: false };
     }
     case 'coding': {
       const pro = b['swe-bench-pro']?.score;
-      const verified = b['swe-bench-verified']?.score;
       const aaCode = b['aa-coding']?.score;
-      if (pro) return { score: Math.round(pro), rawText: `SWE-bench Pro: ${pro}%`, hasData: true };
-      if (verified) return { score: Math.round(verified), rawText: `SWE-bench Verified: ${verified}%`, hasData: true };
-      if (aaCode) return { score: Math.round(aaCode), rawText: `AA Coding: ${aaCode}%`, hasData: true };
+      if (typeof pro === 'number') return { score: Math.round(pro), rawText: `SWE-bench Pro: ${pro}%`, hasData: true };
+      if (typeof aaCode === 'number') return { score: Math.round(aaCode), rawText: `AA Coding: ${aaCode}%`, hasData: true };
       return { score: 0, rawText: 'Not reported', hasData: false };
     }
     case 'agentic': {
       const terminal = b['terminal-bench']?.score;
       const agenticIndex = b['aa-agentic']?.score;
-      if (terminal) return { score: Math.min(100, Math.round(terminal * 1.3)), rawText: `Terminal 4.0: ${terminal}%`, hasData: true };
-      if (agenticIndex) return { score: Math.round(agenticIndex), rawText: `AA Agentic: ${agenticIndex}%`, hasData: true };
+      if (typeof terminal === 'number') return { score: Math.round(terminal), rawText: `Terminal 4.0: ${terminal}%`, hasData: true };
+      if (typeof agenticIndex === 'number') return { score: Math.round(agenticIndex), rawText: `AA Agentic: ${agenticIndex}%`, hasData: true };
       return { score: 0, rawText: 'Not reported', hasData: false };
     }
     case 'math': {
       const frontier = b['frontiermath']?.score;
-      if (frontier) return { score: Math.round(frontier), rawText: `FrontierMath: ${frontier}%`, hasData: true };
+      if (typeof frontier === 'number') return { score: Math.round(frontier), rawText: `FrontierMath: ${frontier}%`, hasData: true };
       const aaInt = b['aa-intelligence']?.score;
-      if (aaInt) return { score: Math.round(aaInt), rawText: `AA Index: ${aaInt}%`, hasData: true };
+      if (typeof aaInt === 'number') return { score: Math.round(aaInt), rawText: `AA Index: ${aaInt}%`, hasData: true };
       return { score: 0, rawText: 'Not reported', hasData: false };
     }
     case 'preference': {
       const arena = b['design-arena']?.score;
-      if (arena) {
+      if (typeof arena === 'number') {
         const normalized = Math.min(100, Math.max(10, Math.round(((arena - 1000) / 450) * 100)));
         return { score: normalized, rawText: `${Math.round(arena)} ELO`, hasData: true };
       }
@@ -109,9 +107,7 @@ function getModelDimensionScore(model: AIModelRecord, dimKey: string): { score: 
     }
     case 'general': {
       const aaInt = b['aa-intelligence']?.score;
-      const mmlu = b['mmlu-pro']?.score;
-      if (aaInt) return { score: Math.round(aaInt), rawText: `AA Index: ${aaInt}%`, hasData: true };
-      if (mmlu) return { score: Math.round(mmlu), rawText: `MMLU-Pro: ${mmlu}%`, hasData: true };
+      if (typeof aaInt === 'number') return { score: Math.round(aaInt), rawText: `AA Index: ${aaInt}%`, hasData: true };
       return { score: 0, rawText: 'Not reported', hasData: false };
     }
     default:

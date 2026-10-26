@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-const require = createRequire("D:\\AiNews\\package.json");
+const require = createRequire(import.meta.url);
 const puppeteer = require("puppeteer-core");
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3210";
@@ -34,6 +34,23 @@ console.log(JSON.stringify(out, null, 2));
 const api = await (await fetch(BASE + "/api/benchmarks")).json();
 console.log("\n=== /api/benchmarks audit ===");
 console.log(JSON.stringify(api.audit, null, 2).slice(0, 900));
+if (
+  !api.success ||
+  !api.audit ||
+  api.audit.scoredModelCount + api.audit.unscoredModelCount !== api.audit.totalModels ||
+  Object.keys(api.audit.benchmarkCoverage ?? {}).length === 0
+) {
+  throw new Error("Benchmark API audit is missing reconciled coverage data");
+}
+console.log(
+  "coverage ledger:",
+  api.audit.scoredModelCount,
+  "scored models |",
+  api.audit.unscoredModelCount,
+  "unscored |",
+  api.audit.uniqueSourceUrlCount,
+  "source URLs"
+);
 
 // Generation filter round-trip
 const all = await (await fetch(BASE + "/api/benchmarks?generation=all")).json();

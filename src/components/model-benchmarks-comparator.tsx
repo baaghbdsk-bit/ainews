@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   Check,
   Plus,
-  RotateCcw,
   AlertCircle,
   ExternalLink,
 } from 'lucide-react';
@@ -261,11 +260,6 @@ export function ModelBenchmarksComparator({
 
   const selectAllBenchmarks = () => setSelectedBenchmarkIds(ALL_BENCHMARKS.map((b) => b.id));
 
-  const resetComparison = () => {
-    setSelectedBenchmarkIds(ALL_BENCHMARKS.map((b) => b.id));
-    setSelectedModelIds(COMPARISON_PRESETS[0].modelIds);
-  };
-
   const filteredDrawerModels = useMemo(() => {
     let list = AI_MODELS_DATA;
 
@@ -289,6 +283,13 @@ export function ModelBenchmarksComparator({
     return list;
   }, [searchQuery, activeLabFilter]);
 
+  const scoredModelPercent = freshness.totalModels
+    ? Math.round((freshness.scoredModelCount / freshness.totalModels) * 100)
+    : 0;
+  const benchmarkCoverage = Object.values(freshness.benchmarkCoverage).sort(
+    (a, b) => b.coveragePercent - a.coveragePercent || a.name.localeCompare(b.name)
+  );
+
   return (
     <div
       className={`benchmarks-container${embedded ? ' is-embedded' : ''}`}
@@ -308,7 +309,7 @@ export function ModelBenchmarksComparator({
               <span className="bench-title-accent">Living Capability Radar.</span>
             </h1>
             <p className="bench-lede">
-              Side-by-side empirical performance across {AI_MODELS_DATA.length} frontier reasoning, coding, and open-weights models. Every score cites official technical reports or LMSYS evaluations.
+              Side-by-side empirical performance across {AI_MODELS_DATA.length} frontier reasoning, coding, and open-weights models. Scores are sourced from provider reports, benchmark owners, Artificial Analysis, Design Arena, and BenchLM; unreported results stay visible instead of being inferred.
             </p>
 
             {/* Brought down below the description */}
@@ -318,13 +319,13 @@ export function ModelBenchmarksComparator({
                 <span className="metric-lbl">Models Audited</span>
               </div>
               <div className="bench-metric-chip">
-                <span className="metric-val">{ALL_BENCHMARKS.length}</span>
-                <span className="metric-lbl">Benchmarks</span>
+                <span className="metric-val">{freshness.totalBenchmarkScores}</span>
+                <span className="metric-lbl">Published Scores</span>
               </div>
               <div className="bench-metric-chip is-verified">
                 <ShieldCheck size={15} className="text-emerald-400" />
-                <span className="metric-val">100%</span>
-                <span className="metric-lbl">Verified Sources</span>
+                <span className="metric-val">{scoredModelPercent}%</span>
+                <span className="metric-lbl">Models With Data</span>
               </div>
             </div>
           </div>
@@ -420,7 +421,7 @@ export function ModelBenchmarksComparator({
                       target="_blank"
                       rel="noreferrer"
                       className="active-tag-src"
-                      title={`View official report: ${m.name}`}
+                      title={`View catalogue record: ${m.name}`}
                     >
                       <span>Src</span>
                       <ExternalLink size={9} />
@@ -784,12 +785,37 @@ export function ModelBenchmarksComparator({
           </div>
         </div>
 
+        <div className="bench-coverage-panel" aria-label="Benchmark source coverage">
+          <div className="bench-coverage-heading">
+            <div>
+              <span className="bench-coverage-kicker">Coverage ledger</span>
+              <h4>What is actually reported?</h4>
+            </div>
+            <span className="bench-coverage-total">
+              {freshness.scoredModelCount}/{freshness.totalModels} models · {freshness.uniqueSourceUrlCount} source URLs
+            </span>
+          </div>
+          <div className="bench-coverage-grid">
+            {benchmarkCoverage.map((coverage) => (
+              <div className="bench-coverage-row" key={coverage.benchmarkId}>
+                <span className="bench-coverage-name" title={coverage.name}>{coverage.name}</span>
+                <span className="bench-coverage-track" aria-hidden="true">
+                  <span style={{ width: `${coverage.coveragePercent}%` }} />
+                </span>
+                <span className="bench-coverage-value">
+                  {coverage.modelCount}/{freshness.totalModels}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Audit Status Bar */}
         <div className="bench-audit-bar">
           <div className="audit-left">
             <ShieldCheck size={14} className="text-rose-400 flex-shrink-0" />
             <span>
-              All {AI_MODELS_DATA.length} frontier model benchmarks independently audited against published technical reports and LMSYS leaderboards.
+              {freshness.totalBenchmarkScores} source-backed scores across {freshness.scoredModelCount} models. {freshness.unscoredModelCount} models have no published result in the tracked boards yet; they are not scored by inference.
             </span>
           </div>
 

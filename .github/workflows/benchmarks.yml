@@ -51,13 +51,16 @@ jobs:
         run: |
           if git diff --quiet -- src/lib/benchmarks/data.ts; then
             echo "Catalogue is already current - nothing to propose."
-            exit 0
+          else
+            echo "Catalogue changed:"
+            git diff --stat -- src/lib/benchmarks/data.ts
           fi
-          echo "Catalogue changed:"
-          git diff --stat -- src/lib/benchmarks/data.ts
 
       - name: Verify the new catalogue still passes the suite
         run: node --experimental-strip-types tests/benchmarks.mjs
+
+      - name: Verify every citation is reachable
+        run: npm run benchmarks:audit-sources
 
       - name: Open a pull request
         uses: peter-evans/create-pull-request@v6

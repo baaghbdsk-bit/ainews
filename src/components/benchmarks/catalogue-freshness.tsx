@@ -35,13 +35,13 @@ export function CatalogueFreshness({ audit }: { audit: CatalogueFreshnessAudit }
   return (
     <div
       className="audit-freshness"
-      title={`Newest model in the catalogue: ${audit.newestModelReleaseDate}. Regenerated from the live OpenRouter and BenchLM catalogues.`}
+      title={`Catalogue snapshot: ${audit.lastAuditedDate}. Newest model release: ${audit.newestModelReleaseDate}. Regenerated from the live OpenRouter and BenchLM catalogues.`}
     >
       {stale ? <AlertCircle size={13} className="text-amber-400" /> : <CheckCircle2 size={13} className="text-emerald-400" />}
-      <span>
-        Catalogue current to {formatFreshnessDate(audit.newestModelReleaseDate)}
-        {typeof age === 'number' && age >= 0 ? ` (${age}d)` : ''}
-      </span>
+        <span>
+          Catalogue audited {formatFreshnessDate(audit.lastAuditedDate)}
+          {typeof age === 'number' && age >= 0 ? ` (${age}d)` : ''}
+        </span>
     </div>
   );
 }

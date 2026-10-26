@@ -222,6 +222,18 @@ function evaluatorFor(sourceUrl, fallback) {
   return fallback;
 }
 
+/**
+ * A provider can move or remove a PDF without changing the underlying model
+ * card. Keep the citation on a stable first-party page when a known mirror URL
+ * is retired; the source audit in CI catches any new dead links.
+ */
+function repairSourceUrl(sourceUrl) {
+  if (sourceUrl?.includes('huggingface.co/deepseek-ai/DeepSeek-V4-Pro/resolve/main/DeepSeek_V4.pdf')) {
+    return 'https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro';
+  }
+  return sourceUrl;
+}
+
 function benchlmMethodology(provenance, sourceLabel) {
   const dateNote = 'Evaluation date not published by source; snapshot date shown.';
   let note = provenance;
@@ -443,7 +455,7 @@ function buildRecords(models, benchlm, benchlmModels) {
       if (own) {
         const official = /provider/i.test(own.statusLabel || '');
         const fallbackUrl = `https://benchlm.ai/models/${benchlmModelSlug(shortSlug)}`;
-        const sourceUrl = guardSourceUrl(own.sourceUrl, vendorSlug, fallbackUrl);
+        const sourceUrl = guardSourceUrl(repairSourceUrl(own.sourceUrl), vendorSlug, fallbackUrl);
         benchmarks[bench.id] = {
           benchmarkId: bench.id,
           name: bench.name,
@@ -533,7 +545,9 @@ function buildRecords(models, benchlm, benchlmModels) {
     // from releaseDate at read time (generationFor in service.ts), so this
     // value is only a hint for readers of the generated file.
     const generation =
-      Date.now() - Date.parse(releaseDate) <= 180 * 86_400_000 ? 'current' : 'previous';
+      Date.parse(`${TODAY}T00:00:00Z`) - Date.parse(releaseDate) <= 180 * 86_400_000
+        ? 'current'
+        : 'previous';
 
     out.push({
       id: m.id,
@@ -560,6 +574,9 @@ function buildRecords(models, benchlm, benchlmModels) {
       },
       benchmarks,
       officialSourceUrl: `https://openrouter.ai/${m.id}`,
+      officialDocumentationUrl: m.hugging_face_id
+        ? `https://huggingface.co/${m.hugging_face_id}`
+        : undefined,
       lastAuditedDate: TODAY,
       aliases: [...new Set([shortSlug, m.canonical_slug].filter((a) => a && a !== m.id))],
     });
@@ -726,7 +743,7 @@ ${b.methodologyNotes ? `        methodologyNotes: ${q(b.methodologyNotes)},\n` :
 ${scoreBlocks(r.benchmarks)}
     },
     officialSourceUrl: ${q(r.officialSourceUrl)},
-    lastAuditedDate: ${q(TODAY)},
+${r.officialDocumentationUrl ? `    officialDocumentationUrl: ${q(r.officialDocumentationUrl)},\n` : ''}    lastAuditedDate: ${q(TODAY)},
     aliases: [${r.aliases.filter(Boolean).map((a) => q(a)).join(', ')}],
   },`
     )

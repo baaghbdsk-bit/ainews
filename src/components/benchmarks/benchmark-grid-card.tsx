@@ -59,6 +59,9 @@ export function BenchmarkGridCard({ benchmark, selectedModels }: BenchmarkGridCa
               {benchmark.category}
             </span>
             <span className="bench-card-unit">{isElo ? 'ELO Rating' : '% Benchmark Score'}</span>
+            <span className="bench-card-coverage" title={`${reportedModels.length} of ${selectedModels.length} compared models report this benchmark`}>
+              {reportedModels.length}/{selectedModels.length} reported
+            </span>
           </div>
           <h4 className="bench-card-title">{benchmark.name}</h4>
         </div>

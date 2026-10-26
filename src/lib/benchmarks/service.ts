@@ -15,10 +15,18 @@ export interface ModelQueryFilter {
 }
 
 export interface FreshnessAuditSummary extends CatalogueAudit {
-  /** Whole days between the newest model in the catalogue and today. */
+  /** Whole days between the catalogue snapshot and today. */
   catalogueAgeDays: number;
   /** True once the catalogue is older than the staleness budget. */
   stale: boolean;
+}
+
+export interface BenchmarkCoverage {
+  benchmarkId: string;
+  name: string;
+  scoreCount: number;
+  modelCount: number;
+  coveragePercent: number;
 }
 
 /**
@@ -27,12 +35,17 @@ export interface FreshnessAuditSummary extends CatalogueAudit {
  */
 export interface CatalogueAudit {
   totalModels: number;
+  scoredModelCount: number;
+  unscoredModelCount: number;
   currentGenCount: number;
   previousGenCount: number;
   openWeightsCount: number;
   totalBenchmarkScores: number;
   officialEvaluationCount: number;
   independentEvaluationCount: number;
+  benchmarkCoverage: Record<string, BenchmarkCoverage>;
+  sourceHostCoverage: Record<string, number>;
+  uniqueSourceUrlCount: number;
   /** Snapshot date recorded in the catalogue file. A claim, not a measurement. */
   lastAuditedDate: string;
   /**
@@ -129,8 +142,20 @@ export function validateModelRecord(model: AIModelRecord): { valid: boolean; err
     errors.push(`Model is missing core identification: ${model.id}`);
   }
 
-  if (!model.officialSourceUrl?.startsWith('http')) {
-    errors.push(`Model ${model.id} lacks a valid HTTP officialSourceUrl`);
+  if (!model.officialSourceUrl?.startsWith('https://')) {
+    errors.push(`Model ${model.id} lacks a valid HTTPS officialSourceUrl`);
+  }
+
+  if (model.officialDocumentationUrl && !model.officialDocumentationUrl.startsWith('https://')) {
+    errors.push(`Model ${model.id} has an invalid HTTPS officialDocumentationUrl`);
+  }
+
+  if (parseFullDate(model.specs.releaseDate) === null) {
+    errors.push(`Model ${model.id} has invalid releaseDate: ${model.specs.releaseDate}`);
+  }
+
+  if (parseFullDate(model.lastAuditedDate) === null) {
+    errors.push(`Model ${model.id} has invalid lastAuditedDate: ${model.lastAuditedDate}`);
   }
 
   if (model.specs.contextWindowTokens <= 0) {
@@ -158,6 +183,20 @@ export function validateModelRecord(model: AIModelRecord): { valid: boolean; err
     const definition = BENCHMARK_DEFINITIONS[key];
     if (!definition) {
       errors.push(`Model ${model.id} benchmark ${key} has no registered benchmark definition`);
+    } else {
+      if (bm.benchmarkId !== key) {
+        errors.push(`Model ${model.id} benchmark ${key} has mismatched benchmarkId: ${bm.benchmarkId}`);
+      }
+      if (bm.category !== definition.category) {
+        errors.push(
+          `Model ${model.id} benchmark ${key} category ${bm.category} does not match definition ${definition.category}`
+        );
+      }
+      if (bm.unit !== definition.unit) {
+        errors.push(
+          `Model ${model.id} benchmark ${key} unit ${bm.unit} does not match definition ${definition.unit}`
+        );
+      }
     }
 
     if (typeof bm.score !== 'number' || !Number.isFinite(bm.score)) {
@@ -168,8 +207,8 @@ export function validateModelRecord(model: AIModelRecord): { valid: boolean; err
       errors.push(`Model ${model.id} benchmark ${key} ELO score unreasonable: ${bm.score}`);
     }
 
-    if (!bm.sourceUrl?.startsWith('http')) {
-      errors.push(`Model ${model.id} benchmark ${key} lacks valid sourceUrl`);
+    if (!bm.sourceUrl?.startsWith('https://')) {
+      errors.push(`Model ${model.id} benchmark ${key} lacks valid HTTPS sourceUrl`);
     }
 
     const evaluationTimestamp = parseEvaluationDate(bm.evaluationDate);
@@ -300,10 +339,26 @@ export function getCatalogueAudit(): CatalogueAudit {
   let previousGenCount = 0;
   let openWeightsCount = 0;
   let newestRelease = 0;
+  const scoreCounts = new Map<string, { scoreCount: number; modelIds: Set<string> }>();
+  const sourceHosts = new Map<string, number>();
+  const sourceUrls = new Set<string>();
   const providersSet = new Set<string>();
+
+  const recordSource = (sourceUrl: string | undefined) => {
+    if (!sourceUrl) return;
+    sourceUrls.add(sourceUrl);
+    try {
+      const host = new URL(sourceUrl).hostname.replace(/^www\./, '');
+      sourceHosts.set(host, (sourceHosts.get(host) ?? 0) + 1);
+    } catch {
+      // validateModelRecord reports malformed URLs; keep the audit deterministic.
+    }
+  };
 
   for (const model of AI_MODELS_DATA) {
     providersSet.add(model.developer);
+    recordSource(model.officialSourceUrl);
+    recordSource(model.officialDocumentationUrl);
     if (generationFor(model) === 'current') currentGenCount++;
     else previousGenCount++;
     if (model.specs.isOpenWeights) openWeightsCount++;
@@ -315,17 +370,50 @@ export function getCatalogueAudit(): CatalogueAudit {
       totalBenchmarkScores++;
       if (score.evaluationType === 'Official Report') officialEvaluationCount++;
       if (score.evaluationType === 'Independent Evaluation') independentEvaluationCount++;
+
+      const coverage = scoreCounts.get(score.benchmarkId) ?? { scoreCount: 0, modelIds: new Set<string>() };
+      coverage.scoreCount++;
+      coverage.modelIds.add(model.id);
+      scoreCounts.set(score.benchmarkId, coverage);
+
+      recordSource(score.sourceUrl);
     }
   }
 
+  const benchmarkCoverage = Object.fromEntries(
+    Object.entries(BENCHMARK_DEFINITIONS).map(([benchmarkId, definition]) => {
+      const coverage = scoreCounts.get(benchmarkId);
+      const modelCount = coverage?.modelIds.size ?? 0;
+      return [
+        benchmarkId,
+        {
+          benchmarkId,
+          name: definition.name,
+          scoreCount: coverage?.scoreCount ?? 0,
+          modelCount,
+          coveragePercent: AI_MODELS_DATA.length
+            ? Math.round((modelCount / AI_MODELS_DATA.length) * 1000) / 10
+            : 0,
+        },
+      ];
+    })
+  );
+
   return {
     totalModels: AI_MODELS_DATA.length,
+    scoredModelCount: AI_MODELS_DATA.filter((m) => Object.keys(m.benchmarks).length > 0).length,
+    unscoredModelCount: AI_MODELS_DATA.filter((m) => Object.keys(m.benchmarks).length === 0).length,
     currentGenCount,
     previousGenCount,
     openWeightsCount,
     totalBenchmarkScores,
     officialEvaluationCount,
     independentEvaluationCount,
+    benchmarkCoverage,
+    sourceHostCoverage: Object.fromEntries(
+      [...sourceHosts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    ),
+    uniqueSourceUrlCount: sourceUrls.size,
     lastAuditedDate: catalogueAsOf(),
     newestModelReleaseDate: newestRelease
       ? new Date(newestRelease).toISOString().slice(0, 10)
@@ -345,9 +433,9 @@ export function getCatalogueAudit(): CatalogueAudit {
  */
 export function getFreshnessAuditSummary(): FreshnessAuditSummary {
   const audit = getCatalogueAudit();
-  const newest = Date.parse(audit.newestModelReleaseDate);
-  const catalogueAgeDays = Number.isFinite(newest)
-    ? Math.max(0, Math.floor((Date.now() - newest) / MS_PER_DAY))
+  const audited = Date.parse(audit.lastAuditedDate);
+  const catalogueAgeDays = Number.isFinite(audited)
+    ? Math.max(0, Math.floor((Date.now() - audited) / MS_PER_DAY))
     : Number.POSITIVE_INFINITY;
 
   return {

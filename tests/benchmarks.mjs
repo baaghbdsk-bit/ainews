@@ -142,20 +142,34 @@ const newestRelease = AI_MODELS_DATA.reduce(
   (newest, m) => (m.specs.releaseDate > newest ? m.specs.releaseDate : newest),
   ''
 );
+const snapshotAgeDays = Math.max(
+  0,
+  Math.floor((Date.now() - Date.parse(`${SNAPSHOT_DATE}T00:00:00Z`)) / 86_400_000)
+);
 assert(
   newestRelease > '',
   'Catalogue exposes a newest model release date',
   `newest: ${newestRelease}`
 );
 assert(
+  audit.catalogueAgeDays === snapshotAgeDays,
+  'Catalogue age is measured from the audit snapshot, not the newest release',
+  `age: ${audit.catalogueAgeDays}d (snapshot ${SNAPSHOT_DATE})`
+);
+assert(
   audit.catalogueAgeDays >= 0 && audit.catalogueAgeDays <= CATALOGUE_STALENESS_DAYS,
   `Catalogue is no older than ${CATALOGUE_STALENESS_DAYS} days`,
-  `age: ${audit.catalogueAgeDays}d (newest model ${newestRelease})`
+  `age: ${audit.catalogueAgeDays}d (snapshot ${SNAPSHOT_DATE})`
 );
 assert(
   audit.stale === (audit.catalogueAgeDays > CATALOGUE_STALENESS_DAYS),
   'Staleness flag agrees with the measured age',
   `stale=${audit.stale} age=${audit.catalogueAgeDays}d`
+);
+assert(
+  audit.scoredModelCount + audit.unscoredModelCount === audit.totalModels,
+  'Catalogue score coverage reconciles with model count',
+  `${audit.scoredModelCount} scored + ${audit.unscoredModelCount} unscored`
 );
 
 // -----------------------------------------------------------------
@@ -459,6 +473,15 @@ assert(
   missingDefinitionErrors[0]
 );
 
+const mismatchedDefinitionErrors = validationErrors((record, bm) => {
+  bm.benchmarkId = 'different-benchmark';
+});
+assert(
+  mismatchedDefinitionErrors.some((error) => error.includes('mismatched benchmarkId')),
+  'validateModelRecord rejects a score whose benchmarkId disagrees with its map key',
+  mismatchedDefinitionErrors[0]
+);
+
 const zeroScoreErrors = validationErrors((record, bm) => {
   bm.score = 0;
   bm.displayValue = '0%';
@@ -537,6 +560,18 @@ const incompleteDefs = defs.filter((id) => {
   return !d.name || !d.category || !d.description || !d.whatItMeasures || !d.limitations;
 });
 assert(incompleteDefs.length === 0, 'Definitions carry full methodology copy', incompleteDefs.join(', '));
+
+const coverageIds = Object.keys(audit.benchmarkCoverage);
+assert(
+  coverageIds.length === defs.length && coverageIds.every((id) => defs.includes(id)),
+  'Audit coverage includes every registered benchmark',
+  `${coverageIds.length} coverage rows`
+);
+assert(
+  coverageIds.every((id) => audit.benchmarkCoverage[id].scoreCount === AI_MODELS_DATA.filter((m) => m.benchmarks[id]).length),
+  'Audit coverage counts match the model records',
+  'score counts reconciled'
+);
 
 // 10. Quadrant matrix integrity: capability score validity & safe plottability
 const aaScores = AI_MODELS_DATA.map((m) => m.benchmarks['aa-intelligence']?.score).filter(
