@@ -1623,6 +1623,59 @@ html[data-theme="light"] .archive-timeline .story-expand-footer {
   }
 }
 
+/* ---- Sandwich menu: Connect + About live here so the bar stays at six ---- */
+.mobile-bottom-nav button.item-menu[aria-expanded="true"] {
+  color: #C084FC;
+}
+
+.mobile-nav-menu {
+  position: fixed;
+  right: 12px;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 172px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(24, 24, 27, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.mobile-nav-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: #A1A1AA;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.mobile-nav-menu button:hover,
+.mobile-nav-menu button.is-active {
+  background: rgba(255, 255, 255, 0.07);
+  color: #F8FAFC;
+}
+
+.mobile-nav-menu button.is-active {
+  box-shadow: inset 2px 0 0 #38BDF8;
+}
+
+@media (min-width: 1081px) {
+  .mobile-nav-menu {
+    display: none;
+  }
+}
+
 /* Mobile-only chrome — hidden on desktop, revealed inside the 1080px block. */
 .mobile-menu-button,
 .mobile-profile-button,

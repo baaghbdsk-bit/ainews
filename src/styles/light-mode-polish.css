@@ -439,6 +439,41 @@ html[data-theme="light"] .mobile-saved-badge {
   color: #FFFFFF !important;
 }
 
+/* Sandwich menu (Connect + About) */
+html[data-theme="light"] .mobile-nav-menu {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: #E2E8F0;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+html[data-theme="light"] .mobile-nav-menu button {
+  color: #52525B;
+}
+
+html[data-theme="light"] .mobile-nav-menu button:hover,
+html[data-theme="light"] .mobile-nav-menu button.is-active {
+  background: #F1F5F9;
+  color: #1A1530;
+}
+
+html[data-theme="light"] .mobile-nav-menu button.is-active {
+  box-shadow: inset 2px 0 0 #1E3A8A;
+}
+
+/* Floating filter pill — the dark rgba fallback would stay dark on a light
+   page, so give it a proper light surface. */
+html[data-theme="light"] .archive-mobile-filter {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #CBD5E1;
+  color: #18181b;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .archive-mobile-filter:hover {
+  border-color: #0D9488;
+  color: #0F766E;
+}
+
 /* 6. Semantic Search & Active Filter Chips in Light Mode */
 html[data-theme="light"] .semantic-search-banner {
   background: #EFF6FF !important;

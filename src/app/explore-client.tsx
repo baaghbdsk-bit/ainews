@@ -17,6 +17,7 @@ import {
   Flame,
   Info,
   Layers,
+  Menu,
   MessageSquare,
   Orbit,
   Radio,
@@ -987,6 +988,7 @@ export function ExploreClient({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
   const isNarrowLayout = useNarrowLayout();
   const [isLight, toggleTheme] = useTheme();
   const [feedMode, setFeedMode] = useState<FeedMode>("latest");
@@ -1106,6 +1108,8 @@ export function ExploreClient({
   const headerFilterBtnRef = useRef<HTMLButtonElement | null>(null);
   const mobileFilterBtnRef = useRef<HTMLButtonElement | null>(null);
   const mobileSheetRef = useRef<HTMLDivElement | null>(null);
+  const navMenuRef = useRef<HTMLDivElement | null>(null);
+  const navMenuBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const closeMobileFilter = useCallback(() => {
     setIsMobileFilterOpen(false);
@@ -1369,6 +1373,7 @@ export function ExploreClient({
         }
         if (isMobileFilterOpen) closeMobileFilter();
         if (isMobileSearchOpen) setIsMobileSearchOpen(false);
+        if (isNavMenuOpen) setIsNavMenuOpen(false);
       } else if (
         event.key === "/" &&
         !["INPUT", "TEXTAREA", "SELECT"].includes((document.activeElement?.tagName || "").toUpperCase())
@@ -1381,7 +1386,19 @@ export function ExploreClient({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFilterOpen, isMobileFilterOpen, isMobileSearchOpen, closeMobileFilter]);
+  }, [isFilterOpen, isMobileFilterOpen, isMobileSearchOpen, isNavMenuOpen, closeMobileFilter]);
+
+  // Sandwich menu: tap outside (or on another control) dismisses it.
+  useEffect(() => {
+    if (!isNavMenuOpen) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (navMenuRef.current?.contains(target) || navMenuBtnRef.current?.contains(target)) return;
+      setIsNavMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isNavMenuOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1428,6 +1445,12 @@ export function ExploreClient({
 
   const hasActiveFilters =
     activeTopic !== "all" || activeYear !== "all" || activeMonth !== "all" || search.trim() !== "" || activeCompany !== "all";
+
+  // Year/month/company/topic filters only narrow the timeline feeds; digest
+  // computes from allStories and benchmarks/feedback/about show no timeline,
+  // so the filter pill and the active-chips bar hide there.
+  const filtersApplyToFeed =
+    feedMode === "latest" || feedMode === "trending" || feedMode === "saved";
 
   const clearFilters = () => {
     setSearch("");
@@ -2209,7 +2232,7 @@ export function ExploreClient({
           </section>
           )}
 
-          {feedMode !== "benchmarks" && hasActiveFilters && activeFilterChips.length > 0 && (
+          {filtersApplyToFeed && hasActiveFilters && activeFilterChips.length > 0 && (
             <div className="timeline-active-filters" role="region" aria-label="Active filters">
               <span className="active-filters-label">Active filters:</span>
               <div className="stream-active-chips">
@@ -2453,44 +2476,71 @@ export function ExploreClient({
           <span className="nav-label">Saved</span>
         </button>
         <button
-          className={`item-feedback ${feedMode === "feedback" ? "is-active" : ""}`}
-          onClick={() => {
-            setFeedMode("feedback");
-            setActiveTopic("all");
-            setActiveTimelineIndex(0);
-          }}
+          ref={navMenuBtnRef}
+          aria-expanded={isNavMenuOpen}
+          aria-haspopup="menu"
+          aria-label="More destinations"
+          className="item-menu"
+          onClick={() => setIsNavMenuOpen((open) => !open)}
           type="button"
         >
-          <MessageSquare aria-hidden="true" size={19} />
-          <span className="nav-label">Connect</span>
+          <Menu aria-hidden="true" size={19} />
+          <span className="nav-label">More</span>
         </button>
-        <button
-          className={`item-about ${feedMode === "about" ? "is-active" : ""}`}
-          onClick={() => {
-            setFeedMode("about");
-            setActiveTopic("all");
-            setActiveTimelineIndex(0);
-          }}
-          type="button"
-        >
-          <Info aria-hidden="true" size={19} />
-          <span className="nav-label">About</span>
-        </button>
+      </nav>
+
+      {isNavMenuOpen && (
+        <div ref={navMenuRef} className="mobile-nav-menu" role="menu">
+          <button
+            aria-label="Feedback and Connect"
+            className={feedMode === "feedback" ? "is-active" : ""}
+            onClick={() => {
+              setFeedMode("feedback");
+              setActiveTopic("all");
+              setActiveTimelineIndex(0);
+              setIsNavMenuOpen(false);
+            }}
+            role="menuitem"
+            type="button"
+          >
+            <MessageSquare aria-hidden="true" size={17} />
+            <span>Connect</span>
+          </button>
+          <button
+            aria-label="About NeuBench"
+            className={feedMode === "about" ? "is-active" : ""}
+            onClick={() => {
+              setFeedMode("about");
+              setActiveTopic("all");
+              setActiveTimelineIndex(0);
+              setIsNavMenuOpen(false);
+            }}
+            role="menuitem"
+            type="button"
+          >
+            <Info aria-hidden="true" size={17} />
+            <span>About</span>
+          </button>
+        </div>
+      )}
+
+      {/* Floating filter pill — only where filters actually narrow the list. */}
+      {filtersApplyToFeed && (
         <button
           ref={mobileFilterBtnRef}
           aria-controls="mobile-filter-panel"
           aria-expanded={isMobileFilterOpen}
-          className={`item-filter ${activeFilterChips.length > 0 ? "has-filters" : ""}`}
+          className="archive-mobile-filter"
           onClick={handleOpenMobileFilter}
           type="button"
         >
-          <div style={{ position: "relative", display: "inline-flex" }}>
-            <SlidersHorizontal aria-hidden="true" size={19} />
-            {activeFilterChips.length > 0 && <span className="mobile-saved-badge">{activeFilterChips.length}</span>}
-          </div>
-          <span className="nav-label">Filter</span>
+          <SlidersHorizontal aria-hidden="true" size={14} />
+          <span>Filter</span>
+          {activeFilterChips.length > 0 && (
+            <span className="filter-mobile-count">{activeFilterChips.length}</span>
+          )}
         </button>
-      </nav>
+      )}
 
       {isMobileFilterOpen && (
         <div
