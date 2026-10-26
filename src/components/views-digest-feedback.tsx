@@ -35,6 +35,7 @@ import {
 import type { StoryDisplay } from '@/lib/timeline-shared';
 import { useAuth } from '@/lib/auth/store';
 import { showGuestNotice } from '@/components/auth/guest-notice';
+import { selectDigestHighlights } from '@/lib/digest-priority';
 
 export interface DailyDigestData {
   totalStories: number;
@@ -155,25 +156,9 @@ export function computeDailyDigest(stories: StoryDisplay[]): DailyDigestData | n
 
   const topCompanies = Array.from(companySet).slice(0, 6);
 
-  // Curate 5 diverse, high-impact stories for the plain-English briefing
-  const seenCompanies = new Set<string>();
-  const highlights: StoryDisplay[] = [];
-  for (const story of recent) {
-    const compKey = story.company?.toLowerCase() || story.source?.toLowerCase() || '';
-    if (compKey && !seenCompanies.has(compKey)) {
-      seenCompanies.add(compKey);
-      highlights.push(story);
-    }
-    if (highlights.length >= 5) break;
-  }
-  if (highlights.length < 5) {
-    for (const story of recent) {
-      if (!highlights.some((h) => h.id === story.id)) {
-        highlights.push(story);
-      }
-      if (highlights.length >= 5) break;
-    }
-  }
+  // Curate five high-impact stories first, using company diversity only as a
+  // secondary constraint so major launches cannot be hidden by routine posts.
+  const highlights = selectDigestHighlights(recent);
 
   return {
     totalStories: recent.length,
