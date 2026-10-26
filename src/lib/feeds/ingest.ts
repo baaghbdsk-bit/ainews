@@ -288,12 +288,16 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     rateLimited = rateLimited || images.rateLimited;
   }
 
-  // 8. Tell the timeline to re-resolve within the hour.
-  revalidatePath('/');
-  revalidateTag(AI_NEWS_TAG, 'max');
-  // The timeline also reads published rows directly (getPublishedStories), which
-  // is cached under STORIES_TAG — invalidate it too so new/updated decks show up.
-  revalidateTag(STORIES_TAG, 'max');
+  // 8. Tell the timeline to re-resolve within the hour (only inside Next.js).
+  try {
+    revalidatePath('/');
+    revalidateTag(AI_NEWS_TAG, 'max');
+    // The timeline also reads published rows directly (getPublishedStories), which
+    // is cached under STORIES_TAG — invalidate it too so new/updated decks show up.
+    revalidateTag(STORIES_TAG, 'max');
+  } catch {
+    // Running outside the Next.js runtime (e.g. CLI/GitHub Actions) — skip.
+  }
 
   return {
     fetched,

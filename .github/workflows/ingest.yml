@@ -1,25 +1,8 @@
-name: Ingest AI news (every 30 minutes)
-
-# Fires every 30 minutes and pushes the latest RSS feeds into Supabase, extracts
-# article bodies, generates reader-facing summaries, then revalidates the
-# timeline. Runs on the free tier; summaries use an LLM only if the *deployment*
-# has LLM_API_KEY set (otherwise a zero-cost extractive fallback is used).
-#
-# Secrets required in GitHub -> Settings -> Secrets and variables -> Actions:
-#   CRON_SECRET              - bearer token the route checks (any long random string)
-#   NEXT_PUBLIC_SUPABASE_URL - your Supabase project URL (legacy, unused by this workflow)
-#   SUPABASE_SERVICE_ROLE_KEY - server key (legacy, unused by this workflow)
-#   INGEST_URL               - no longer used; the canonical endpoint is hardcoded below.
-#                              Update the secret to https://neubench.vercel.app/api/cron/ingest
-#                              if you keep referencing it elsewhere.
-#
-# Note: the ingest job executes inside the deployed app, so LLM_API_KEY (if
-# used) must be set in the *host* environment (e.g. Vercel project settings),
-# not here.
+name: Ingest AI news (hourly)
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -29,111 +12,39 @@ jobs:
   ingest:
     runs-on: ubuntu-latest
     env:
-      CRON_SECRET: ${{ secrets.CRON_SECRET }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci --no-audit --no-fund
-
-      - name: Run ingestion job
-        env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      - name: Full ingest
+        run: node --experimental-strip-types scripts/ingest.mjs full
+      - name: Enrich backlog
         run: |
-          set -euo pipefail
-
-          # Canonical endpoint. Do not build this from a secret and do not follow
-          # redirects: an unexpected 3xx must fail the job instead of being
-          # silently accepted.
-          ENDPOINT="https://neubench.vercel.app/api/cron/ingest"
-          TIMEOUT_SECONDS=590
-
-          ingest() {
-            local url="$1"
-            local body="/tmp/ingest-response.json"
-            local code
-
-            code="$(curl --silent --show-error --fail --max-redirs 0 \
-              --connect-timeout 10 --max-time "${TIMEOUT_SECONDS}" \
-              -H "Authorization: Bearer ${CRON_SECRET}" \
-              -o "${body}" -w '%{http_code}' "${url}")" || {
-                echo "::error::curl request failed for ${url}" >&2
-                return 1
-              }
-
-            if [[ "${code}" != "200" ]]; then
-              echo "::error::Unexpected HTTP status ${code} from ${url}" >&2
-              cat "${body}" >&2 || true
-              return 1
-            fi
-
-            if ! jq -e . "${body}" >/dev/null 2>&1; then
-              echo "::error::Response is not valid JSON from ${url}" >&2
-              cat "${body}" >&2 || true
-              return 1
-            fi
-
-            if [[ "$(jq -r '.ok // false' "${body}")" != "true" ]]; then
-              echo "::error::Ingestion reported an application-level failure for ${url}" >&2
-              jq . "${body}" >&2 || cat "${body}" >&2
-              return 1
-            fi
-
-            cat "${body}"
-          }
-
-          echo "== Full ingest (fetch feeds + insert + enrich) =="
-          ingest "${ENDPOINT}" | tee /tmp/ingest.json
-          echo
-
-          # Each call only enriches a bounded batch (see INGEST_ENRICH_LIMIT), so
-          # keep calling the cheap enrich-only mode until the backlog is drained.
-          remaining="$(jq -r '.remaining // 0' /tmp/ingest.json)"
           for i in $(seq 1 12); do
-            if [[ -z "${remaining}" || "${remaining}" == "0" ]]; then
-              break
-            fi
-            echo "== Enrich pass ${i} (remaining: ${remaining}) =="
-            ingest "${ENDPOINT}?mode=enrich" | tee /tmp/ingest.json
-            echo
-            remaining="$(jq -r '.remaining // 0' /tmp/ingest.json)"
-            rate_limited="$(jq -r '.rateLimited // false' /tmp/ingest.json)"
-            enriched="$(jq -r '.enriched // 0' /tmp/ingest.json)"
-            if [[ "${rate_limited}" == "true" && "${enriched}" == "0" ]]; then
-              echo "A source is throttling us (HTTP 429); stopping early to retry next run."
-              break
-            fi
+            out=$(node --experimental-strip-types scripts/ingest.mjs enrich)
+            echo "$out"
+            remaining=$(echo "$out" | jq -r '.remaining // 0')
+            [[ -z "$remaining" || "$remaining" == "0" ]] && break
           done
-
-          # Generate reader-facing summaries (LLM when the deployment has an
-          # LLM_API_KEY, else the extractive fallback). Each call handles a
-          # bounded batch, so keep calling until the backlog is drained.
+      - name: Summarize backlog
+        run: |
           for i in $(seq 1 12); do
-            echo "== Summarize pass ${i} =="
-            ingest "${ENDPOINT}?mode=summarize" | tee /tmp/ingest.json
-            echo
-            summary_remaining="$(jq -r '.summaryRemaining // 0' /tmp/ingest.json)"
-            if [[ "${summary_remaining}" == "0" ]]; then
-              break
-            fi
+            out=$(node --experimental-strip-types scripts/ingest.mjs summarize)
+            echo "$out"
+            sr=$(echo "$out" | jq -r '.summaryRemaining // 0')
+            [[ "$sr" == "0" ]] && break
           done
-
-          # Fill lead images for rows that still have none: the feed item's own
-          # image when it has one, otherwise the source page's og:image. Each
-          # call handles a bounded batch, so keep calling until it is drained.
+      - name: Images backlog
+        run: |
           for i in $(seq 1 6); do
-            echo "== Images pass ${i} =="
-            ingest "${ENDPOINT}?mode=images&imagesLimit=40" | tee /tmp/ingest.json
-            echo
-            images_remaining="$(jq -r '.imagesRemaining // 0' /tmp/ingest.json)"
-            images_filled="$(jq -r '.imagesFilled // 0' /tmp/ingest.json)"
-            if [[ "${images_remaining}" == "0" || "${images_filled}" == "0" ]]; then
-              break
-            fi
+            out=$(node --experimental-strip-types scripts/ingest.mjs images)
+            echo "$out"
+            ir=$(echo "$out" | jq -r '.imagesRemaining // 0')
+            [[ "$ir" == "0" ]] && break
           done
