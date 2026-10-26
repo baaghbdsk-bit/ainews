@@ -2262,8 +2262,8 @@ html[data-theme="light"] .story-article-source strong {
 
 /* ==========================================================================
    MOBILE & TABLET TIMELINE — text-first cards.
-   The date node shrinks to a compact chip, the thumbnail is gone, and the
-   sole CTA ("Original article") becomes a full-width tap target on phones.
+   The date node shrinks to a compact chip (the rail re-centres on it), the
+   thumbnail is gone, and body text scales up a notch for small screens.
    ========================================================================== */
 
 @media (max-width: 1080px) {
@@ -2277,6 +2277,11 @@ html[data-theme="light"] .story-article-source strong {
   .archive-timeline .story-row {
     padding: 16px 16px 16px 18px;
     gap: 14px;
+  }
+
+  /* Re-centre the rail on the smaller node: 18px card padding + 24px node radius = 42px. */
+  .archive-timeline .timeline-list::before {
+    left: 41px;
   }
 
   .archive-timeline .timeline-node {
@@ -2294,16 +2299,43 @@ html[data-theme="light"] .story-article-source strong {
 
   .archive-timeline .timeline-node.node-latest::after {
     top: -10px;
-    font-size: 7px;
+    font-size: 8px;
+  }
+
+  .archive-timeline .story-title,
+  .archive-timeline .story-title-text {
+    font-size: 18px;
   }
 
   .archive-timeline .story-preview {
+    font-size: 14px;
     -webkit-line-clamp: 4;
     line-clamp: 4;
   }
 
+  .archive-timeline .story-meta {
+    font-size: 11.5px;
+  }
+
+  .archive-timeline .story-company-tag {
+    font-size: 13px;
+  }
+
+  .archive-timeline .story-read-time {
+    font-size: 12.5px;
+  }
+
+  .archive-timeline .trending-rank-badge {
+    font-size: 12px;
+  }
+
+  .archive-timeline .story-action-btn {
+    font-size: 13px;
+  }
+
   .archive-timeline .read-link {
     min-height: 36px;
+    font-size: 14px;
   }
 }
 
@@ -2315,49 +2347,40 @@ html[data-theme="light"] .story-article-source strong {
     border-radius: 16px;
   }
 
+  /* 16px card padding + 21px node radius = 37px node centre. */
+  .archive-timeline .timeline-list::before {
+    left: 36px;
+  }
+
   .archive-timeline .timeline-node {
     width: 42px;
     height: 42px;
   }
 
   .archive-timeline .timeline-node .date-day {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .archive-timeline .timeline-node .date-month {
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: 0.08em;
   }
 
   .archive-timeline .story-title,
   .archive-timeline .story-title-text {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .archive-timeline .story-preview {
-    font-size: 13px;
+    font-size: 14px;
     -webkit-line-clamp: 3;
     line-clamp: 3;
     margin: 8px 0 12px;
   }
 
-  /* Socials wrap onto their own row; the CTA takes the full width below them. */
-  .archive-timeline .story-actions-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .archive-timeline .story-actions-left {
-    justify-content: flex-start;
-  }
-
-  .archive-timeline .story-actions-right {
-    margin-left: 0;
-  }
-
+  /* Single row while it fits; the bar already wraps, so the CTA drops to its
+     own line only on very narrow screens — never force-stacked. */
   .archive-timeline .read-link {
-    justify-content: center;
     min-height: 44px;
     font-size: 14px;
   }
