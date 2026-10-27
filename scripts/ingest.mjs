@@ -14,5 +14,15 @@ function optsFor(m) {
   };
 }
 
-const result = await runIngest(optsFor(mode));
-console.log(JSON.stringify(result));
+async function main() {
+  try {
+    const result = await runIngest(optsFor(mode));
+    console.log(JSON.stringify(result));
+    process.exit(0);
+  } catch (err) {
+    console.error('Ingest error:', err);
+    process.exit(1);
+  }
+}
+
+main();
