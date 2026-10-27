@@ -177,11 +177,23 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
 
     // 3. Skip anything already stored, regardless of status, so a draft can
     //    never be re-imported as a second published row.
-    const { data: existing = [], error: queryErr } = await supabase
-      .from('stories')
-      .select('source_url, slug');
-    if (queryErr) {
-      errors.push(`Failed to read existing stories: ${queryErr.message}`);
+    // Supabase/PostgREST caps a single select at 1000 rows, so page through
+    // the whole table; otherwise dedup only sees the first page and re-imports
+    // duplicates for any story beyond row 1000.
+    const existing: { source_url: string; slug: string }[] = [];
+    let existingErr: { message: string } | null = null;
+    for (let from = 0; ; from += 1000) {
+      const { data: page, error: pageErr } = await supabase
+        .from('stories')
+        .select('source_url, slug')
+        .range(from, from + 999);
+      if (pageErr) { existingErr = pageErr; break; }
+      if (!page || page.length === 0) break;
+      existing.push(...(page as { source_url: string; slug: string }[]));
+      if (page.length < 1000) break;
+    }
+    if (existingErr) {
+      errors.push(`Failed to read existing stories: ${existingErr.message}`);
       return {
         fetched,
         newItems: 0,
@@ -197,10 +209,10 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
       };
     }
     const existingUrls = new Set<string>(
-      (existing as { source_url: string }[]).map((r) => canonicalizeUrl(r.source_url)),
+      existing.map((r) => canonicalizeUrl(r.source_url)),
     );
     const existingSlugs = new Set<string>(
-      (existing as { slug: string }[]).map((r) => r.slug),
+      existing.map((r) => r.slug),
     );
     const toInsert = unique.filter(
       (s) =>

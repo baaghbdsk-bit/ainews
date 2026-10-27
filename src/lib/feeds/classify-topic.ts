@@ -1,4 +1,4 @@
-export type Topic = 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
+﻿export type Topic = 'Models' | 'Products' | 'Business' | 'Research' | 'Policy' | 'Dev Tools & Infra';
 
 const POLICY_PATTERNS = [
   /\b(?:antitrust|ftc|fcc|sec|eu ai act|copyright|infringement|lawsuit|sued|suing|court|judicial|injunction)\b/i,
@@ -9,6 +9,13 @@ const POLICY_PATTERNS = [
   /\b(?:legal liability|defamation|privacy violation|data protection|gdpr)\b/i,
   /\b(?:ai safety(?!\s+research)|aligned ai|existential risk|x-risk|takeover risk|control problem)\b/i,
   /\b(?:red team(?:ing)?|responsible ai|model spec|constitutional ai safety|ai ethics)\b/i,
+  /\b(?:sues|safety concerns?|safety risks?|safety incidents?|safety failures?|safety reports?|safety monitoring|safety monitors?|disabled safety|safety (?:pause|halt|blueprint|bug bounty|level [1-4]|protections?|standards?|governance|review|audit|overview))\b/i,
+  /\b(?:policy|governance|responsible scaling|safety level)\b/i,
+  /\b(?:child|teen|youth|community) safety\b/i,
+  /\b(?:securing|security council|bug bounty|blueprint|action plan)\b/i,
+  /\b(?:shared|consistent|industry|frontier|advanced ai|ai) standards?\b/i,
+  /\bstandards? for (?:the next phase|advanced ai|ai)\b/i,
+  /\b(?:responsible and safe use|safe use of (?:ai|technology))\b/i,
 ];
 
 const RESEARCH_PATTERNS = [
@@ -59,6 +66,7 @@ const BUSINESS_PATTERNS = [
   /\b(?:revenue|profit|earnings|quarterly results|layoffs?|downsizing|billion-dollar|million-dollar)\b/i,
   /\b(?:stock|shares|invests? in|investment)\b/i,
   /\b(?:unicorns?|startup raises|venture capital|vc round)\b/i,
+  /\b(?:board|trustee|foundation board)\b/i,
 ];
 
 // Dev Tools & Infra Patterns: SDKs, APIs, frameworks, IDEs, cloud/ML platforms, hardware
@@ -91,7 +99,7 @@ function scorePatterns(text: string, patterns: RegExp[]): number {
  * Research, Policy, Dev Tools & Infra) based on strict linguistic patterns in
  * the title and content.
  *
- * Free, deterministic, and instant — prevents commercial apps, corporate news,
+ * Free, deterministic, and instant â€” prevents commercial apps, corporate news,
  * and platform integrations from leaking into the Models category.
  */
 export function classifyStoryTopic(input: {
@@ -123,6 +131,7 @@ export function classifyStoryTopic(input: {
   const maxScore = Math.max(policyScore, researchScore, modelScore, productScore, businessScore, devtoolsScore);
 
   if (maxScore >= 2) {
+    if (policyScore === maxScore && policyScore > researchScore) return 'Policy';
     if (researchScore === maxScore) return 'Research';
     if (policyScore === maxScore) return 'Policy';
     if (businessScore === maxScore) return 'Business';
@@ -131,6 +140,29 @@ export function classifyStoryTopic(input: {
     if (productScore === maxScore) return 'Products';
   }
 
+  // Safety/policy stories with no stronger signal should not fall through to
+  // the (often model/product-oriented) fallback topic.
+  if (/\b(?:safety|safe|policy|governance|securing)\b/i.test(input.title)) {
+    return 'Policy';
+  }
+
   // Fallback to designated topic or default to Products
   return input.fallbackTopic ?? 'Products';
 }
+
+export function classifyStoryTopicDebug(input: { title: string; summary?: string | null; fallbackTopic?: Topic; }): { topic: Topic; scores: Record<string, number>; } {
+  const title = input.title.toLowerCase();
+  const text = `${input.title} ${input.summary ?? ''}`.toLowerCase();
+  const policyScore = scorePatterns(title, POLICY_PATTERNS) * 2 + scorePatterns(text, POLICY_PATTERNS);
+  const researchScore = scorePatterns(title, RESEARCH_PATTERNS) * 2 + scorePatterns(text, RESEARCH_PATTERNS);
+  let modelScore = scorePatterns(title, MODEL_PATTERNS) * 2 + scorePatterns(text, MODEL_PATTERNS);
+  modelScore += scorePatterns(title, NAMED_MODEL_RELEASE_PATTERNS) * 2;
+  modelScore += scorePatterns(text, NAMED_MODEL_RELEASE_PATTERNS);
+  let productScore = scorePatterns(title, PRODUCT_PATTERNS) * 2 + scorePatterns(text, PRODUCT_PATTERNS);
+  const businessScore = scorePatterns(title, BUSINESS_PATTERNS) * 2 + scorePatterns(text, BUSINESS_PATTERNS);
+  const devtoolsScore = scorePatterns(title, DEVTOOLS_PATTERNS) * 2 + scorePatterns(text, DEVTOOLS_PATTERNS);
+  const hasProductOverrides = scorePatterns(title, PRODUCT_OVERRIDES) > 0 || scorePatterns(text, PRODUCT_OVERRIDES) >= 2;
+  if (hasProductOverrides) { productScore += 3; modelScore = Math.max(0, modelScore - 2); }
+  return { topic: classifyStoryTopic(input), scores: { policyScore, researchScore, modelScore, productScore, businessScore, devtoolsScore } };
+}
+
