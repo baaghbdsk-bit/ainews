@@ -258,7 +258,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GuestNotice />
         <PwaRegister />
         <PwaInstallPrompt />
-        <Analytics />
+        {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
       </body>
     </html>
   );
