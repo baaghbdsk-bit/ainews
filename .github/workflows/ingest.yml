@@ -23,11 +23,11 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: Full ingest
-        run: node --experimental-strip-types scripts/ingest.mjs full
+        run: npx tsx scripts/ingest.mjs full
       - name: Enrich backlog
         run: |
           for i in $(seq 1 12); do
-            out=$(node --experimental-strip-types scripts/ingest.mjs enrich)
+            out=$(npx tsx scripts/ingest.mjs enrich)
             echo "$out"
             remaining=$(echo "$out" | jq -r '.remaining // 0')
             [[ -z "$remaining" || "$remaining" == "0" ]] && break
@@ -35,7 +35,7 @@ jobs:
       - name: Summarize backlog
         run: |
           for i in $(seq 1 12); do
-            out=$(node --experimental-strip-types scripts/ingest.mjs summarize)
+            out=$(npx tsx scripts/ingest.mjs summarize)
             echo "$out"
             sr=$(echo "$out" | jq -r '.summaryRemaining // 0')
             [[ "$sr" == "0" ]] && break
@@ -43,7 +43,7 @@ jobs:
       - name: Images backlog
         run: |
           for i in $(seq 1 6); do
-            out=$(node --experimental-strip-types scripts/ingest.mjs images)
+            out=$(npx tsx scripts/ingest.mjs images)
             echo "$out"
             ir=$(echo "$out" | jq -r '.imagesRemaining // 0')
             [[ "$ir" == "0" ]] && break
