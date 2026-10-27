@@ -214,44 +214,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               transition: none;
             }
           }
-          #neubench-loading {
-            position: fixed; inset: 0; z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-            background: #000000;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
-          }
-          html[data-theme="light"] #neubench-loading { background: #ffffff; }
-          #neubench-loading.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-          .nb-loader-logo { display: inline-flex; align-items: center; gap: 0.06em; font-family: var(--font-geist-sans, "Geist", system-ui, sans-serif); font-weight: 600; font-size: 48px; letter-spacing: 0.02em; color: #F5F5F5; line-height: 1; user-select: none; }
-          html[data-theme="light"] .nb-loader-logo { color: #18181b; }
-          .nb-loader-letters { display: inline-block; }
-          .nb-loader-e { display: inline-flex; align-items: center; width: 120px; height: 138px; flex: 0 0 auto; }
-          .nb-loader-e svg { width: 100%; height: 100%; display: block; overflow: visible; }
-          .nb-loader-bar { transform-box: fill-box; transform-origin: left center; opacity: 0.3; transform: scaleX(0.3); animation: nb-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important; }
-          .nb-loader-bar--blue { animation-delay: 150ms; }
-          .nb-loader-bar--violet { animation-delay: 300ms; }
-          .nb-loader-bar--teal { animation-delay: 450ms; }
-          @keyframes nb-bar-expand {
-            0% { opacity: 0.3; transform: scaleX(0.3); }
-            25% { opacity: 1; transform: scaleX(1.05); }
-            40%, 60% { opacity: 1; transform: scaleX(1); }
-            75% { opacity: 0.3; transform: scaleX(0.3); }
-            100% { opacity: 0.3; transform: scaleX(0.3); }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            .nb-loader-bar { animation: nb-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important; opacity: 0.3; transform: scaleX(0.3); }
-          }
-        `}</style>
-        <div id="neubench-loading" suppressHydrationWarning>
-          <span className="nb-loader-e">
-            <svg viewBox="0 0 65 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect className="nb-loader-bar nb-loader-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#4777FF" />
-              <rect className="nb-loader-bar nb-loader-bar--violet" x="0" y="28" width="65" height="16" rx="8" fill="#8055F5" />
-              <rect className="nb-loader-bar nb-loader-bar--teal" x="0" y="56" width="65" height="16" rx="8" fill="#13DCCB" />
-            </svg>
-          </span>
-        </div>
-        <script dangerouslySetInnerHTML={{ __html: "(function(){var el=document.getElementById('neubench-loading');if(!el)return;function hide(){el.classList.add('is-hidden');setTimeout(function(){el.remove();},400);}if(document.readyState==='complete'){hide();}else{window.addEventListener('load',hide,{once:true});setTimeout(hide,4000);}})();" }} />
+          `}</style>
         {children}
         <WelcomeGate />
         <AuthDialog />
