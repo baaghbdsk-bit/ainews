@@ -17,6 +17,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  normKey,
+  lookupBenchSafe,
+  passesIdentitySafetyCheck,
+} from './model-matching.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = path.join(ROOT, 'scratch', 'models.json');
@@ -104,22 +109,7 @@ const VENDORS = {
   microsoft: ['Microsoft', 'blue'],
 };
 
-const EFFORT = /\b(high|xhigh|max|medium|low|none|minimal|unknown|thinking|non-?thinking|reasoning|preview|experimental)\b/g;
-
-function normKey(input) {
-  return String(input || '')
-    .toLowerCase()
-    .replace(/^https?:\/\/\S+$/, '')
-    .replace(/\d{4}-\d{2}-\d{2}/g, '')
-    .replace(/\d{8}/g, '')
-    .replace(/_\d+k\b/g, '')
-    .replace(/[-_]\d+b(?:-a\d+b)?\b/g, '')
-    .replace(EFFORT, '')
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-    .sort()
-    .join('');
-}
+// normKey is imported from ./model-matching.mjs with safe normalization and variant/size preservation
 
 function firstSentence(text, max = 132) {
   const clean = String(text || '').replace(/\s+/g, ' ').replace(/[*_`#]/g, '').trim();
@@ -317,15 +307,6 @@ async function loadBenchlmScores() {
   return out;
 }
 
-function lookupBench(map, candidates) {
-  if (!map) return null;
-  const keys = candidates.map(normKey).filter(Boolean);
-  for (const k of keys) {
-    const hit = map.get(k);
-    if (hit) return hit;
-  }
-  return null;
-}
 
 const MODEL_CACHE = path.join(ROOT, 'scratch', 'benchlm-models.json');
 
@@ -421,7 +402,7 @@ async function loadBenchlmModels(slugs) {
 
 const SUFFIX = /:(free|batch|extended|thinking|online|nitro|floor|exacto)$/;
 
-function buildRecords(models, benchlm, benchlmModels) {
+function buildRecords(models, benchlm, benchlmModels, auditLogs = { ambiguous: [], rejected: [] }) {
   const since = Date.parse(`${SINCE}T00:00:00Z`);
   const seen = new Set();
   const out = [];
@@ -444,14 +425,22 @@ function buildRecords(models, benchlm, benchlmModels) {
     const completionPrice = perMillion(m.pricing?.completion);
     const name = m.name.replace(/^[^:]+:\s*/, '').trim();
     const shortSlug = m.id.split('/')[1] || m.id;
-    const candidates = [shortSlug, m.canonical_slug?.split('/')[1], name];
+    const candidates = [
+      m.id,
+      `${vendorSlug}-${shortSlug}`,
+      shortSlug,
+      m.canonical_slug,
+      m.canonical_slug?.split('/')[1],
+      name,
+      m.name,
+    ].filter(Boolean);
 
     const benchmarks = {};
     const page = benchlmModels[benchlmModelSlug(shortSlug)] || null;
 
     for (const bench of BENCHLM_BENCHMARKS) {
       const own = page?.scores?.[bench.id];
-      const hit = lookupBench(benchlm[bench.id], candidates);
+      const hit = lookupBenchSafe(benchlm[bench.id], m, candidates, bench.id, auditLogs);
       if (own) {
         const official = /provider/i.test(own.statusLabel || '');
         const fallbackUrl = `https://benchlm.ai/models/${benchlmModelSlug(shortSlug)}`;
@@ -630,9 +619,19 @@ function buildRecords(models, benchlm, benchlmModels) {
           };
           break;
         }
-        // Fallback: substring match for cases like "opus55" in "claudeopus55"
+        // Fallback: unambiguous match with strict identity safety check (no generic substring merging)
         for (const [key, val] of modelBest) {
           if (cand.includes(key) || key.includes(cand)) {
+            const safety = passesIdentitySafetyCheck(val.system, rec.id.split('/')[1] || rec.id);
+            if (!safety.ok) {
+              auditLogs.rejected.push({
+                modelId: rec.id,
+                benchId: 'aa-coding-agent',
+                candidate: val.system,
+                reason: safety.reason,
+              });
+              continue;
+            }
             rec.benchmarks['aa-coding-agent'] = {
               benchmarkId: 'aa-coding-agent',
               name: 'AA Coding Agent Index v2.0',
@@ -785,12 +784,34 @@ const slugs = models
 const benchlmModels = await loadBenchlmModels(slugs);
 console.log(`  model pages: ${Object.keys(benchlmModels).length}`);
 
-const records = buildRecords(models, benchlm, benchlmModels);
+const auditLogs = { ambiguous: [], rejected: [] };
+const records = buildRecords(models, benchlm, benchlmModels, auditLogs);
 const withScores = records.filter((r) => Object.keys(r.benchmarks).length > 0).length;
-console.log(`Built ${records.length} records (${withScores} with at least one score)`);
+const totalScoresCount = records.reduce((acc, r) => acc + Object.keys(r.benchmarks).length, 0);
+
+console.log(`\n=== Model Ingestion & Matching Summary ===`);
+console.log(`Built ${records.length} records (${withScores} with at least one score, ${records.length - withScores} unscored)`);
+console.log(`  total attached scores across all models: ${totalScoresCount}`);
 console.log(`  current: ${records.filter((r) => r.specs.generation === 'current').length}`);
 console.log(`  open weights: ${records.filter((r) => r.specs.isOpenWeights).length}`);
 console.log(`  developers: ${new Set(records.map((r) => r.developer)).size}`);
 
+console.log(`\n=== Model Matching Safety & Audit Log ===`);
+console.log(`  Ambiguous candidate assignments prevented: ${auditLogs.ambiguous.length}`);
+if (auditLogs.ambiguous.length > 0) {
+  for (const amb of auditLogs.ambiguous) {
+    console.log(`    [AMBIGUOUS] ${amb.modelId} on ${amb.benchId}: candidate matches [${amb.candidates.join(', ')}] rejected (${amb.reason})`);
+  }
+}
+console.log(`  Unsafe / conflicting variant matches rejected: ${auditLogs.rejected.length}`);
+if (auditLogs.rejected.length > 0) {
+  for (const rej of auditLogs.rejected.slice(0, 10)) {
+    console.log(`    [REJECTED] ${rej.modelId} on ${rej.benchId} against "${rej.candidate}": ${rej.reason}`);
+  }
+  if (auditLogs.rejected.length > 10) {
+    console.log(`    ... and ${auditLogs.rejected.length - 10} more rejected candidate matches.`);
+  }
+}
+
 fs.writeFileSync(OUT, render(records, DEFINITIONS));
-console.log(`Wrote ${path.relative(ROOT, OUT)}`);
+console.log(`\nWrote ${path.relative(ROOT, OUT)}`);

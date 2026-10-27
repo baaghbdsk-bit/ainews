@@ -41,6 +41,8 @@ const { AI_MODELS_DATA, BENCHMARK_DEFINITIONS } = await import(
 );
 const { getAvailableModels, getModelById, validateModelRecord, generationFor, getFreshnessAuditSummary, CATALOGUE_STALENESS_DAYS } =
   await import('../src/lib/benchmarks/service.ts');
+const { normKey, passesIdentitySafetyCheck, lookupBenchSafe, KNOWN_ALIASES } =
+  await import('../scripts/model-matching.mjs');
 
 // The catalogue keeps a rolling six-month window, so the cutoff moves with
 // today's date. Old models are dropped instead of accumulating forever.
@@ -608,6 +610,135 @@ const unplottableCount = AI_MODELS_DATA.filter((m) => {
 assert(
   unplottableCount > 0,
   `Quadrant chart correctly identifies models lacking complete capability/pricing pairs (${unplottableCount} models unplottable)`
+);
+
+// -----------------------------------------------------------------
+// 11. Safe Model Matching & Identity Disambiguation Regression Suite
+// -----------------------------------------------------------------
+// 11a. Kimi Name Variations & Alias Normalization
+assert(
+  normKey('kimi-k3.1-pro') === normKey('kimi-3-1-pro'),
+  'Kimi normalization matches kimi-k3.1-pro to kimi-3-1-pro',
+  `${normKey('kimi-k3.1-pro')} === ${normKey('kimi-3-1-pro')}`
+);
+assert(
+  normKey('Kimi K3.1 Pro') === normKey('kimi-3-1-pro'),
+  'Kimi normalization matches Kimi K3.1 Pro to kimi-3-1-pro',
+  `${normKey('Kimi K3.1 Pro')} === ${normKey('kimi-3-1-pro')}`
+);
+assert(
+  normKey('kimi-k2.6') === normKey('kimi-2-6'),
+  'Kimi normalization matches kimi-k2.6 to kimi-2-6',
+  `${normKey('kimi-k2.6')} === ${normKey('kimi-2-6')}`
+);
+assert(
+  normKey('Kimi K3 (Max)') === normKey('kimi-k3'),
+  'Kimi normalization strips effort annotation to match Kimi K3',
+  `${normKey('Kimi K3 (Max)')} === ${normKey('kimi-k3')}`
+);
+assert(
+  Boolean(KNOWN_ALIASES['moonshotai/kimi-k3.1-pro']?.includes('kimi-3-1-pro')),
+  'KNOWN_ALIASES maps kimi-3-1-pro to moonshotai/kimi-k3.1-pro',
+  'canonical alias verified'
+);
+
+// 11b. Cross-version isolation (never merge different generations/versions)
+const crossVersionCheck1 = passesIdentitySafetyCheck('kimi-k3.1-pro', 'kimi-k3');
+assert(
+  !crossVersionCheck1.ok,
+  'Identity check rejects merging Kimi K3.1 Pro with Kimi K3',
+  crossVersionCheck1.reason
+);
+const crossVersionCheck2 = passesIdentitySafetyCheck('kimi-k3.1-pro', 'kimi-k2.6');
+assert(
+  !crossVersionCheck2.ok,
+  'Identity check rejects merging Kimi K3.1 Pro with Kimi K2.6',
+  crossVersionCheck2.reason
+);
+
+// 11c. Qwen Variants & Parameter-Size Safety (never merge different parameter sizes or variants)
+const qwenSizeCheck1 = passesIdentitySafetyCheck('Qwen3.8-27B', 'Qwen3.8 Max');
+assert(
+  !qwenSizeCheck1.ok,
+  'Identity check rejects merging Qwen3.8-27B with Qwen3.8 Max (parameter size safety)',
+  qwenSizeCheck1.reason
+);
+const qwenSizeCheck2 = passesIdentitySafetyCheck('Qwen3.6-27B', 'Qwen3.6 Plus');
+assert(
+  !qwenSizeCheck2.ok,
+  'Identity check rejects merging Qwen3.6-27B with Qwen3.6 Plus',
+  qwenSizeCheck2.reason
+);
+const qwenVariantCheck1 = passesIdentitySafetyCheck('Qwen3.8-Flash-Next', 'Qwen3.8 Flash');
+assert(
+  !qwenVariantCheck1.ok,
+  'Identity check rejects merging Qwen3.8-Flash-Next with Qwen3.8 Flash (variant suffix safety)',
+  qwenVariantCheck1.reason
+);
+const qwenVariantCheck2 = passesIdentitySafetyCheck('Qwen3.8 Max Prime', 'Qwen3.8 Max');
+assert(
+  !qwenVariantCheck2.ok,
+  'Identity check rejects merging Qwen3.8 Max Prime with Qwen3.8 Max',
+  qwenVariantCheck2.reason
+);
+const qwenVersionCheck = passesIdentitySafetyCheck('Qwen3.5 Flash', 'Qwen3.7 Flash');
+assert(
+  !qwenVersionCheck.ok,
+  'Identity check rejects merging Qwen3.5 Flash with Qwen3.7 Flash (version mismatch)',
+  qwenVersionCheck.reason
+);
+
+// 11d. Lab Variant & Modality Safety (never merge Pro vs base, v1 vs v2, Image vs Text)
+const gptProCheck = passesIdentitySafetyCheck('GPT-5.6 Luna Pro', 'GPT-5.6 Luna');
+assert(
+  !gptProCheck.ok,
+  'Identity check rejects merging GPT-5.6 Luna Pro with GPT-5.6 Luna',
+  gptProCheck.reason
+);
+const fuguV2Check = passesIdentitySafetyCheck('Fugu Ultra v2', 'Fugu Ultra');
+assert(
+  !fuguV2Check.ok,
+  'Identity check rejects merging Fugu Ultra v2 with Fugu Ultra (version mismatch)',
+  fuguV2Check.reason
+);
+const geminiImageCheck = passesIdentitySafetyCheck('Gemini 3.1 Flash Image', 'Gemini 3.1 Flash');
+assert(
+  !geminiImageCheck.ok,
+  'Identity check rejects merging Gemini 3.1 Flash Image with Gemini 3.1 Flash (modality safety)',
+  geminiImageCheck.reason
+);
+
+// 11e. Verified positive matches
+const fuguPositiveCheck = passesIdentitySafetyCheck('Sakana Fugu-Ultra', 'sakana/fugu-ultra');
+assert(
+  fuguPositiveCheck.ok,
+  'Identity check accepts Sakana Fugu-Ultra as equivalent to sakana/fugu-ultra',
+  fuguPositiveCheck.reason || 'clean match'
+);
+const claudePositiveCheck = passesIdentitySafetyCheck('Claude Opus 5.5', 'claude-opus-5-5');
+assert(
+  claudePositiveCheck.ok,
+  'Identity check accepts Claude Opus 5.5 as equivalent to claude-opus-5-5',
+  claudePositiveCheck.reason || 'clean match'
+);
+
+// 11f. lookupBenchSafe ambiguity handling
+const mockBoard = [
+  { model: 'TestModel 1.0 Pro', slug: 'test-1-0-pro', score: 85 },
+  { model: 'TestModel 1.0 Max', slug: 'test-1-0-max', score: 90 },
+];
+const mockLogs = { ambiguous: [], rejected: [] };
+const mockAmbiguousResult = lookupBenchSafe(
+  mockBoard,
+  { id: 'vendor/test-1-0' },
+  ['test-1-0', 'TestModel 1.0'],
+  'test-bench',
+  mockLogs
+);
+assert(
+  mockAmbiguousResult === null,
+  'lookupBenchSafe returns null when candidates are ambiguous or incompatible',
+  `ambiguousCount=${mockLogs.ambiguous.length}`
 );
 
 console.log('='.repeat(70));

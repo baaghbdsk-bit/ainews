@@ -534,42 +534,54 @@ export function ModelBenchmarksComparator({
 
                   {/* Model Selection Chips Grid */}
                   <div className="drawer-chips-grid">
-                    {filteredDrawerModels.map((m) => {
-                      const isSelected = selectedModelIds.includes(m.id);
-                      const isMax = selectedModelIds.length >= 5 && !isSelected;
+                    {filteredDrawerModels.length === 0 ? (
+                      <div className="drawer-empty-search text-center py-6 px-4 col-span-full">
+                        <AlertCircle size={20} className="mx-auto mb-2 text-zinc-400 opacity-60" />
+                        <p className="text-xs text-zinc-300 font-medium mb-1">
+                          No benchmarked models found{searchQuery ? ` matching "${searchQuery}"` : ''}
+                        </p>
+                        <p className="text-[11px] text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                          Specialized image models, extractors, and newly listed models without published benchmark results are withheld from side-by-side comparison.
+                        </p>
+                      </div>
+                    ) : (
+                      filteredDrawerModels.map((m) => {
+                        const isSelected = selectedModelIds.includes(m.id);
+                        const isMax = selectedModelIds.length >= 5 && !isSelected;
 
-                      return (
-                        <button
-                          type="button"
-                          key={m.id}
-                          onClick={() => {
-                            if (isMax) {
-                              showNotice('Maximum 5 models can be compared at once. Deselect a model first.');
-                            } else {
-                              toggleModel(m.id);
-                            }
-                          }}
-                          aria-pressed={isSelected}
-                          aria-disabled={isMax}
-                          className={`drawer-model-chip ${isSelected ? 'is-selected' : ''} ${
-                            isMax ? 'is-disabled' : ''
-                          }`}
-                        >
-                          <div className="drawer-chip-left">
-                            <span
-                              className={`model-color-dot fill-${m.developerColor}`}
-                              aria-hidden="true"
-                            />
-                            <span className="drawer-chip-name">{m.name}</span>
-                          </div>
+                        return (
+                          <button
+                            type="button"
+                            key={m.id}
+                            onClick={() => {
+                              if (isMax) {
+                                showNotice('Maximum 5 models can be compared at once. Deselect a model first.');
+                              } else {
+                                toggleModel(m.id);
+                              }
+                            }}
+                            aria-pressed={isSelected}
+                            aria-disabled={isMax}
+                            className={`drawer-model-chip ${isSelected ? 'is-selected' : ''} ${
+                              isMax ? 'is-disabled' : ''
+                            }`}
+                          >
+                            <div className="drawer-chip-left">
+                              <span
+                                className={`model-color-dot fill-${m.developerColor}`}
+                                aria-hidden="true"
+                              />
+                              <span className="drawer-chip-name">{m.name}</span>
+                            </div>
 
-                          <div className="drawer-chip-right">
-                            <span className="drawer-chip-dev">{m.developer}</span>
-                            {isSelected && <CheckCircle2 size={13} className="text-purple-400" />}
-                          </div>
-                        </button>
-                      );
-                    })}
+                            <div className="drawer-chip-right">
+                              <span className="drawer-chip-dev">{m.developer}</span>
+                              {isSelected && <CheckCircle2 size={13} className="text-purple-400" />}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               )}
