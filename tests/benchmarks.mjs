@@ -47,9 +47,6 @@ const { normKey, passesIdentitySafetyCheck, lookupBenchSafe, KNOWN_ALIASES } =
 // The catalogue keeps a rolling six-month window, so the cutoff moves with
 // today's date. Old models are dropped instead of accumulating forever.
 const WINDOW_MONTHS = 6;
-const windowStart = new Date();
-windowStart.setUTCMonth(windowStart.getUTCMonth() - WINDOW_MONTHS);
-const WINDOW_START = windowStart.toISOString().slice(0, 10);
 // Read the snapshot date from the catalogue instead of pinning it here. A
 // refresh moves the snapshot forward; a hardcoded date would fail the suite
 // on every successful refresh and block the pull request the job exists to
@@ -58,6 +55,9 @@ const SNAPSHOT_DATE = AI_MODELS_DATA.reduce(
   (latest, m) => (m.lastAuditedDate > latest ? m.lastAuditedDate : latest),
   '',
 );
+const windowStart = new Date(SNAPSHOT_DATE);
+windowStart.setUTCMonth(windowStart.getUTCMonth() - WINDOW_MONTHS);
+const WINDOW_START = windowStart.toISOString().slice(0, 10);
 const EVALUATION_DATE_NOTE = 'Evaluation date not published by source; snapshot date shown';
 
 let passed = 0;

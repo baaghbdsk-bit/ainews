@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowRight,
@@ -1043,6 +1043,7 @@ export function ExploreClient({
   // The identity votes are recorded against: the account when signed in, the
   // local guest token otherwise.
   const { clientId: authClientId, user: authUser, openAuth } = useAuth();
+  const [isFetchingRemote, setIsFetchingRemote] = useState(true);
 
   // The server renders one page so the document stays small and the first
   // paint is quick. The rest of the merge streams in afterwards, so filtering
@@ -1052,23 +1053,31 @@ export function ExploreClient({
 
     const loadRest = async () => {
       let offset = initialStories.length;
-      for (;;) {
-        const res = await fetch(`/api/stories?offset=${offset}&limit=200`);
-        if (!res.ok) return;
-        const page = (await res.json()) as {
-          stories?: StoryDisplay[];
-          hasMore?: boolean;
-        };
-        const batch = page.stories ?? [];
-        if (!batch.length) return;
-        if (cancelled) return;
-        setAllStories((prev) => {
-          const seen = new Set(prev.map((story) => story.slug));
-          const fresh = batch.filter((story) => !seen.has(story.slug));
-          return fresh.length ? [...prev, ...fresh] : prev;
-        });
-        offset += batch.length;
-        if (!page.hasMore) return;
+      try {
+        for (;;) {
+          const res = await fetch(`/api/stories?offset=${offset}&limit=200`);
+          if (!res.ok) break;
+          const page = (await res.json()) as {
+            stories?: StoryDisplay[];
+            hasMore?: boolean;
+          };
+          const batch = page.stories ?? [];
+          if (!batch.length) break;
+          if (cancelled) break;
+          setAllStories((prev) => {
+            const seen = new Set(prev.map((story) => story.slug));
+            const fresh = batch.filter((story) => !seen.has(story.slug));
+            return fresh.length ? [...prev, ...fresh] : prev;
+          });
+          offset += batch.length;
+          if (!page.hasMore) break;
+        }
+      } catch (err) {
+        console.error("Failed to load remaining stories:", err);
+      } finally {
+        if (!cancelled) {
+          setIsFetchingRemote(false);
+        }
       }
     };
 
@@ -1335,6 +1344,7 @@ export function ExploreClient({
 
   // Progressive rendering: show PAGE_SIZE rows at a time, expand on scroll.
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const isLoadingMoreRef = useRef(false);
 
   // Reset the visible window on every filter change (skip the initial mount
   // where the defaults are already correct).
@@ -1346,10 +1356,22 @@ export function ExploreClient({
     }
     setVisibleCount(PAGE_SIZE);
     setActiveTimelineIndex(0);
+    isLoadingMoreRef.current = false;
   }, [activeTopic, activeYear, activeMonth, activeCompany, search, feedMode]);
 
   const stories = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
+  const hasMore = visibleCount < filtered.length || isFetchingRemote;
+
+  const loadNextBatch = useCallback(() => {
+    if (isLoadingMoreRef.current) return;
+    if (visibleCount >= filtered.length && !isFetchingRemote) return;
+
+    isLoadingMoreRef.current = true;
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + PAGE_SIZE);
+      isLoadingMoreRef.current = false;
+    }, 120);
+  }, [visibleCount, filtered.length, isFetchingRemote]);
 
 
   // Pre-calculate story counts for each category. The server ships the exact
@@ -1428,7 +1450,7 @@ export function ExploreClient({
     return () => clearInterval(throttleTimer);
   }, [activeTimelineIndex, stories.length]);
 
-  // Infinite scroll: bump the visible count when the sentinel enters view.
+  // Infinite scroll: IntersectionObserver triggers as user approaches end of current batch
   useEffect(() => {
     if (!hasMore) return;
     const sentinel = sentinelRef.current;
@@ -1437,15 +1459,35 @@ export function ExploreClient({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
-          setVisibleCount((prev) => prev + PAGE_SIZE);
+          loadNextBatch();
         }
       },
-      { rootMargin: "1200px 0px" },
+      // 450px rootMargin triggers right around story 8-9 for seamless continuous feed
+      { rootMargin: "450px 0px" },
     );
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-  }, [hasMore]);
+  }, [hasMore, visibleCount, filtered.length, loadNextBatch]);
+
+  // Mobile / tablet / fast-scroll safety net: window scroll check
+  useEffect(() => {
+    if (!hasMore) return;
+
+    const handleWindowScroll = () => {
+      if (isLoadingMoreRef.current) return;
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const viewportHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+
+      if (docHeight - (scrollY + viewportHeight) < 650) {
+        loadNextBatch();
+      }
+    };
+
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleWindowScroll);
+  }, [hasMore, loadNextBatch]);
 
 
   const hasActiveFilters =
@@ -2374,21 +2416,60 @@ export function ExploreClient({
                       onVoteChange={handleVoteChange}
                     />
                   ))}
-                  {/* Sentinel placed to trigger early when reaching story 8 or 9 */}
+                  {/* Sentinel & Continuous Loader */}
                   {hasMore && (
-                    <>
+                    <div className="timeline-spinner-wrap" aria-live="polite">
                       <div
                         aria-hidden="true"
                         className="timeline-sentinel"
                         ref={sentinelRef}
-                        style={{ position: 'relative', top: '-600px', height: '1px', pointerEvents: 'none' }}
+                        style={{ height: '1px', width: '100%', pointerEvents: 'none' }}
                       />
-                      {/* Custom NeuBench Batch Loader Spinner when user scrolls fast */}
-                      <div className="flex flex-col items-center justify-center py-10 my-4 gap-3 w-full opacity-80" aria-live="polite">
-                        <NeubenchLogo variant="icon" size={28} />
-                        <span className="text-xs font-mono tracking-wider uppercase text-zinc-400">Loading stories…</span>
+                      <div className="timeline-spinner-pill">
+                        <span
+                          className="neubench-spinner"
+                          aria-hidden="true"
+                          style={{ width: 22, height: 22 }}
+                        >
+                          <svg
+                            viewBox="0 0 65 72"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                            focusable="false"
+                          >
+                            <rect
+                              className="neubench-spinner-bar neubench-spinner-bar--blue"
+                              x="0"
+                              y="0"
+                              width="65"
+                              height="16"
+                              rx="8"
+                              fill="#4777FF"
+                            />
+                            <rect
+                              className="neubench-spinner-bar neubench-spinner-bar--violet"
+                              x="0"
+                              y="28"
+                              width="65"
+                              height="16"
+                              rx="8"
+                              fill="#8055F5"
+                            />
+                            <rect
+                              className="neubench-spinner-bar neubench-spinner-bar--teal"
+                              x="0"
+                              y="56"
+                              width="65"
+                              height="16"
+                              rx="8"
+                              fill="#13DCCB"
+                            />
+                          </svg>
+                        </span>
+                        <span className="timeline-spinner-text">Loading stories…</span>
                       </div>
-                    </>
+                    </div>
                   )}
                 </>
               ) : showEmpty ? (
