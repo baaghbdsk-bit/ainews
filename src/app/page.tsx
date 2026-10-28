@@ -10,7 +10,7 @@ import { SiteHeader } from "./site-header";
  * the rest of the merge in the background, so the document stays small enough
  * to paint quickly.
  */
-const INITIAL_STORY_WINDOW = 12;
+const INITIAL_STORY_WINDOW = 10;
 
 /**
  * The layout's relative canonical ("../") resolves to "/index" for the root
