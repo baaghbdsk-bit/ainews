@@ -2374,7 +2374,15 @@ export function ExploreClient({
                       onVoteChange={handleVoteChange}
                     />
                   ))}
-                  {hasMore && <div aria-hidden="true" className="timeline-sentinel" ref={sentinelRef} />}
+                  {/* Sentinel placed to trigger early when reaching story 8 or 9 */}
+                  {hasMore && (
+                    <div
+                      aria-hidden="true"
+                      className="timeline-sentinel"
+                      ref={sentinelRef}
+                      style={{ position: 'relative', top: '-600px', height: '1px', pointerEvents: 'none' }}
+                    />
+                  )}
                 </>
               ) : showEmpty ? (
                 <div className="empty-state">
