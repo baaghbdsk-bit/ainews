@@ -51,7 +51,7 @@ export interface TimelineFilters {
 
 /** How many rows ship per page — the first page is server-rendered, the rest
  *  are fetched from /api/stories as the reader scrolls or changes filters. */
-export const PAGE_SIZE = 60;
+export const PAGE_SIZE = 15;
 
 /** Lowercased search haystack per story. Same fields the client used to
  *  search locally, so results match the old behaviour exactly. */
