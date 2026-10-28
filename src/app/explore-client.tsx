@@ -2376,12 +2376,19 @@ export function ExploreClient({
                   ))}
                   {/* Sentinel placed to trigger early when reaching story 8 or 9 */}
                   {hasMore && (
-                    <div
-                      aria-hidden="true"
-                      className="timeline-sentinel"
-                      ref={sentinelRef}
-                      style={{ position: 'relative', top: '-600px', height: '1px', pointerEvents: 'none' }}
-                    />
+                    <>
+                      <div
+                        aria-hidden="true"
+                        className="timeline-sentinel"
+                        ref={sentinelRef}
+                        style={{ position: 'relative', top: '-600px', height: '1px', pointerEvents: 'none' }}
+                      />
+                      {/* Custom NeuBench Batch Loader Spinner when user scrolls fast */}
+                      <div className="flex flex-col items-center justify-center py-10 my-4 gap-3 w-full opacity-80" aria-live="polite">
+                        <NeubenchLogo variant="icon" size={28} />
+                        <span className="text-xs font-mono tracking-wider uppercase text-zinc-400">Loading stories…</span>
+                      </div>
+                    </>
                   )}
                 </>
               ) : showEmpty ? (
