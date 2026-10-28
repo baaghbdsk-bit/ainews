@@ -46,26 +46,23 @@ export async function getPublishedStories(): Promise<Story[]> {
   try {
     const rows: Story[] = [];
 
-    for (let offset = 0; ; offset += STORY_PAGE_SIZE) {
-      const { data, error } = await supabase
-        .from('stories')
-        .select(PUBLISHED_STORY_COLUMNS)
-        .eq('status', 'published')
-        .order('event_date', { ascending: false })
-        .order('id', { ascending: false })
-        .range(offset, offset + STORY_PAGE_SIZE - 1);
+    // Bound the timeline archive to the most recent 500 stories to prevent
+    // draining Supabase database egress limits on free plans.
+    const MAX_STORIES = 500;
+    const { data, error } = await supabase
+      .from('stories')
+      .select(PUBLISHED_STORY_COLUMNS)
+      .eq('status', 'published')
+      .order('event_date', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(MAX_STORIES);
 
-      if (error) {
-        console.error('Failed to fetch published stories:', error);
-        // Keep whatever was read before the failure rather than losing the
-        // whole archive.
-        break;
-      }
-
-      rows.push(...((data ?? []) as Story[]));
-      if (!data || data.length < STORY_PAGE_SIZE) break;
+    if (error) {
+      console.error('Failed to fetch published stories:', error);
+      return [];
     }
 
+    rows.push(...((data ?? []) as Story[]));
     return rows;
   } catch (err) {
     console.error('Error fetching published stories:', err);
