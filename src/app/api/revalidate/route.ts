@@ -15,7 +15,7 @@ import { bearerMatches, jsonNoStore } from '@/lib/supabase/api-guard';
  *
  * Example:
  *   curl -H "Authorization: Bearer $REVALIDATE_SECRET" \
- *        https://neubench.vercel.app/api/revalidate
+ *        https://neubench.netlify.app/api/revalidate
  */
 export async function GET(request: NextRequest) {
   const secret = process.env.REVALIDATE_SECRET;

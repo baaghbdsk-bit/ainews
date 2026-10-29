@@ -13,7 +13,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://neubench.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://neubench.netlify.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

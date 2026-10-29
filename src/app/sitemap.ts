@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { getPublishedStories } from '@/lib/actions/stories';
 import { ENTITIES } from '@/lib/dossier/entities';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neubench.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neubench.netlify.app';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [

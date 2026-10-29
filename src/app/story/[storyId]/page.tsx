@@ -448,19 +448,45 @@ function renderStoryPage(story: DisplayStory, upvoteCount: number) {
     .length;
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 180));
 
-  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://neubench.vercel.app").replace(/\/$/, "");
+  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://neubench.netlify.app").replace(/\/$/, "");
   const canonicalUrl = `${siteOrigin}/story/${story.slug}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "NewsArticle",
     headline: story.title,
     description: deck || story.summary,
     image: story.imageUrl ? [story.imageUrl] : undefined,
-    datePublished: story.date,
-    author: { "@type": "Organization", name: "NeuBench" },
-    publisher: { "@type": "Organization", name: "NeuBench" },
-    mainEntityOfPage: canonicalUrl,
+    datePublished: `${story.date}T00:00:00.000Z`,
+    dateModified: ('updated_at' in story && typeof story.updated_at === 'string' ? story.updated_at : undefined) ?? `${story.date}T00:00:00.000Z`,
+    author: {
+      "@type": "Organization",
+      name: "NeuBench",
+      url: siteOrigin,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "NeuBench",
+      url: siteOrigin,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteOrigin}/neubench-logo.svg`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: [".story-article-standfirst", ".story-article-why p", ".key-points li"],
+    },
+    articleSection: story.topic,
+    keywords: [story.topic, story.company, "Artificial Intelligence", "AI News"].filter(Boolean).join(", "),
+    about: [
+      { "@type": "Thing", name: story.topic },
+      ...(story.company ? [{ "@type": "Organization", name: story.company }] : []),
+    ],
   };
   const analytics = extractStoryAnalytics({
     title: story.title,

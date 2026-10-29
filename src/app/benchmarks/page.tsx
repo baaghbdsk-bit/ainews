@@ -45,6 +45,42 @@ async function BenchmarksView({ searchParams }: { searchParams?: BenchmarksSearc
   return <ModelBenchmarksComparator initialView={initialView} audit={getFreshnessAuditSummary()} />;
 }
 
+const benchmarksJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "NeuBench Frontier AI Model Benchmark Index",
+  "description":
+    "Comprehensive empirical benchmark dataset comparing 130+ frontier artificial intelligence models across coding, agentic autonomy, reasoning, mathematics, context windows, and API economics.",
+  "url": "https://neubench.netlify.app/benchmarks",
+  "creator": {
+    "@type": "Organization",
+    "name": "NeuBench",
+    "url": "https://neubench.netlify.app",
+  },
+  "keywords": [
+    "AI benchmarks",
+    "LLM evaluation",
+    "Terminal-Bench",
+    "SWE-bench Verified",
+    "GPQA Diamond",
+    "AIME",
+    "API Pricing",
+    "Frontier Models",
+  ],
+  "variableMeasured": [
+    "Terminal-Bench (Autonomous CLI Coding)",
+    "SWE-bench Verified (Software Engineering)",
+    "LiveCodeBench (Contamination-Resistant Coding)",
+    "GPQA Diamond (Graduate Scientific Reasoning)",
+    "AIME (Mathematical Reasoning)",
+    "Context Window Size (Tokens)",
+    "Input Token Pricing ($/M)",
+    "Output Token Pricing ($/M)",
+  ],
+  "isAccessibleForFree": true,
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+};
+
 export default function BenchmarksPage({
   searchParams,
 }: {
@@ -56,6 +92,10 @@ export default function BenchmarksPage({
 
   return (
     <main className="site-frame archive-page benchmarks-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(benchmarksJsonLd) }}
+      />
       <SiteHeader
         className="story-article-topbar"
         right={
