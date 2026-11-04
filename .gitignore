@@ -68,3 +68,7 @@ tests/_*
 tests/capture-*.mjs
 tests/test-*.mjs
 tests/inspect-*.mjs
+
+# cloudflare
+.open-next
+.wrangler

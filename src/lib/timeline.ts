@@ -1,4 +1,3 @@
-﻿import { cacheLife, cacheTag } from 'next/cache';
 import { fetchAiNews, AI_NEWS_TAG } from '@/lib/feeds/fetch-ai-news';
 import { getPublishedStoriesWithVotes, getUpvoteCounts } from '@/lib/actions/stories';
 import { STORIES_TAG } from '@/lib/cache-tags';
@@ -94,18 +93,17 @@ function formatStoryForDisplay(
 const IS_BUILD_TIME = process.env.NEXT_PHASE === 'phase-production-build';
 
 export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(AI_NEWS_TAG, STORIES_TAG);
 
   // During production build, skip slow external sources so prerender completes
   // quickly. Seed stories provide a static snapshot; live data fills in on the
   // first runtime visit once the cache warms. Each source already enforces its
   // own timeout internally (fetchAiNews: 3s per feed; Supabase: its own timeouts),
   // so no wrapper deadline is needed here.
-  const liveStories = IS_BUILD_TIME ? [] : await fetchAiNews();
+
   const dbStories = IS_BUILD_TIME ? [] : await getPublishedStoriesWithVotes();
   const upvoteCounts = IS_BUILD_TIME ? {} : await getUpvoteCounts();
+  const liveStories =
+    IS_BUILD_TIME || (dbStories && dbStories.length > 0) ? [] : await fetchAiNews();
   const seedConverted = seedStories.map(convertSeedStory);
 
   const sources = [...liveStories, ...(dbStories ?? []), ...seedConverted];

@@ -6,6 +6,7 @@ import { WelcomeGate } from "@/components/auth/welcome-gate";
 import { GuestNotice } from "@/components/auth/guest-notice";
 import { PwaRegister } from "@/components/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { ThemeFab } from "@/components/theme-fab";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -221,6 +222,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GuestNotice />
         <PwaRegister />
         <PwaInstallPrompt />
+        <ThemeFab />
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
       </body>
     </html>

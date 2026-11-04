@@ -11,7 +11,7 @@ import { useAuth } from '@/lib/auth/store';
  * the reading experience is not interrupted, and the choice to sign in is
  * always the reader's.
  */
-export function AccountButton() {
+export function AccountButton({ iconOnly = false }: { iconOnly?: boolean }) {
   const { user, status, openAuth, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -38,9 +38,14 @@ export function AccountButton() {
 
   if (!user) {
     return (
-      <button type="button" className="account-btn" onClick={openAuth} data-tour-target="account">
+      <button
+        type="button"
+        className={`account-btn ${iconOnly ? 'account-btn-icononly' : ''}`}
+        onClick={openAuth}
+        data-tour-target="account"
+      >
         <LogIn size={14} />
-        <span>Sign in</span>
+        {!iconOnly && <span>Sign in</span>}
       </button>
     );
   }
@@ -58,7 +63,7 @@ export function AccountButton() {
     <div className="account-wrap" ref={wrapRef}>
       <button
         type="button"
-        className="account-btn account-btn-user"
+        className={`account-btn account-btn-user ${iconOnly ? 'account-btn-icononly' : ''}`}
         onClick={() => setMenuOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
@@ -66,7 +71,7 @@ export function AccountButton() {
         data-tour-target="account"
       >
         <UserIcon size={14} />
-        <span className="account-email">{displayName}</span>
+        {!iconOnly && <span className="account-email">{displayName}</span>}
       </button>
 
       {menuOpen && (

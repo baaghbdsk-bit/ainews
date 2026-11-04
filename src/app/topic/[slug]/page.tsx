@@ -18,12 +18,12 @@ import { SiteHeader } from '../../site-header';
  * know this is synthesis with sources, not first-hand reporting.
  */
 
-export const instant = false;
+
 
 // Wait for the static result on unlisted slugs instead of serving the App
 // Shell: an unknown topic then returns a real 404 (not a streamed 200) on the
 // first request. Requires generateStaticParams below and all route data cached.
-export const ensureStatic = 'navigation';
+
 
 export function generateStaticParams(): { slug: string }[] {
   return ENTITIES.map(({ slug }) => ({ slug }));

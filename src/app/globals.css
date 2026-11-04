@@ -25,3 +25,15 @@
 @import "../styles/auth.css";
 @import "../styles/app-palette.css";
 @import "../styles/pwa.css";
+@import "../styles/home-launcher.css";
+@import "../styles/explore.css";
+
+.theme-fab {
+  position: fixed; right: 18px; bottom: 18px; z-index: 200;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface); color: var(--fg);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+}
+.theme-fab:hover { background: var(--surface-hover); }

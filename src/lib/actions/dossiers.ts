@@ -1,6 +1,6 @@
 'use server';
 
-import { cacheLife, cacheTag } from 'next/cache';
+
 import { createPublicClient } from '@/lib/supabase/public';
 import { DOSSIERS_TAG, dossierTag } from '@/lib/cache-tags';
 import { DossierBlocksSchema, type DossierBlock } from '@/lib/dossier/schema';
@@ -55,9 +55,9 @@ interface SourceRow {
 }
 
 export async function getDossierBySlug(slug: string): Promise<DossierView | null> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(DOSSIERS_TAG, dossierTag(slug));
+
+
+
 
   try {
     const supabase = createPublicClient();

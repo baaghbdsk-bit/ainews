@@ -5,7 +5,7 @@ import { createPublicClient } from '@/lib/supabase/public';
 // (Supabase client is obtained via createPublicClient; no direct createClient needed here.)
 import { CreateStorySchema, UpdateStorySchema, type Story } from '@/lib/schemas/story';
 import { ZodError } from 'zod';
-import { cacheLife, cacheTag, revalidatePath, updateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { isEditor } from '@/lib/auth/editor';
 import { extractCompany } from '@/lib/story-company';
@@ -36,9 +36,6 @@ const STORY_PAGE_SIZE = 1000;
  * cannot be skipped or repeated at a boundary.
  */
 export async function getPublishedStories(): Promise<Story[]> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(STORIES_TAG);
 
   const supabase = createPublicClient();
   if (!supabase) return [];
@@ -85,8 +82,6 @@ const voteCountsClient = (): ReturnType<typeof createPublicClient> =>
  * A missing table degrades to an empty map instead of failing the page.
  */
 export async function getUpvoteCounts(): Promise<Record<string, number>> {
-  'use cache';
-  cacheLife('minutes');
 
   const counts: Record<string, number> = {};
 
@@ -117,8 +112,6 @@ export async function getUpvoteCounts(): Promise<Record<string, number>> {
 
 /** The upvote total for one story. Zero when the story has never been voted on. */
 export async function getUpvoteCount(slug: string): Promise<number> {
-  'use cache';
-  cacheLife('minutes');
 
   const counts = await getUpvoteCounts();
   return counts[slug] ?? 0;
@@ -138,9 +131,6 @@ export async function getPublishedStoriesWithVotes(): Promise<StoryWithVotes[]> 
  * Fetch a single story by slug (public read, published only)
  */
 export async function getStoryBySlug(slug: string): Promise<Story | null> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(STORIES_TAG);
 
   return queryStoryBySlug(slug);
 }
@@ -203,10 +193,7 @@ async function queryStoryBySlug(slug: string): Promise<Story | null> {
  * image - instead of falling through to re-fetching every feed.
  */
 export async function getStoryBySlugPrefix(slug: string): Promise<Story | null> {
-  'use cache';
   if (IS_BUILD_TIME) return null;
-  cacheLife('minutes');
-  cacheTag(STORIES_TAG);
 
   const prefix = slugTitlePart(slug);
   if (!prefix || prefix === slug) return null;
@@ -243,9 +230,6 @@ export async function getStoryBySlugPrefix(slug: string): Promise<Story | null> 
  * long-form dossier yet, so topic chips never lead to a 404.
  */
 export async function getStoriesByEntityTerms(terms: string[], limit = 40): Promise<Story[]> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(STORIES_TAG);
 
   if (!terms.length) return [];
 
@@ -333,7 +317,7 @@ export async function createStory(input: unknown) {
       return { error: 'Failed to create story', data: null };
     }
 
-    updateTag(STORIES_TAG);
+    revalidateTag(STORIES_TAG, 'max');
     revalidatePath('/');
     return { error: null, data: data as Story };
   } catch (err) {
@@ -393,7 +377,7 @@ export async function updateStory(id: string, input: unknown) {
       else data.company = nextCompany;
     }
 
-    updateTag(STORIES_TAG);
+    revalidateTag(STORIES_TAG, 'max');
     revalidatePath('/');
     return { error: null, data: data as Story };
   } catch (err) {
@@ -424,7 +408,7 @@ export async function deleteStory(id: string) {
       return { error: 'Failed to delete story' };
     }
 
-    updateTag(STORIES_TAG);
+    revalidateTag(STORIES_TAG, 'max');
     revalidatePath('/');
     return { error: null };
   } catch (err) {

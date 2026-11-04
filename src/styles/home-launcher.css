@@ -1,0 +1,92 @@
+/* Home launcher — finalized broadsheet masthead + module grid (real app).
+   Palette: masonry dark (default) with a light override. */
+
+.hl-root {
+  --bg: #0f1117; --fg: #f2f3f7; --muted: #9aa1b2; --faint: #5f6675;
+  --line: #232733; --line2: #2e3444; --surface: #171a22;
+  --accent: #d4a24e; --accent-soft: rgba(212, 162, 78, 0.14);
+  --hover-bg: rgba(255, 255, 255, 0.06);
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-geist-sans), sans-serif;
+  min-height: 100dvh;
+  position: relative;
+}
+.hl-user { position: absolute; top: 16px; right: 18px; z-index: 30; }
+.hl-user .account-btn-icononly {
+  width: 34px; height: 34px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.hl-root[data-bh-theme="light"] {
+  --bg: #f7f3ec; --fg: #16130f; --muted: #5f584c; --faint: #948a77;
+  --line: #cfc6b6; --line2: #a99e8a; --surface: #fffdf8;
+  --accent: #0a0a0a; --accent-soft: #e8e0d2; --hover-bg: #fffdf8;
+}
+
+.bh-mast {
+  text-align: center; padding: 30px 24px 22px;
+  border-bottom: 3px double var(--line2);
+}
+.bh-mast h1.bh-wordmark {
+  font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
+  font-size: clamp(56px, 10vw, 150px);
+  font-weight: 700; letter-spacing: 0.02em;
+  margin: 0 0 10px; line-height: 0.95; color: var(--fg);
+  display: inline-flex; align-items: center; gap: 0.02em;
+  position: relative;
+}
+.bh-mast h1.bh-wordmark .neubench-logo-e {
+  width: 0.58em; height: 0.66em;
+  transform: translateY(0.03em);
+}
+.bh-hallmark {
+  position: absolute; right: 0; top: 100%; margin-top: 2px;
+  font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; white-space: nowrap;
+}
+.bh-sub {
+  font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif; font-style: italic;
+  font-size: 16.5px; color: var(--muted);
+  max-width: 54ch; margin: 14px auto 0; line-height: 1.6;
+}
+
+.bh-shell { max-width: 1200px; margin: 0 auto; padding: 24px 24px 8px; }
+.bh-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.bh-mod {
+  text-align: left; cursor: pointer; display: block;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
+  padding: 18px; font-family: inherit; color: inherit; text-decoration: none;
+  transition: border-color 140ms var(--ease), background 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+.bh-mod:hover { border-color: var(--line2); background: var(--hover-bg); }
+.bh-mod.active {
+  border-color: var(--bh-tone, var(--accent));
+  background: var(--bh-tone, var(--accent));
+  box-shadow: none; color: #fff;
+}
+.bh-mod .bh-ic {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; margin-bottom: 10px;
+}
+.bh-mod.active .bh-ic { color: rgba(255, 255, 255, 0.92); }
+.bh-mod h3 { font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif; font-size: 22px; margin: 0 0 6px; }
+.bh-mod.active h3 { color: #fff; }
+.bh-mod p { margin: 0; font-size: 13px; color: var(--muted); }
+.bh-mod.active p { color: rgba(255, 255, 255, 0.88); }
+
+@media (max-width: 900px) {
+  .bh-grid { grid-template-columns: 1fr 1fr; }
+  .bh-mast h1.bh-wordmark { font-size: clamp(44px, 14vw, 96px); }
+}
+@media (max-width: 600px) {
+  .bh-grid { grid-template-columns: 1fr; }
+}
+
+.bh-toggle {
+  position: fixed; right: 18px; bottom: 18px; z-index: 40;
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid var(--line2); background: var(--surface); color: var(--fg);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}

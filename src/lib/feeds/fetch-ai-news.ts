@@ -1,4 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import { XMLParser } from 'fast-xml-parser';
 import type { Story } from '@/lib/schemas/story';
 import { canonicalizeUrl, slugify } from '@/lib/slug';
@@ -445,9 +444,6 @@ export async function loadFeed(
  * Cached so navigation to the timeline never waits on six upstream feeds.
  */
 export async function fetchAiNews(): Promise<Story[]> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(AI_NEWS_TAG);
 
   const results: Story[][] = await Promise.all(FEEDS.map((feed) => loadFeed(feed)));
   const seenUrls = new Set<string>();

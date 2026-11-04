@@ -21,17 +21,6 @@ import { ReadingProgress } from "@/components/reading-progress";
 import { extractiveSummary } from "@/lib/feeds/summarize";
 import { unstable_cache } from "next/cache";
 
-export const instant = false;
-
-/**
- * Wait for the real page instead of a prerendered fallback.
- *
- * Without it, a slug that is not in the archive is answered with a 200
- * fallback while the page is generated in the background, so a missing story
- * never returns a real 404.
- */
-export const ensureStatic = 'navigation';
-
 const getCachedExtraction = unstable_cache(
   async (url: string): Promise<ExtractOutcome> => {
     return Promise.race([

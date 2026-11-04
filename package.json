@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:worker": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
@@ -28,14 +29,16 @@
   },
   "dependencies": {
     "@extractus/article-extractor": "^9.0.1",
+    "@opennextjs/cloudflare": "^1.20.16",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "@vercel/analytics": "^2.0.1",
     "fast-xml-parser": "^5.11.2",
     "lucide-react": "^1.55.0",
-    "next": "16.4.0",
+    "next": "^16.4.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "wrangler": "^4.157.0",
     "zod": "^4.6.6"
   },
   "devDependencies": {
@@ -44,11 +47,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "^16.4.5",
     "pg": "^8.23.1",
     "puppeteer-core": "^25.14.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
 }
-
