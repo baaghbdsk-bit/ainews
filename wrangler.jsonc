@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "neubench",
+  "name": "app",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-02-14",
   "compatibility_flags": [
@@ -15,6 +15,6 @@
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZWlsZGRnZHNwZWR3cG1qZWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MjIxNjAsImV4cCI6MjEwNzM5ODE2MH0.N-2qmOoZWf9ToQ2ZBT5w5C_GeASd8gOQzSmviwbzJUc",
     "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZWlsZGRnZHNwZWR3cG1qZWZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTgyMjE2MCwiZXhwIjoyMTA3Mzk4MTYwfQ.ia9Yb9q4TpuJAWMSlg0BgFu4RpyItHM6puovB69RxMU",
     "CRON_SECRET": "gvivek982@",
-    "NEXT_PUBLIC_SITE_URL": "https://neubench.baaghbdsk.workers.dev"
+    "NEXT_PUBLIC_SITE_URL": "https://app.neubench.workers.dev"
   }
 }
