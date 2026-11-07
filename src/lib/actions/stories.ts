@@ -35,32 +35,47 @@ const STORY_PAGE_SIZE = 1000;
  * The second sort column keeps the order stable across pages, so a row
  * cannot be skipped or repeated at a boundary.
  */
-export async function getPublishedStories(): Promise<Story[]> {
+// Helper to prevent database queries from stalling page requests
+function withTimeout<T>(promise: Promise<T>, ms = 2500, fallback: T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([
+    promise.then((res) => {
+      clearTimeout(timer);
+      return res;
+    }).catch(() => {
+      clearTimeout(timer);
+      return fallback;
+    }),
+    timeout,
+  ]);
+}
 
+export async function getPublishedStories(): Promise<Story[]> {
   const supabase = createPublicClient();
   if (!supabase) return [];
 
   try {
-    const rows: Story[] = [];
-
-    // Bound the timeline archive to the most recent 500 stories to prevent
-    // draining Supabase database egress limits on free plans.
     const MAX_STORIES = 500;
-    const { data, error } = await supabase
-      .from('stories')
-      .select(PUBLISHED_STORY_COLUMNS)
-      .eq('status', 'published')
-      .order('event_date', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(MAX_STORIES);
+    const fetchQuery = async (): Promise<Story[]> => {
+      const { data, error } = await supabase
+        .from('stories')
+        .select(PUBLISHED_STORY_COLUMNS)
+        .eq('status', 'published')
+        .order('event_date', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(MAX_STORIES);
 
-    if (error) {
-      console.error('Failed to fetch published stories:', error);
-      return [];
-    }
+      if (error) {
+        console.error('Failed to fetch published stories:', error);
+        return [];
+      }
+      return ((data ?? []) as Story[]);
+    };
 
-    rows.push(...((data ?? []) as Story[]));
-    return rows;
+    return await withTimeout(fetchQuery(), 2500, []);
   } catch (err) {
     console.error('Error fetching published stories:', err);
     return [];
@@ -76,18 +91,21 @@ export async function getPublishedStoriesCountForDate(dateStr: string): Promise<
   if (!supabase) return 0;
 
   try {
-    const { count, error } = await supabase
-      .from('stories')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'published')
-      .eq('event_date', dateStr);
+    const fetchCount = async (): Promise<number> => {
+      const { count, error } = await supabase
+        .from('stories')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'published')
+        .eq('event_date', dateStr);
 
-    if (error) {
-      console.error('Failed to count published stories for date:', dateStr, error);
-      return 0;
-    }
+      if (error) {
+        console.error('Failed to count published stories for date:', dateStr, error);
+        return 0;
+      }
+      return count ?? 0;
+    };
 
-    return count ?? 0;
+    return await withTimeout(fetchCount(), 2500, 0);
   } catch (err) {
     console.error('Error counting published stories for date:', dateStr, err);
     return 0;
@@ -103,20 +121,23 @@ export async function getPublishedStoriesForDate(dateStr: string, limit = 300): 
   if (!supabase) return [];
 
   try {
-    const { data, error } = await supabase
-      .from('stories')
-      .select(PUBLISHED_STORY_COLUMNS)
-      .eq('status', 'published')
-      .eq('event_date', dateStr)
-      .order('id', { ascending: false })
-      .limit(limit);
+    const fetchStories = async (): Promise<Story[]> => {
+      const { data, error } = await supabase
+        .from('stories')
+        .select(PUBLISHED_STORY_COLUMNS)
+        .eq('status', 'published')
+        .eq('event_date', dateStr)
+        .order('id', { ascending: false })
+        .limit(limit);
 
-    if (error) {
-      console.error('Failed to fetch published stories for date:', dateStr, error);
-      return [];
-    }
+      if (error) {
+        console.error('Failed to fetch published stories for date:', dateStr, error);
+        return [];
+      }
+      return (data ?? []) as Story[];
+    };
 
-    return (data ?? []) as Story[];
+    return await withTimeout(fetchStories(), 2500, []);
   } catch (err) {
     console.error('Error fetching published stories for date:', dateStr, err);
     return [];
@@ -138,32 +159,35 @@ const voteCountsClient = (): ReturnType<typeof createPublicClient> =>
  * A missing table degrades to an empty map instead of failing the page.
  */
 export async function getUpvoteCounts(): Promise<Record<string, number>> {
-
   const counts: Record<string, number> = {};
 
   const supabase = voteCountsClient();
   if (!supabase) return counts;
 
   try {
-    const { data, error } = await supabase
-      .from('story_vote_counts')
-      .select('story_slug, upvote_count');
+    const fetchVotes = async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from('story_vote_counts')
+        .select('story_slug, upvote_count');
 
-    if (error) {
-      if (!isMissingSchemaError(error)) {
-        console.error('Failed to fetch upvote counts:', error);
+      if (error) {
+        if (!isMissingSchemaError(error)) {
+          console.error('Failed to fetch upvote counts:', error);
+        }
+        return counts;
+      }
+
+      for (const row of (data ?? []) as VoteCountRow[]) {
+        counts[row.story_slug] = row.upvote_count;
       }
       return counts;
-    }
+    };
 
-    for (const row of (data ?? []) as VoteCountRow[]) {
-      counts[row.story_slug] = row.upvote_count;
-    }
+    return await withTimeout(fetchVotes(), 2500, counts);
   } catch (err) {
     console.error('Error fetching upvote counts:', err);
+    return counts;
   }
-
-  return counts;
 }
 
 /** The upvote total for one story. Zero when the story has never been voted on. */

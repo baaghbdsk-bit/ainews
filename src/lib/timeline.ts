@@ -1,4 +1,3 @@
-import { fetchAiNews, AI_NEWS_TAG } from '@/lib/feeds/fetch-ai-news';
 import {
   getPublishedStories,
   getPublishedStoriesForDate,
@@ -127,11 +126,8 @@ async function fetchMergedTimelineInternal(): Promise<TimelineStoryDisplay[]> {
         getUpvoteCounts().catch(() => ({})),
       ]);
 
-  const liveStories =
-    IS_BUILD_TIME || (dbStories && dbStories.length > 0) ? [] : await fetchAiNews();
   const seedConverted = seedStories.map(convertSeedStory);
-
-  const sources = [...liveStories, ...(dbStories ?? []), ...seedConverted];
+  const sources = [...(dbStories ?? []), ...seedConverted];
 
   const imageByUrl = new Map<string, string>();
   const imageByTitleDate = new Map<string, string>();

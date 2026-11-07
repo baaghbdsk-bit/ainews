@@ -36,7 +36,7 @@ const MODULES: ModuleConfig[] = [
     darkGlow: "rgba(56, 189, 248, 0.22)",
     lightTone: "#0284c7",
     lightGlow: "rgba(2, 132, 199, 0.15)",
-    href: "/explore?view=latest",
+    href: "/latest",
   },
   {
     key: "benchmarks",
@@ -47,7 +47,7 @@ const MODULES: ModuleConfig[] = [
     darkGlow: "rgba(251, 113, 133, 0.22)",
     lightTone: "#e11d48",
     lightGlow: "rgba(225, 29, 72, 0.15)",
-    href: "/explore?view=benchmarks",
+    href: "/benchmarks",
   },
   {
     key: "trending",
@@ -58,7 +58,7 @@ const MODULES: ModuleConfig[] = [
     darkGlow: "rgba(245, 158, 11, 0.22)",
     lightTone: "#d97706",
     lightGlow: "rgba(217, 119, 6, 0.15)",
-    href: "/explore?view=trending",
+    href: "/trending",
   },
   {
     key: "saved",
@@ -69,7 +69,7 @@ const MODULES: ModuleConfig[] = [
     darkGlow: "rgba(16, 185, 129, 0.22)",
     lightTone: "#059669",
     lightGlow: "rgba(5, 150, 105, 0.15)",
-    href: "/explore?view=saved",
+    href: "/saved",
   },
   {
     key: "about",
@@ -80,18 +80,18 @@ const MODULES: ModuleConfig[] = [
     darkGlow: "rgba(129, 140, 248, 0.22)",
     lightTone: "#4f46e5",
     lightGlow: "rgba(79, 70, 229, 0.15)",
-    href: "/explore?view=about",
+    href: "/about",
   },
   {
     key: "connect",
     icon: MessageSquare,
-    title: "Feedback & Connect",
-    desc: "Channels to reach the team and shape the product.",
+    title: "Connect",
+    desc: "Channels to reach the team, share feedback, and shape the product.",
     darkTone: "#2dd4bf",
     darkGlow: "rgba(45, 212, 191, 0.22)",
     lightTone: "#0d9488",
     lightGlow: "rgba(13, 148, 136, 0.15)",
-    href: "/explore?view=connect",
+    href: "/connect",
   },
 ];
 
@@ -133,7 +133,7 @@ export function HomeLauncher() {
               <Link
                 key={m.key}
                 href={m.href}
-                prefetch={true}
+                prefetch={false}
                 className="bh-mod"
                 style={{ "--bh-tone": tone, "--bh-glow": glow } as React.CSSProperties}
               >

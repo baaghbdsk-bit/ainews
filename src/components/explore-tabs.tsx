@@ -8,12 +8,37 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { AccountButton } from '@/components/auth/account-button';
 import { BookmarkButton, ShareButton, UpvoteButton } from '@/components/story-actions';
 import { useBookmarks } from '@/components/story-actions/bookmark-button';
-import { AboutMainView } from '@/components/views-about';
-import { FeedbackConnectMainView } from '@/components/feedback-connect-view';
-import { ModelBenchmarksComparator } from '@/components/model-benchmarks-comparator';
+import dynamic from 'next/dynamic';
 import { selectDigestHighlights } from '@/lib/digest-priority';
 import { deduplicateStories } from '@/lib/story-dedup';
 import { NeubenchSpinner } from '@/components/loading';
+
+const AboutMainView = dynamic(() => import('@/components/views-about').then((m) => m.AboutMainView), {
+  ssr: true,
+  loading: () => (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+      <NeubenchSpinner size={28} />
+    </div>
+  ),
+});
+
+const FeedbackConnectMainView = dynamic(() => import('@/components/feedback-connect-view').then((m) => m.FeedbackConnectMainView), {
+  ssr: true,
+  loading: () => (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+      <NeubenchSpinner size={28} />
+    </div>
+  ),
+});
+
+const ModelBenchmarksComparator = dynamic(() => import('@/components/model-benchmarks-comparator').then((m) => m.ModelBenchmarksComparator), {
+  ssr: true,
+  loading: () => (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+      <NeubenchSpinner size={28} />
+    </div>
+  ),
+});
 import {
   cleanTitleEditorial,
   detectRealEntityEditorial,
@@ -277,16 +302,24 @@ const LABELS: Record<string, string> = {
   saved: 'Saved',
   about: 'About',
   benchmarks: 'Benchmarks',
-  connect: 'Feedback & Connect',
-  feedback: 'Feedback & Connect',
+  connect: 'Connect',
+  feedback: 'Connect',
 };
 
-export function ExploreTabs({ stories }: { stories: TimelineStoryDisplay[] }) {
+export function ExploreTabs({
+  stories = [],
+  initialView: propInitialView,
+}: {
+  stories?: TimelineStoryDisplay[];
+  initialView?: View;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requested = searchParams.get('view') as View | null;
-  const initialView = requested && (VIEWS.includes(requested as any) || requested === 'feedback') ? requested : 'latest';
-  const [view, setView] = useState<View>(initialView);
+  const determinedInitialView =
+    propInitialView ||
+    (requested && (VIEWS.includes(requested as any) || requested === 'feedback') ? requested : 'latest');
+  const [view, setView] = useState<View>(determinedInitialView);
   const [isTrendingLoading, setIsTrendingLoading] = useState(false);
 
   // User upvoted stories state (local votes from localStorage + in-session upvotes)
@@ -319,20 +352,34 @@ export function ExploreTabs({ stories }: { stories: TimelineStoryDisplay[] }) {
 
   // Synchronize when URL changes externally (browser back/forward button)
   useEffect(() => {
-    if (requested && (VIEWS.includes(requested as any) || requested === 'feedback')) {
+    if (propInitialView) {
+      setView(propInitialView);
+    } else if (requested && (VIEWS.includes(requested as any) || requested === 'feedback')) {
       setView(requested);
     } else if (!requested) {
       setView('latest');
     }
-  }, [requested]);
+  }, [requested, propInitialView]);
 
   const handleSwitchView = (newView: View) => {
     setView(newView);
     setIsTrendingLoading(false);
     if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('view', newView);
-      window.history.replaceState({}, '', url.toString());
+      const targetPath =
+        newView === 'latest'
+          ? '/latest'
+          : newView === 'trending'
+          ? '/trending'
+          : newView === 'saved'
+          ? '/saved'
+          : newView === 'benchmarks'
+          ? '/benchmarks'
+          : newView === 'about'
+          ? '/about'
+          : newView === 'connect' || newView === 'feedback'
+          ? '/connect'
+          : '/latest';
+      window.history.pushState({}, '', targetPath);
     }
   };
 
@@ -993,53 +1040,78 @@ export function ExploreTabs({ stories }: { stories: TimelineStoryDisplay[] }) {
                 href="/home"
                 className="ex-tab ex-tab-home"
                 title="Return to NeuBench Home"
+                prefetch={false}
               >
                 <Home size={13} className="ex-tab-home-icon" />
                 <span>Home</span>
               </Link>
-              <button
-                type="button"
+              <Link
+                href="/latest"
+                prefetch={false}
                 className={`ex-tab ex-tab-latest ${view === 'latest' ? 'active' : ''}`}
-                onClick={() => handleSwitchView('latest')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSwitchView('latest');
+                }}
               >
                 Latest
-              </button>
-              <button
-                type="button"
+              </Link>
+              <Link
+                href="/trending"
+                prefetch={false}
                 className={`ex-tab ex-tab-trending ${view === 'trending' ? 'active' : ''}`}
-                onClick={() => handleSwitchView('trending')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSwitchView('trending');
+                }}
               >
                 {isTrendingLoading && <NeubenchSpinner size={12} strokeWidth={4.5} />}
                 Trending
-              </button>
-              <button
-                type="button"
+              </Link>
+              <Link
+                href="/saved"
+                prefetch={false}
                 className={`ex-tab ex-tab-saved ${view === 'saved' ? 'active' : ''}`}
-                onClick={() => handleSwitchView('saved')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSwitchView('saved');
+                }}
               >
                 Saved
-              </button>
-              <button
-                type="button"
+              </Link>
+              <Link
+                href="/benchmarks"
+                prefetch={false}
                 className={`ex-tab ex-tab-benchmarks ${view === 'benchmarks' ? 'active' : ''}`}
-                onClick={() => handleSwitchView('benchmarks')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSwitchView('benchmarks');
+                }}
               >
                 Benchmarks
-              </button>
-              <button
-                type="button"
+              </Link>
+              <Link
+                href="/about"
+                prefetch={false}
                 className={`ex-tab ex-tab-about ${view === 'about' ? 'active' : ''}`}
-                onClick={() => handleSwitchView('about')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSwitchView('about');
+                }}
               >
                 About
-              </button>
-              <button
-                type="button"
+              </Link>
+              <Link
+                href="/connect"
+                prefetch={false}
                 className={`ex-tab ex-tab-connect ${view === 'connect' || view === 'feedback' ? 'active' : ''}`}
-                onClick={() => handleSwitchView('connect')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSwitchView('connect');
+                }}
               >
-                Feedback
-              </button>
+                Connect
+              </Link>
             </nav>
           </div>
 
@@ -1610,11 +1682,6 @@ export function ExploreTabs({ stories }: { stories: TimelineStoryDisplay[] }) {
                                   <span>
                                     Showing {Math.min(visibleAllFeedCount, allDayStories.length)} of {allDayStories.length} dispatches for {selectedMonth} {selectedDay}, {selectedYear}
                                   </span>
-                                  {allDayStories.length > 10 && (
-                                    <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: '0.72rem', background: 'rgba(253, 224, 71, 0.12)', color: 'var(--accent)', fontWeight: 600, border: '1px solid rgba(253, 224, 71, 0.25)' }}>
-                                      Batches of 10
-                                    </span>
-                                  )}
                                 </span>
                                 <button
                                   type="button"
