@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
-  Loader2,
   LogIn,
   Mail,
   MailCheck,
@@ -130,10 +129,6 @@ export function AuthCard({
   const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setMode(initialMode);
-  }, [initialMode]);
-
-  useEffect(() => {
     const t = setTimeout(() => emailRef.current?.focus(), 50);
     return () => clearTimeout(t);
   }, [mode]);
@@ -162,7 +157,7 @@ export function AuthCard({
     if (onClose) onClose();
     if (onSuccess) onSuccess();
     else if (!isModal) {
-      router.push('/explore?view=latest');
+      router.push('/latest');
     }
   };
 

@@ -2,49 +2,18 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import type { TimelineStoryDisplay } from '@/lib/timeline';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AccountButton } from '@/components/auth/account-button';
 import { BookmarkButton, ShareButton, UpvoteButton } from '@/components/story-actions';
-import { useBookmarks } from '@/components/story-actions/bookmark-button';
-import dynamic from 'next/dynamic';
 import { selectDigestHighlights } from '@/lib/digest-priority';
 import { deduplicateStories } from '@/lib/story-dedup';
 import { NeubenchSpinner } from '@/components/loading';
-
-const AboutMainView = dynamic(() => import('@/components/views-about').then((m) => m.AboutMainView), {
-  ssr: true,
-  loading: () => (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <NeubenchSpinner size={28} />
-    </div>
-  ),
-});
-
-const FeedbackConnectMainView = dynamic(() => import('@/components/feedback-connect-view').then((m) => m.FeedbackConnectMainView), {
-  ssr: true,
-  loading: () => (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <NeubenchSpinner size={28} />
-    </div>
-  ),
-});
-
-const ModelBenchmarksComparator = dynamic(() => import('@/components/model-benchmarks-comparator').then((m) => m.ModelBenchmarksComparator), {
-  ssr: true,
-  loading: () => (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <NeubenchSpinner size={28} />
-    </div>
-  ),
-});
 import {
   cleanTitleEditorial,
   detectRealEntityEditorial,
   generateFiveToEightLineOverviewEditorial,
   generateTriadOverviewEditorial,
-  generateFiveSecondDayOverview,
   generateFiveSecondDayPoints,
   extractImpactChips,
 } from '@/lib/editorial-overview';
@@ -60,8 +29,6 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
-  Bookmark,
-  Loader2,
 } from 'lucide-react';
 
 const MONTHS = [
@@ -293,34 +260,14 @@ export function scoreStoryNotability(s: TimelineStoryDisplay): number {
   return score;
 }
 
-const VIEWS = ['latest', 'trending', 'saved', 'about', 'connect', 'benchmarks'] as const;
-type View = (typeof VIEWS)[number] | 'feedback';
-
-const LABELS: Record<string, string> = {
-  latest: 'Latest',
-  trending: 'Trending',
-  saved: 'Saved',
-  about: 'About',
-  benchmarks: 'Benchmarks',
-  connect: 'Connect',
-  feedback: 'Connect',
-};
-
 export function ExploreTabs({
   stories = [],
-  initialView: propInitialView,
+  initialView = 'latest',
 }: {
   stories?: TimelineStoryDisplay[];
-  initialView?: View;
+  initialView?: 'latest' | 'trending';
 }) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const requested = searchParams.get('view') as View | null;
-  const determinedInitialView =
-    propInitialView ||
-    (requested && (VIEWS.includes(requested as any) || requested === 'feedback') ? requested : 'latest');
-  const [view, setView] = useState<View>(determinedInitialView);
-  const [isTrendingLoading, setIsTrendingLoading] = useState(false);
+  const view = initialView;
 
   // User upvoted stories state (local votes from localStorage + in-session upvotes)
   const [localVoteSlugs, setLocalVoteSlugs] = useState<Set<string>>(() => {
@@ -336,8 +283,8 @@ export function ExploreTabs({
   });
 
   useEffect(() => {
-    const handleVoteEvent = (e: any) => {
-      const { slug, voted } = e.detail || {};
+    const handleVoteEvent = (event: Event) => {
+      const { slug, voted } = (event as CustomEvent<{ slug?: string; voted?: boolean }>).detail ?? {};
       if (!slug) return;
       setLocalVoteSlugs((prev) => {
         const next = new Set(prev);
@@ -349,39 +296,6 @@ export function ExploreTabs({
     window.addEventListener('neubench_vote_changed', handleVoteEvent);
     return () => window.removeEventListener('neubench_vote_changed', handleVoteEvent);
   }, []);
-
-  // Synchronize when URL changes externally (browser back/forward button)
-  useEffect(() => {
-    if (propInitialView) {
-      setView(propInitialView);
-    } else if (requested && (VIEWS.includes(requested as any) || requested === 'feedback')) {
-      setView(requested);
-    } else if (!requested) {
-      setView('latest');
-    }
-  }, [requested, propInitialView]);
-
-  const handleSwitchView = (newView: View) => {
-    setView(newView);
-    setIsTrendingLoading(false);
-    if (typeof window !== 'undefined') {
-      const targetPath =
-        newView === 'latest'
-          ? '/latest'
-          : newView === 'trending'
-          ? '/trending'
-          : newView === 'saved'
-          ? '/saved'
-          : newView === 'benchmarks'
-          ? '/benchmarks'
-          : newView === 'about'
-          ? '/about'
-          : newView === 'connect' || newView === 'feedback'
-          ? '/connect'
-          : '/latest';
-      window.history.pushState({}, '', targetPath);
-    }
-  };
 
   // Find latest available date in data
   const latestDateStory = stories[0];
@@ -409,7 +323,7 @@ export function ExploreTabs({
     });
     if (todayStories.length > 0) {
       const deduped = deduplicateStories(todayStories);
-      const ranked = selectDigestHighlights(deduped as any, 5) as TimelineStoryDisplay[];
+      const ranked = selectDigestHighlights(deduped, 5);
       map[todayKey] = {
         stories: ranked.length > 0 ? ranked : deduped.slice(0, 5),
         total: todayStories.length,
@@ -454,12 +368,10 @@ export function ExploreTabs({
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Reset batch count to 10 whenever filters, date, or feed mode change
-  useEffect(() => {
+  const resetFeedBatch = <T,>(setValue: (value: T) => void, value: T) => {
+    setValue(value);
     setVisibleAllFeedCount(10);
-  }, [selectedYear, selectedMonth, selectedDay, selectedTopic, selectedCompany, searchQuery, feedMode]);
-
-
+  };
 
   // Close search when clicking outside if query is empty
   useEffect(() => {
@@ -488,7 +400,7 @@ export function ExploreTabs({
           return next;
         });
       } else if (e.key === 'Escape' && isSearchOpen) {
-        setSearchQuery('');
+        resetFeedBatch(setSearchQuery, '');
         setIsSearchOpen(false);
       }
     }
@@ -529,15 +441,17 @@ export function ExploreTabs({
   // In All Feed Mode: loads full chronological stream on-demand
   // Dedicated, non-blocking asynchronous data loader with deduplicated in-flight guards
   useEffect(() => {
+    const inFlightFetches = inFlightFetchRef.current;
+
     if (feedMode === 'all') {
       if (dateAllCache[selectedDateKey] && dateAllCache[selectedDateKey].length > 0) {
         return;
       }
       const fetchKey = `all:${selectedDateKey}`;
-      if (inFlightFetchRef.current.has(fetchKey)) {
+      if (inFlightFetches.has(fetchKey)) {
         return;
       }
-      inFlightFetchRef.current.add(fetchKey);
+      inFlightFetches.add(fetchKey);
       let active = true;
       setIsLoadingAllFeed(true);
 
@@ -558,13 +472,13 @@ export function ExploreTabs({
           console.error('Lazy loading failed for all stories', selectedDateKey, err);
         })
         .finally(() => {
-          inFlightFetchRef.current.delete(fetchKey);
+          inFlightFetches.delete(fetchKey);
           if (active) setIsLoadingAllFeed(false);
         });
 
       return () => {
         active = false;
-        inFlightFetchRef.current.delete(fetchKey);
+        inFlightFetches.delete(fetchKey);
       };
     } else {
       // feedMode === 'highlight' -> Fast Path: only fetch highlights + total count!
@@ -572,10 +486,10 @@ export function ExploreTabs({
         return;
       }
       const fetchKey = `hl:${selectedDateKey}`;
-      if (inFlightFetchRef.current.has(fetchKey)) {
+      if (inFlightFetches.has(fetchKey)) {
         return;
       }
-      inFlightFetchRef.current.add(fetchKey);
+      inFlightFetches.add(fetchKey);
       let active = true;
       setIsLoadingHighlights(true);
 
@@ -597,13 +511,13 @@ export function ExploreTabs({
           console.error('Lazy loading failed for highlights', selectedDateKey, err);
         })
         .finally(() => {
-          inFlightFetchRef.current.delete(fetchKey);
+          inFlightFetches.delete(fetchKey);
           if (active) setIsLoadingHighlights(false);
         });
 
       return () => {
         active = false;
-        inFlightFetchRef.current.delete(fetchKey);
+        inFlightFetches.delete(fetchKey);
       };
     }
   }, [selectedDateKey, feedMode, dateHighlightsCache, dateAllCache]);
@@ -728,7 +642,7 @@ export function ExploreTabs({
       }
       highlights = hlList.slice(0, 5);
     } else if (dedupedDayStories.length > 0) {
-      const digestRanked = selectDigestHighlights(dedupedDayStories as any, 5) as TimelineStoryDisplay[];
+      const digestRanked = selectDigestHighlights(dedupedDayStories, 5);
       highlights = digestRanked.length > 0 ? digestRanked : dedupedDayStories.slice(0, 5);
     }
 
@@ -776,7 +690,7 @@ export function ExploreTabs({
   const handlePrevDay = () => {
     const curDay = parseInt(selectedDay, 10);
     if (curDay > 1) {
-      setSelectedDay(String(curDay - 1));
+      resetFeedBatch(setSelectedDay, String(curDay - 1));
       return;
     }
     // Cross to previous month
@@ -785,46 +699,43 @@ export function ExploreTabs({
       const prevMonth = MONTHS[mIdx - 1];
       const prevYearNum = parseInt(selectedYear, 10) || 2026;
       const lastDayOfPrevMonth = new Date(prevYearNum, mIdx, 0).getDate();
-      setSelectedMonth(prevMonth.name);
-      setSelectedDay(String(lastDayOfPrevMonth));
+      resetFeedBatch(setSelectedMonth, prevMonth.name);
+      resetFeedBatch(setSelectedDay, String(lastDayOfPrevMonth));
     } else {
       // Cross to previous year (December 31)
       const yNum = parseInt(selectedYear, 10) || 2026;
-      setSelectedYear(String(yNum - 1));
-      setSelectedMonth('Dec');
-      setSelectedDay('31');
+      resetFeedBatch(setSelectedYear, String(yNum - 1));
+      resetFeedBatch(setSelectedMonth, 'Dec');
+      resetFeedBatch(setSelectedDay, '31');
     }
   };
 
   const handleNextDay = () => {
     const curDay = parseInt(selectedDay, 10);
     if (curDay < daysInMonth) {
-      setSelectedDay(String(curDay + 1));
+      resetFeedBatch(setSelectedDay, String(curDay + 1));
       return;
     }
     // Cross to next month
     const mIdx = MONTHS.findIndex((m) => m.name.toLowerCase() === selectedMonth.toLowerCase());
     if (mIdx < MONTHS.length - 1) {
       const nextMonth = MONTHS[mIdx + 1];
-      setSelectedMonth(nextMonth.name);
-      setSelectedDay('1');
+      resetFeedBatch(setSelectedMonth, nextMonth.name);
+      resetFeedBatch(setSelectedDay, '1');
     } else {
       // Cross to next year (January 1)
       const yNum = parseInt(selectedYear, 10) || 2026;
-      setSelectedYear(String(yNum + 1));
-      setSelectedMonth('Jan');
-      setSelectedDay('1');
+      resetFeedBatch(setSelectedYear, String(yNum + 1));
+      resetFeedBatch(setSelectedMonth, 'Jan');
+      resetFeedBatch(setSelectedDay, '1');
     }
   };
 
   const handleGoToToday = () => {
-    setSelectedYear(defaultYear);
-    setSelectedMonth(defaultMonth);
-    setSelectedDay(defaultDay);
+    resetFeedBatch(setSelectedYear, defaultYear);
+    resetFeedBatch(setSelectedMonth, defaultMonth);
+    resetFeedBatch(setSelectedDay, defaultDay);
   };
-
-  // Bookmarks hook
-  const [bookmarks] = useBookmarks();
 
   // Weekly bounds calculation (resets Sunday midnight)
   const weekBounds = useMemo(() => {
@@ -922,42 +833,8 @@ export function ExploreTabs({
     });
   }, [view, stories, weekBounds, localVoteSlugs, selectedCompany, selectedTopic, searchQuery]);
 
-  // Saved Stories
-  const savedStories = useMemo(() => {
-    let list = stories.filter((s) => bookmarks.has(s.slug));
-    list = deduplicateStories(list);
-
-    if (selectedCompany !== 'all') {
-      list = list.filter((s) => s.company?.toLowerCase() === selectedCompany.toLowerCase());
-    }
-
-    if (selectedTopic !== 'all') {
-      list = list.filter((s) => s.topic?.toLowerCase() === selectedTopic.toLowerCase());
-    }
-
-    if (searchQuery.trim().length > 0) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (s) =>
-          s.title.toLowerCase().includes(q) ||
-          (s.summary && s.summary.toLowerCase().includes(q)) ||
-          (s.company && s.company.toLowerCase().includes(q))
-      );
-    }
-
-    return list;
-  }, [stories, bookmarks, selectedCompany, selectedTopic, searchQuery]);
-
   return (
     <div className="ex-root">
-      {/* Top sticky progress spinner when loading trending */}
-      {view === 'trending' && isTrendingLoading && (
-        <div className="neubench-top-loading-bar" role="status" aria-live="polite">
-          <NeubenchSpinner size={16} strokeWidth={4.5} />
-          <span>Loading Weekly Top Trending Dispatches…</span>
-        </div>
-      )}
-
       {/* Pinned Sticky Header */}
       <div className="ex-header-sticky">
         <header className="ex-top">
@@ -1000,10 +877,10 @@ export function ExploreTabs({
                 autoFocus
                 placeholder="Search dispatches, companies..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => resetFeedBatch(setSearchQuery, e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') {
-                    setSearchQuery('');
+                    resetFeedBatch(setSearchQuery, '');
                     setIsSearchOpen(false);
                   }
                 }}
@@ -1013,7 +890,7 @@ export function ExploreTabs({
               {searchQuery.trim().length > 0 ? (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => resetFeedBatch(setSearchQuery, '')}
                   className="ex-search-action-btn"
                   title="Clear search query"
                   aria-label="Clear search"
@@ -1049,10 +926,6 @@ export function ExploreTabs({
                 href="/latest"
                 prefetch={false}
                 className={`ex-tab ex-tab-latest ${view === 'latest' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSwitchView('latest');
-                }}
               >
                 Latest
               </Link>
@@ -1060,56 +933,19 @@ export function ExploreTabs({
                 href="/trending"
                 prefetch={false}
                 className={`ex-tab ex-tab-trending ${view === 'trending' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSwitchView('trending');
-                }}
               >
-                {isTrendingLoading && <NeubenchSpinner size={12} strokeWidth={4.5} />}
                 Trending
               </Link>
-              <Link
-                href="/saved"
-                prefetch={false}
-                className={`ex-tab ex-tab-saved ${view === 'saved' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSwitchView('saved');
-                }}
-              >
+              <Link href="/saved" prefetch={false} className="ex-tab ex-tab-saved">
                 Saved
               </Link>
-              <Link
-                href="/benchmarks"
-                prefetch={false}
-                className={`ex-tab ex-tab-benchmarks ${view === 'benchmarks' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSwitchView('benchmarks');
-                }}
-              >
+              <Link href="/benchmarks" prefetch={false} className="ex-tab ex-tab-benchmarks">
                 Benchmarks
               </Link>
-              <Link
-                href="/about"
-                prefetch={false}
-                className={`ex-tab ex-tab-about ${view === 'about' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSwitchView('about');
-                }}
-              >
+              <Link href="/about" prefetch={false} className="ex-tab ex-tab-about">
                 About
               </Link>
-              <Link
-                href="/connect"
-                prefetch={false}
-                className={`ex-tab ex-tab-connect ${view === 'connect' || view === 'feedback' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSwitchView('connect');
-                }}
-              >
+              <Link href="/connect" prefetch={false} className="ex-tab ex-tab-connect">
                 Connect
               </Link>
             </nav>
@@ -1125,10 +961,10 @@ export function ExploreTabs({
                   autoFocus
                   placeholder="Search dispatches, companies, models..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => resetFeedBatch(setSearchQuery, e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
-                      setSearchQuery('');
+                      resetFeedBatch(setSearchQuery, '');
                       setIsSearchOpen(false);
                     }
                   }}
@@ -1143,7 +979,7 @@ export function ExploreTabs({
                 {searchQuery.trim().length > 0 ? (
                   <button
                     type="button"
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => resetFeedBatch(setSearchQuery, '')}
                     className="ex-search-action-btn"
                     title="Clear search query"
                     aria-label="Clear search"
@@ -1182,7 +1018,7 @@ export function ExploreTabs({
         </header>
 
         {/* Subtoolbar with Date Slider, View-specific indicator, and Company/Topic Filters */}
-        {(view === 'latest' || view === 'trending' || view === 'saved') && (
+        {(view === 'latest' || view === 'trending') && (
           <div className="ex-subtoolbar">
             <div className="ex-subtoolbar-inner">
               <div className="ex-subtoolbar-left">
@@ -1224,7 +1060,7 @@ export function ExploreTabs({
                                 type="button"
                                 className={`ex-day-cell ${isSelected ? 'is-selected' : ''} ${hasStories ? 'has-stories' : ''}`}
                                 onClick={() => {
-                                  setSelectedDay(d);
+                                  resetFeedBatch(setSelectedDay, d);
                                   setOpenDropdown(null);
                                 }}
                               >
@@ -1273,7 +1109,7 @@ export function ExploreTabs({
                                 type="button"
                                 className={`ex-month-item ${isSelected ? 'is-selected' : ''}`}
                                 onClick={() => {
-                                  setSelectedMonth(m.name);
+                                  resetFeedBatch(setSelectedMonth, m.name);
                                   setOpenDropdown(null);
                                 }}
                               >
@@ -1322,7 +1158,7 @@ export function ExploreTabs({
                                 type="button"
                                 className={`ex-year-item ${isSelected ? 'is-selected' : ''}`}
                                 onClick={() => {
-                                  setSelectedYear(y);
+                                  resetFeedBatch(setSelectedYear, y);
                                   setOpenDropdown(null);
                                 }}
                               >
@@ -1374,7 +1210,7 @@ export function ExploreTabs({
                       role="tab"
                       aria-selected={feedMode === 'highlight'}
                       className={`ex-feed-tab-btn ${feedMode === 'highlight' ? 'is-active' : ''}`}
-                      onClick={() => setFeedMode('highlight')}
+                      onClick={() => resetFeedBatch(setFeedMode, 'highlight')}
                     >
                       <Sparkles size={13} />
                       <span>Highlight ({Math.min(5, highlightStories.length)})</span>
@@ -1385,7 +1221,7 @@ export function ExploreTabs({
                       role="tab"
                       aria-selected={feedMode === 'all'}
                       className={`ex-feed-tab-btn ${feedMode === 'all' ? 'is-active' : ''}`}
-                      onClick={() => setFeedMode('all')}
+                      onClick={() => resetFeedBatch(setFeedMode, 'all')}
                     >
                       <Layers size={13} />
                       <span>All Feed ({totalFeedCount})</span>
@@ -1402,12 +1238,6 @@ export function ExploreTabs({
                   </div>
                 )}
 
-                {view === 'saved' && (
-                  <div className="ex-saved-indicator" title="Saved Stories in your Dossier">
-                    <Bookmark size={13} style={{ color: 'var(--accent)' }} />
-                    <span>Saved Dossier ({savedStories.length})</span>
-                  </div>
-                )}
               </div>
 
               {/* Right: Company & Category filters */}
@@ -1415,7 +1245,7 @@ export function ExploreTabs({
                 <div className="ex-toolbar-filters">
                 <select
                   value={selectedCompany}
-                  onChange={(e) => setSelectedCompany(e.target.value)}
+                  onChange={(e) => resetFeedBatch(setSelectedCompany, e.target.value)}
                   className="ex-filter-dropdown"
                   aria-label="Filter by Company"
                 >
@@ -1432,7 +1262,7 @@ export function ExploreTabs({
 
                 <select
                   value={selectedTopic}
-                  onChange={(e) => setSelectedTopic(e.target.value)}
+                  onChange={(e) => resetFeedBatch(setSelectedTopic, e.target.value)}
                   className="ex-filter-dropdown"
                   aria-label="Filter by Category"
                 >
@@ -1501,7 +1331,7 @@ export function ExploreTabs({
                         {totalFeedCount > 0 && (
                           <button
                             type="button"
-                            onClick={() => setFeedMode('all')}
+                            onClick={() => resetFeedBatch(setFeedMode, 'all')}
                             className="ex-bluf-stream-btn"
                           >
                             <span>Full Stream ({totalFeedCount})</span>
@@ -1516,7 +1346,7 @@ export function ExploreTabs({
                       <div className="ex-bluf-5sec-header">
                         <div className="ex-bluf-5sec-kicker">
                           <Zap size={12} className="ex-bluf-5sec-icon" />
-                          <span>Today's AI Moment • 5-Second Overview</span>
+                          <span>Today&apos;s AI Moment • 5-Second Overview</span>
                         </div>
                         <span className="ex-bluf-5sec-sub">Scannable Executive Takeaways</span>
                       </div>
@@ -1612,7 +1442,7 @@ export function ExploreTabs({
                         <span>Looking for the complete chronological stream?</span>
                         <button
                           type="button"
-                          onClick={() => setFeedMode('all')}
+                          onClick={() => resetFeedBatch(setFeedMode, 'all')}
                           className="ex-highlight-stream-link"
                         >
                           <span>Switch to All Feed ({totalFeedCount} dispatches)</span>
@@ -1635,7 +1465,7 @@ export function ExploreTabs({
                           </span>
                           <button
                             type="button"
-                            onClick={() => setFeedMode('highlight')}
+                            onClick={() => resetFeedBatch(setFeedMode, 'highlight')}
                             style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                           >
                             <Sparkles size={12} />
@@ -1685,7 +1515,7 @@ export function ExploreTabs({
                                 </span>
                                 <button
                                   type="button"
-                                  onClick={() => setFeedMode('highlight')}
+                                  onClick={() => resetFeedBatch(setFeedMode, 'highlight')}
                                   style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                                 >
                                   <Sparkles size={12} />
@@ -1826,17 +1656,7 @@ export function ExploreTabs({
               </div>
             </div>
 
-            {isTrendingLoading ? (
-              <div className="ex-loading-state" style={{ minHeight: 380 }} role="status" aria-live="polite">
-                <NeubenchSpinner size={44} strokeWidth={4.5} />
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--fg)', marginTop: 18, marginBottom: 6 }}>
-                  Loading Weekly Top Trending Dispatches…
-                </h3>
-                <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>
-                  Filtering community-voted dispatches (Resets Sunday 00:00)
-                </p>
-              </div>
-            ) : trendingStories.length === 0 ? (
+            {trendingStories.length === 0 ? (
               <div className="ex-empty" style={{ margin: '40px auto' }}>
                 <TrendingUp size={36} style={{ opacity: 0.45, marginBottom: 14 }} />
                 <h3>No trending dispatches this week</h3>
@@ -1921,127 +1741,6 @@ export function ExploreTabs({
           </div>
         )}
 
-        {/* 3. SAVED DOSSIER VIEW */}
-        {view === 'saved' && (
-          <div style={{ maxWidth: 1360, margin: '0 auto', padding: '0 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 4px 14px', flexWrap: 'wrap', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Bookmark size={20} style={{ color: 'var(--accent)' }} />
-                <div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Saved Research Dossier</h2>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
-                    Your bookmarked stories synced across research sessions ({savedStories.length} saved)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {savedStories.length === 0 ? (
-              <div className="ex-empty" style={{ margin: '40px auto' }}>
-                <Bookmark size={40} style={{ opacity: 0.4, marginBottom: 14 }} />
-                <h3>Your Saved Dossier is Empty</h3>
-                <p style={{ color: 'var(--muted)', maxWidth: 440, margin: '8px auto 20px' }}>
-                  Stories you bookmark appear here for quick access across your research sessions.
-                </p>
-                <button
-                  type="button"
-                  className="ex-btn-primary"
-                  onClick={() => router.replace('/explore?view=latest', { scroll: false })}
-                >
-                  <Sparkles size={14} />
-                  <span>Browse Latest News</span>
-                </button>
-              </div>
-            ) : (
-              <div className="ex-timeline-panels-list" aria-label="Saved AI Dispatches">
-                {savedStories.map((story, idx) => {
-                  const cleanTitle = cleanTitleOnly(story.title);
-                  const entity = detectRealEntityEditorial(story.title, story.company);
-                  const cleanSummary =
-                    story.summary && story.summary.length > 220
-                      ? cleanSummaryText(story.summary)
-                      : generateFiveToEightLineOverviewEditorial(story);
-                  const isLast = idx === savedStories.length - 1;
-
-                  return (
-                    <article key={story.id || idx} className="ex-timeline-panel-item">
-                      <div className="ex-timeline-rail">
-                        <div className="ex-timeline-date-badge">
-                          <span className="ex-timeline-date-day">{story.day}</span>
-                          <span className="ex-timeline-date-month">{story.month}</span>
-                        </div>
-                        {!isLast && <span className="ex-timeline-rail-line" />}
-                      </div>
-
-                      <div className="ex-panel-card">
-                        <div className="ex-panel-meta-row">
-                          <span className={`ex-tag ex-tag-topic ex-topic-${getTopicSlug(story.topic)}`}>
-                            <span className="ex-tag-dot" />
-                            {story.topic || 'Products'}
-                          </span>
-                          {entity && (
-                            <span className={`ex-tag ex-tag-entity ex-entity-${getEntitySlug(entity)}`}>
-                              {entity}
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="ex-panel-title">
-                          <span>{cleanTitle}</span>
-                        </h3>
-
-                        {cleanSummary && (
-                          <p className="ex-panel-summary">
-                            {cleanSummary}
-                          </p>
-                        )}
-
-                        <div className="ex-panel-footer">
-                          <div className="ex-panel-footer-links">
-                            <Link
-                              href={`/story/${story.slug}`}
-                              className="ex-panel-read-link"
-                            >
-                              <span>Read full story</span>
-                              <ArrowRight size={13} />
-                            </Link>
-                          </div>
-
-                          <div className="ex-panel-actions">
-                            <UpvoteButton slug={story.slug} baseCount={story.upvoteCount ?? 0} initialVoted={localVoteSlugs.has(story.slug)} />
-                            <BookmarkButton slug={story.slug} />
-                            <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} />
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 3. BENCHMARKS VIEW */}
-        {view === 'benchmarks' && (
-          <div className="ex-benchmarks-embed-wrap" style={{ maxWidth: 1360, margin: '0 auto', padding: '0 20px 60px' }}>
-            <ModelBenchmarksComparator embedded />
-          </div>
-        )}
-
-        {/* 4. ABOUT VIEW */}
-        {view === 'about' && (
-          <AboutMainView
-            onBrowseLatest={() => router.replace('/explore?view=latest', { scroll: false })}
-          />
-        )}
-
-        {/* 5. FEEDBACK & CONNECT VIEW */}
-        {(view === 'connect' || view === 'feedback') && (
-          <FeedbackConnectMainView
-            onBrowseLatest={() => router.replace('/explore?view=latest', { scroll: false })}
-          />
-        )}
       </main>
     </div>
   );

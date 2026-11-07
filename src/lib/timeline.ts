@@ -1,10 +1,10 @@
 import {
   getPublishedStories,
+  getPublishedStoriesBySlugs,
   getPublishedStoriesForDate,
   getPublishedStoriesCountForDate,
   getUpvoteCounts,
 } from '@/lib/actions/stories';
-import { STORIES_TAG } from '@/lib/cache-tags';
 import { stories as seedStories } from '@/app/stories';
 import { canonicalizeUrl, slugify } from '@/lib/slug';
 import { colorForTopic } from '@/lib/story-colors';
@@ -123,7 +123,7 @@ async function fetchMergedTimelineInternal(): Promise<TimelineStoryDisplay[]> {
     ? [[], {}]
     : await Promise.all([
         getPublishedStories(),
-        getUpvoteCounts().catch(() => ({})),
+        getUpvoteCounts(),
       ]);
 
   const seedConverted = seedStories.map(convertSeedStory);
@@ -204,7 +204,7 @@ async function fetchMergedTimelineInternal(): Promise<TimelineStoryDisplay[]> {
 }
 
 /**
- * The full merged timeline (live RSS + published DB rows + seed history),
+ * The full merged timeline (published DB rows + seed history),
  * cached in memory with a sliding TTL to eliminate repetitive Supabase egress.
  */
 export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
@@ -249,6 +249,32 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
   return inFlightTimelinePromise;
 }
 
+export async function getTimelineStoriesBySlugs(slugs: string[]): Promise<TimelineStoryDisplay[]> {
+  const requestedSlugs = [...new Set(slugs)].slice(0, 500);
+  if (requestedSlugs.length === 0) return [];
+
+  const [publishedStories, upvoteCounts] = await Promise.all([
+    getPublishedStoriesBySlugs(requestedSlugs),
+    getUpvoteCounts(requestedSlugs),
+  ]);
+  const storiesBySlug = new Map(publishedStories.map((story) => [story.slug, story]));
+
+  for (const seedStory of seedStories) {
+    const story = convertSeedStory(seedStory);
+    if (requestedSlugs.includes(story.slug) && !storiesBySlug.has(story.slug)) {
+      storiesBySlug.set(story.slug, story);
+    }
+  }
+
+  return requestedSlugs
+    .map((slug) => storiesBySlug.get(slug))
+    .filter((story): story is Story => story !== undefined)
+    .sort((a, b) => b.event_date.localeCompare(a.event_date))
+    .map((story) =>
+      formatStoryForDisplay(story, colorForTopic(story.topic), upvoteCounts[story.slug] ?? 0),
+    );
+}
+
 export interface TimelinePage {
   stories: TimelineStoryDisplay[];
   /** Total stories across the full merged set (unfiltered). */
@@ -288,7 +314,7 @@ export async function getStoriesForDate(
       return { stories: fullCached.data, total: fullCached.data.length, mode: 'all' };
     }
     const deduped = deduplicateStories(fullCached.data);
-    const ranked = selectDigestHighlights(deduped as any, 5) as TimelineStoryDisplay[];
+    const ranked = selectDigestHighlights(deduped, 5);
     const top5 = ranked.length > 0 ? ranked : deduped.slice(0, 5);
     return { stories: top5, total: fullCached.data.length, mode: 'highlights' };
   }
@@ -341,7 +367,7 @@ export async function getStoriesForDate(
     }
 
     const deduped = deduplicateStories(unique);
-    const ranked = selectDigestHighlights(deduped as any, 5) as TimelineStoryDisplay[];
+    const ranked = selectDigestHighlights(deduped, 5);
     const top5 = ranked.length > 0 ? ranked : deduped.slice(0, 5);
 
     const result: DateStoriesResult = {
@@ -392,7 +418,7 @@ export async function getStoriesForDate(
   dateStoriesCache.set(dateStr, { data: dedupedUnique, timestamp: now });
 
   // Pre-warm highlights cache from this complete set
-  const ranked = selectDigestHighlights(dedupedUnique as any, 5) as TimelineStoryDisplay[];
+  const ranked = selectDigestHighlights(dedupedUnique, 5);
   const top5 = ranked.length > 0 ? ranked : dedupedUnique.slice(0, 5);
   dateHighlightsCache.set(dateStr, {
     data: { stories: top5, total: dedupedUnique.length, mode: 'highlights' },

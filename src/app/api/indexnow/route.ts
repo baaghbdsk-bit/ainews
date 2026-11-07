@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { submitToIndexNow } from '@/lib/seo/indexnow';
 import { getTimelinePage } from '@/lib/timeline';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.neubench.workers.dev';
 
   const coreUrls = [
     `${siteUrl}/`,
     `${siteUrl}/explore`,
-    `${siteUrl}/explore?view=latest`,
+    `${siteUrl}/latest`,
+    `${siteUrl}/trending`,
     `${siteUrl}/benchmarks`,
     `${siteUrl}/about`,
     `${siteUrl}/feedback`,

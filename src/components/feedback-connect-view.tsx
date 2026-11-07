@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import Link from 'next/link';
 import {
   Mail,
   Send,
   CheckCircle2,
   AlertCircle,
-  Loader2,
   Share2,
   ExternalLink,
   Sparkles,
@@ -25,11 +25,7 @@ const FEEDBACK_CATEGORIES = [
   { value: 'other', label: 'Other', desc: 'General thoughts or questions' },
 ];
 
-interface FeedbackConnectMainViewProps {
-  onBrowseLatest: () => void;
-}
-
-export function FeedbackConnectMainView({ onBrowseLatest }: FeedbackConnectMainViewProps) {
+export function FeedbackConnectMainView() {
   const [category, setCategory] = useState('ui_ux');
   const [comment, setComment] = useState('');
   const [email, setEmail] = useState('');
@@ -370,10 +366,10 @@ export function FeedbackConnectMainView({ onBrowseLatest }: FeedbackConnectMainV
 
       {/* Return to Live Stream */}
       <div className="dossier-footer-nav" style={{ marginTop: '28px' }}>
-        <button type="button" className="hero-action-btn btn-primary" onClick={onBrowseLatest}>
+        <Link href="/latest" className="hero-action-btn btn-primary">
           <Sparkles size={14} />
           <span>Return to Live Stream</span>
-        </button>
+        </Link>
       </div>
     </div>
   );

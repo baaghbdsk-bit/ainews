@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { connection } from "next/server";
 import { getMergedTimeline } from "@/lib/timeline";
 import { ExploreTabs } from "@/components/explore-tabs";
-import { NeubenchLoadingLogo } from "@/components/loading";
 
 export const metadata: Metadata = {
   title: "Latest AI News & Breakthroughs — NeuBench",
@@ -19,16 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LatestPage() {
-  let stories: Awaited<ReturnType<typeof getMergedTimeline>> = [];
-  try {
-    stories = await getMergedTimeline();
-  } catch {
-    stories = [];
-  }
-
-  return (
-    <Suspense fallback={<NeubenchLoadingLogo variant="fullscreen" size={56} label="Loading Latest AI News…" />}>
-      <ExploreTabs initialView="latest" stories={stories} />
-    </Suspense>
-  );
+  await connection();
+  const stories = await getMergedTimeline();
+  return <ExploreTabs initialView="latest" stories={stories} />;
 }

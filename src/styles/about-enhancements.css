@@ -225,6 +225,66 @@
   }
 }
 
+@media (max-width: 1080px) {
+  .about-main-container {
+    padding: 18px 24px 36px;
+    gap: 30px;
+  }
+
+  .about-v2-hero {
+    padding: 24px 12px 10px;
+  }
+
+  .about-v2-cta {
+    padding: 28px 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-main-container {
+    padding: 14px 16px 28px;
+    gap: 24px;
+  }
+
+  .about-v2-hero {
+    align-items: flex-start;
+    padding: 14px 0 4px;
+    text-align: left;
+    gap: 12px;
+  }
+
+  .about-v2-kicker {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .about-v2-title {
+    font-size: clamp(1.75rem, 8vw, 2.45rem);
+    line-height: 1.15;
+  }
+
+  .about-v2-lede {
+    font-size: 15px;
+    text-align: left;
+  }
+
+  .about-v2-cta {
+    align-items: stretch;
+    padding: 22px 16px;
+    text-align: left;
+  }
+
+  .about-v2-cta-buttons {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .about-v2-cta-buttons > a {
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
 .about-v2-vector-card {
   background: var(--surface);
   border: 1px solid var(--line2);

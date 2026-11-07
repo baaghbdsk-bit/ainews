@@ -15,14 +15,14 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Unexpected error while rendering the timeline:", error);
+    console.error("Unexpected error while rendering the page:", error);
   }, [error]);
 
   return (
     <main className="site-frame archive-page">
       <SiteHeader />
       <div className="empty-state" role="alert">
-        <p>Something went wrong loading the timeline.</p>
+        <p>We couldn&apos;t load this page.</p>
         <button type="button" onClick={reset}>
           Try again
         </button>

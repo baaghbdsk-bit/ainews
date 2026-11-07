@@ -1,32 +1,34 @@
-import { Suspense } from "react";
-import type { Metadata } from "next";
-import { getMergedTimeline } from "@/lib/timeline";
-import { ExploreTabs } from "@/components/explore-tabs";
-import { NeubenchLoadingLogo } from "@/components/loading";
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: "Live AI News Stream & Breakthrough Radar",
-  description:
-    "Real-time one-stop feed of all global artificial intelligence developments. Filter by date, lab, company, or topic. Read verified AI news without visiting 10 different sites.",
-  alternates: { canonical: "/explore" },
-  openGraph: {
-    title: "Live AI News Stream — NeuBench",
-    description:
-      "The living pulse of artificial intelligence: real-time news, model releases, and breakthroughs in a single unified stream.",
-  },
+type ExploreSearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+const ROUTES: Record<string, string> = {
+  latest: '/latest',
+  trending: '/trending',
+  saved: '/saved',
+  benchmarks: '/benchmarks',
+  about: '/about',
+  connect: '/connect',
+  feedback: '/connect',
 };
 
-export default async function ExplorePage() {
-  let stories: Awaited<ReturnType<typeof getMergedTimeline>> = [];
-  try {
-    stories = await getMergedTimeline();
-  } catch {
-    stories = [];
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: ExploreSearchParams;
+}) {
+  const params = await searchParams;
+  const view = Array.isArray(params.view) ? params.view[0] : params.view;
+  const target = ROUTES[view ?? 'latest'] ?? '/latest';
+  const query = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (key === 'view' || value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      query.append(key, item);
+    }
   }
 
-  return (
-    <Suspense fallback={<NeubenchLoadingLogo variant="fullscreen" size={56} label="Loading AI intelligence radar…" />}>
-      <ExploreTabs stories={stories} />
-    </Suspense>
-  );
+  const queryString = query.toString();
+  redirect(queryString ? `${target}?${queryString}` : target);
 }

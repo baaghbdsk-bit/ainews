@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { ExploreTabs } from "@/components/explore-tabs";
-import { NeubenchLoadingLogo } from "@/components/loading";
+import { SiteHeader } from "@/app/site-header";
+import { AboutMainView } from "@/components/views-about";
 
 export const metadata: Metadata = {
   title: "About NeuBench — The One-Stop AI News Platform",
@@ -20,8 +19,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <Suspense fallback={<NeubenchLoadingLogo variant="fullscreen" size={56} label="Loading About…" />}>
-      <ExploreTabs initialView="about" stories={[]} />
-    </Suspense>
+    <main className="site-frame archive-page">
+      <SiteHeader className="story-article-topbar" />
+      <AboutMainView />
+    </main>
   );
 }

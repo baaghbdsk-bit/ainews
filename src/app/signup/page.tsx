@@ -16,11 +16,11 @@ export default function SignupPage() {
       <nav className="auth-page-footer-nav" aria-label="Auth page navigation">
         <Link href="/home" className="auth-page-footer-link">Home</Link>
         <span>•</span>
-        <Link href="/explore?view=latest" className="auth-page-footer-link">Latest AI News</Link>
+        <Link href="/latest" className="auth-page-footer-link">Latest AI News</Link>
         <span>•</span>
         <Link href="/benchmarks" className="auth-page-footer-link">Benchmarks</Link>
         <span>•</span>
-        <Link href="/explore?view=about" className="auth-page-footer-link">About</Link>
+        <Link href="/about" className="auth-page-footer-link">About</Link>
       </nav>
     </main>
   );

@@ -18,17 +18,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/explore`,
-      changeFrequency: 'hourly',
-      priority: 1.0,
-    },
-    {
-      url: `${BASE_URL}/explore?view=latest`,
+      url: `${BASE_URL}/latest`,
       changeFrequency: 'hourly',
       priority: 0.95,
     },
     {
-      url: `${BASE_URL}/explore?view=trending`,
+      url: `${BASE_URL}/trending`,
       changeFrequency: 'hourly',
       priority: 0.9,
     },
@@ -38,17 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.95,
     },
     {
-      url: `${BASE_URL}/explore?view=benchmarks`,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${BASE_URL}/explore?view=about`,
+      url: `${BASE_URL}/about`,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${BASE_URL}/explore?view=connect`,
+      url: `${BASE_URL}/connect`,
       changeFrequency: 'monthly',
       priority: 0.6,
     },

@@ -7,6 +7,7 @@ import { WelcomeGate } from "@/components/auth/welcome-gate";
 import { GuestNotice } from "@/components/auth/guest-notice";
 import { PwaRegister } from "@/components/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { MobilePrimaryNavigation } from "@/components/mobile-primary-navigation";
 
 import "./globals.css";
 
@@ -149,7 +150,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     "@type": "SearchAction",
                     "target": {
                       "@type": "EntryPoint",
-                      "urlTemplate": `${siteUrl}/explore?view=latest&q={search_term_string}`,
+                      "urlTemplate": `${siteUrl}/latest?q={search_term_string}`,
                     },
                     "query-input": "required name=search_term_string",
                   },
@@ -277,6 +278,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }
           `}</style>
         {children}
+        <MobilePrimaryNavigation />
         <WelcomeGate />
         <AuthDialog />
         <GuestNotice />

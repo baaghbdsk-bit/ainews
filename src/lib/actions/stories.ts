@@ -19,10 +19,6 @@ import { isMissingSchemaError } from '@/lib/supabase/api-guard';
 const PUBLISHED_STORY_COLUMNS =
   'id, slug, title, summary, significance, deck, key_points, why_it_matters, company, image_url, source, source_url, topic, event_date, published_at, status, updated_at';
 
-/** Rows per page when reading the archive. PostgREST returns at most this
- *  many rows in one response, so the read has to be paged. */
-const STORY_PAGE_SIZE = 1000;
-
 /**
  * Fetch all published stories ordered by event_date descending.
  *
@@ -35,22 +31,23 @@ const STORY_PAGE_SIZE = 1000;
  * The second sort column keeps the order stable across pages, so a row
  * cannot be skipped or repeated at a boundary.
  */
-// Helper to prevent database queries from stalling page requests
-function withTimeout<T>(promise: Promise<T>, ms = 2500, fallback: T): Promise<T> {
+class QueryTimeoutError extends Error {
+  constructor(operation: string, ms: number) {
+    super(`${operation} timed out after ${ms}ms`);
+    this.name = 'QueryTimeoutError';
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms = 2500, operation = 'Database query'): Promise<T> {
   let timer: ReturnType<typeof setTimeout>;
-  const timeout = new Promise<T>((resolve) => {
-    timer = setTimeout(() => resolve(fallback), ms);
+  const timeout = new Promise<T>((_, reject) => {
+    timer = setTimeout(() => reject(new QueryTimeoutError(operation, ms)), ms);
   });
-  return Promise.race([
-    promise.then((res) => {
-      clearTimeout(timer);
-      return res;
-    }).catch(() => {
-      clearTimeout(timer);
-      return fallback;
-    }),
-    timeout,
-  ]);
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+function isQueryTimeoutError(error: unknown): error is QueryTimeoutError {
+  return error instanceof QueryTimeoutError;
 }
 
 export async function getPublishedStories(): Promise<Story[]> {
@@ -75,9 +72,42 @@ export async function getPublishedStories(): Promise<Story[]> {
       return ((data ?? []) as Story[]);
     };
 
-    return await withTimeout(fetchQuery(), 2500, []);
+    return await withTimeout(fetchQuery(), 2500, 'Published stories query');
   } catch (err) {
     console.error('Error fetching published stories:', err);
+    if (isQueryTimeoutError(err)) throw err;
+    return [];
+  }
+}
+
+export async function getPublishedStoriesBySlugs(slugs: string[]): Promise<Story[]> {
+  const uniqueSlugs = [...new Set(slugs)].slice(0, 500);
+  if (uniqueSlugs.length === 0) return [];
+
+  const supabase = createPublicClient();
+  if (!supabase) return [];
+
+  try {
+    const fetchStories = async (): Promise<Story[]> => {
+      const { data, error } = await supabase
+        .from('stories')
+        .select(PUBLISHED_STORY_COLUMNS)
+        .eq('status', 'published')
+        .in('slug', uniqueSlugs)
+        .order('event_date', { ascending: false });
+
+      if (error) {
+        console.error('Failed to fetch saved published stories:', error);
+        return [];
+      }
+
+      return (data ?? []) as Story[];
+    };
+
+    return await withTimeout(fetchStories(), 2500, 'Saved stories query');
+  } catch (err) {
+    console.error('Error fetching saved published stories:', err);
+    if (isQueryTimeoutError(err)) throw err;
     return [];
   }
 }
@@ -105,9 +135,10 @@ export async function getPublishedStoriesCountForDate(dateStr: string): Promise<
       return count ?? 0;
     };
 
-    return await withTimeout(fetchCount(), 2500, 0);
+    return await withTimeout(fetchCount(), 2500, 'Published story count query');
   } catch (err) {
     console.error('Error counting published stories for date:', dateStr, err);
+    if (isQueryTimeoutError(err)) throw err;
     return 0;
   }
 }
@@ -137,9 +168,10 @@ export async function getPublishedStoriesForDate(dateStr: string, limit = 300): 
       return (data ?? []) as Story[];
     };
 
-    return await withTimeout(fetchStories(), 2500, []);
+    return await withTimeout(fetchStories(), 2500, 'Published stories by date query');
   } catch (err) {
     console.error('Error fetching published stories for date:', dateStr, err);
+    if (isQueryTimeoutError(err)) throw err;
     return [];
   }
 }
@@ -158,17 +190,21 @@ const voteCountsClient = (): ReturnType<typeof createPublicClient> =>
  * Current upvote totals per story slug, read from the aggregate vote table.
  * A missing table degrades to an empty map instead of failing the page.
  */
-export async function getUpvoteCounts(): Promise<Record<string, number>> {
+export async function getUpvoteCounts(slugs?: string[]): Promise<Record<string, number>> {
   const counts: Record<string, number> = {};
+  const requestedSlugs = slugs ? [...new Set(slugs)].slice(0, 500) : undefined;
+  if (requestedSlugs?.length === 0) return counts;
 
   const supabase = voteCountsClient();
   if (!supabase) return counts;
 
   try {
     const fetchVotes = async (): Promise<Record<string, number>> => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('story_vote_counts')
         .select('story_slug, upvote_count');
+      if (requestedSlugs) query.in('story_slug', requestedSlugs);
+      const { data, error } = await query;
 
       if (error) {
         if (!isMissingSchemaError(error)) {
@@ -183,9 +219,10 @@ export async function getUpvoteCounts(): Promise<Record<string, number>> {
       return counts;
     };
 
-    return await withTimeout(fetchVotes(), 2500, counts);
+    return await withTimeout(fetchVotes(), 2500, 'Upvote counts query');
   } catch (err) {
     console.error('Error fetching upvote counts:', err);
+    if (isQueryTimeoutError(err)) throw err;
     return counts;
   }
 }

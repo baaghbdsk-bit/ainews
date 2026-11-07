@@ -870,7 +870,7 @@
 @media (max-width: 1080px) {
   .story-article {
     width: min(100% - 40px, 960px);
-    margin: clamp(40px, 8vh, 96px) auto 100px;
+    margin: clamp(24px, 5vh, 60px) auto 48px;
   }
 }
 
@@ -881,17 +881,42 @@
 
   .story-article {
     width: 100%;
-    margin: 40px auto 80px;
-    padding: 0 20px;
+    margin: 24px auto 32px;
+    padding: 0 clamp(16px, 5vw, 24px);
   }
 
   .story-article h1 {
     max-width: 100%;
-    margin: 20px 0 16px;
+    margin: 16px 0 14px;
+    font-size: clamp(1.75rem, 7vw, 2.4rem);
+    line-height: 1.16;
+    overflow-wrap: anywhere;
   }
 
   .story-article-meta {
     margin-left: 0;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+  }
+
+  .story-article-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .story-article-actions .story-action-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .story-article table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .story-article pre,
+  .story-article code {
+    overflow-wrap: anywhere;
   }
 }
-

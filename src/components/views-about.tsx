@@ -12,17 +12,12 @@ import {
   Radio,
   BarChart2,
   ArrowRight,
-  CheckCircle2,
   Wrench,
   TrendingUp,
   ExternalLink,
 } from "lucide-react";
 
-interface AboutMainViewProps {
-  onBrowseLatest: () => void;
-}
-
-export function AboutMainView({ onBrowseLatest }: AboutMainViewProps) {
+export function AboutMainView() {
   return (
     <div className="about-main-container">
       {/* 1. Hero Section */}
@@ -211,16 +206,16 @@ export function AboutMainView({ onBrowseLatest }: AboutMainViewProps) {
           Browse real-time dispatches, benchmark capability matrices, or track community consensus.
         </p>
         <div className="about-v2-cta-buttons">
-          <button type="button" className="about-v2-btn-primary" onClick={onBrowseLatest}>
+          <Link href="/latest" className="about-v2-btn-primary">
             <Sparkles size={15} />
             <span>Browse Latest Stories</span>
-          </button>
+          </Link>
           <Link href="/benchmarks" className="about-v2-btn-secondary">
             <BarChart2 size={15} />
             <span>Benchmark Comparator</span>
             <ArrowRight size={13} />
           </Link>
-          <Link href="/explore?view=connect" className="about-v2-btn-secondary">
+          <Link href="/connect" className="about-v2-btn-secondary">
             <span>Feedback &amp; Connect</span>
             <ExternalLink size={13} />
           </Link>

@@ -302,3 +302,70 @@ html[data-theme="dark"] .specs-table th {
   background: #7e22ce;
   transform: translateY(-1px);
 }
+
+@media (max-width: 900px) {
+  .comparison-container {
+    width: min(100% - 36px, 760px);
+    padding-top: 1rem;
+  }
+
+  .comparison-breadcrumbs {
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    white-space: nowrap;
+  }
+
+  .comparison-cta {
+    margin-top: 2rem;
+    padding: 1.75rem 1.25rem;
+  }
+
+  .benchmarks-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .specs-table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 600px) {
+  .comparison-container {
+    width: min(100% - 28px, 560px);
+  }
+
+  .comparison-hero {
+    margin-bottom: 1.75rem;
+  }
+
+  .comparison-title {
+    font-size: clamp(1.7rem, 8vw, 2.25rem);
+    overflow-wrap: anywhere;
+  }
+
+  .comparison-subtitle {
+    font-size: 0.96rem;
+  }
+
+  .comparison-scoreboard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .score-card {
+    padding: 1rem;
+  }
+
+  .faq-card {
+    padding: 1rem;
+  }
+
+  .comparison-cta-btn {
+    min-height: 44px;
+    justify-content: center;
+  }
+}

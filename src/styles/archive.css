@@ -479,3 +479,43 @@
   .archive-filter-panel { padding: 18px 16px 16px; }
   .date-filter { grid-template-columns: minmax(0, 1fr); }
 }
+
+@media (max-width: 1080px) {
+  .archive-topbar {
+    height: 60px !important;
+    min-height: 60px !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 8px 18px !important;
+  }
+
+  .archive-topbar .global-nav {
+    display: none !important;
+  }
+
+  .archive-topbar .account-slot {
+    gap: 6px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .archive-topbar {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 6px 14px !important;
+  }
+
+  .archive-topbar .wordmark {
+    font-size: 20px;
+  }
+
+  .archive-topbar .wordmark-symbol {
+    width: 32px;
+    height: 32px;
+  }
+
+  .archive-topbar .account-slot {
+    margin-left: auto !important;
+  }
+}

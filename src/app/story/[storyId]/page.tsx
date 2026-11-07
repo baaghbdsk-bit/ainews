@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowUpRight, BookOpen, ExternalLink, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookOpen, Sparkles } from 'lucide-react';
 import { getStoryBySlug, getStoryBySlugPrefix, getUpvoteCount } from '@/lib/actions/stories';
 import { stories as seedStories } from '../../stories';
 import { slugify } from '@/lib/slug';
@@ -140,7 +140,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
 
       <article className="story-article">
         <div className="story-article-meta">
-          <Link href="/explore?view=latest" className="story-back-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--muted)', textDecoration: 'none', marginRight: 12 }}>
+          <Link href="/latest" className="story-back-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--muted)', textDecoration: 'none', marginRight: 12 }}>
             <ArrowLeft size={14} />
             <span>Timeline</span>
           </Link>

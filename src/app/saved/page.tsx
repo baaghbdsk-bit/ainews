@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { ExploreTabs } from "@/components/explore-tabs";
-import { NeubenchLoadingLogo } from "@/components/loading";
+import { SiteHeader } from "@/app/site-header";
+import { SavedStoriesView } from "@/components/saved-stories-view";
 
 export const metadata: Metadata = {
   title: "Saved Intelligence Dossier — NeuBench",
@@ -19,8 +18,9 @@ export const metadata: Metadata = {
 
 export default function SavedPage() {
   return (
-    <Suspense fallback={<NeubenchLoadingLogo variant="fullscreen" size={56} label="Loading Saved Stories…" />}>
-      <ExploreTabs initialView="saved" stories={[]} />
-    </Suspense>
+    <div className="site-frame archive-page">
+      <SiteHeader className="story-article-topbar" />
+      <SavedStoriesView />
+    </div>
   );
 }
