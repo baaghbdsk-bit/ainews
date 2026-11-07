@@ -1,9 +1,9 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- NeuBench wordmark logo for Open Graph / schema.org. Shows the 'E' letter mark. -->
 <svg width='1200' height='1200' viewBox='0 0 1200 1200' fill='none' xmlns='http://www.w3.org/2000/svg'>
   <rect width='1200' height='1200' rx='200' fill='#0A0A0F'/>
   <rect x='180' y='250' width='840' height='180' rx='90' fill='#4777FF'/>
-  <rect x='180' y='490' width='840' height='180' rx='90' fill='#8055F5'/>
+  <rect x='180' y='490' width='840' height='180' rx='90' fill='#FDE047'/>
   <rect x='180' y='730' width='840' height='180' rx='90' fill='#13DCCB'/>
   <text x='600' y='1020' text-anchor='middle' font-family='Geist, system-ui, sans-serif' font-size='140' font-weight='700' fill='#FFFFFF'>NeuBench</text>
 </svg>

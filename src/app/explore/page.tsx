@@ -2,10 +2,18 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getMergedTimeline } from "@/lib/timeline";
 import { ExploreTabs } from "@/components/explore-tabs";
+import { NeubenchLoadingLogo } from "@/components/loading";
 
 export const metadata: Metadata = {
-  title: "Explore — NeuBench",
+  title: "Live AI News Stream & Breakthrough Radar",
+  description:
+    "Real-time one-stop feed of all global artificial intelligence developments. Filter by date, lab, company, or topic. Read verified AI news without visiting 10 different sites.",
   alternates: { canonical: "/explore" },
+  openGraph: {
+    title: "Live AI News Stream — NeuBench",
+    description:
+      "The living pulse of artificial intelligence: real-time news, model releases, and breakthroughs in a single unified stream.",
+  },
 };
 
 export default async function ExplorePage() {
@@ -17,7 +25,7 @@ export default async function ExplorePage() {
   }
 
   return (
-    <Suspense fallback={<div style={{ padding: 40, color: "var(--fg-muted)" }}>Loading…</div>}>
+    <Suspense fallback={<NeubenchLoadingLogo variant="fullscreen" size={56} label="Loading AI intelligence radar…" />}>
       <ExploreTabs stories={stories} />
     </Suspense>
   );

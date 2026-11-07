@@ -1,39 +1,20 @@
 /* Entry point: Tailwind plus the ordered semantic modules under src/styles/.
- * Import order is significant — it mirrors the original source order of
- * src/app/globals.css and therefore the compiled cascade order. */
+ * Import order mirrors the compiled cascade order. */
 @import "tailwindcss";
 @import "../styles/base.css";
 @import "../styles/shell.css";
 @import "../styles/archive.css";
-@import "../styles/story-article.css";
 @import "../styles/desktop-shell.css";
 @import "../styles/about.css";
-@import "../styles/sidebar.css";
 @import "../styles/ui-layer.css";
-@import "../styles/daily-digest.css";
-@import "../styles/sidebar-definitive.css";
 @import "../styles/about-enhancements.css";
 @import "../styles/feedback-enhancements.css";
-@import "../styles/stats-grid.css";
+@import "./benchmarks/benchmarks.css";
 @import "../styles/badges.css";
-@import "../styles/digest-enhancements.css";
 @import "../styles/light-mode-polish.css";
-@import "../styles/hero-metrics.css";
-@import "../styles/what-happened.css";
-@import "../styles/ai-streamer.css";
 @import "../styles/loading.css";
 @import "../styles/auth.css";
 @import "../styles/app-palette.css";
 @import "../styles/pwa.css";
 @import "../styles/home-launcher.css";
 @import "../styles/explore.css";
-
-.theme-fab {
-  position: fixed; right: 18px; bottom: 18px; z-index: 200;
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  background: var(--surface); color: var(--fg);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
-}
-.theme-fab:hover { background: var(--surface-hover); }

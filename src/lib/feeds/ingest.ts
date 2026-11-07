@@ -7,8 +7,10 @@ import { STORIES_TAG } from '@/lib/cache-tags';
 import { supabaseServiceRoleKey, supabaseUrl } from '@/lib/env';
 import { isUniqueViolation } from '@/lib/supabase/api-guard';
 import { extractArticle, fetchLeadImage } from './extract-article';
+import { submitToIndexNow } from '@/lib/seo/indexnow';
 import { summarizeArticle } from './summarize';
 import { llmEnabled } from './llm';
+import { areDuplicateStories, deduplicateStories } from '@/lib/story-dedup';
 import type { Database } from '@/lib/supabase/types';
 
 // A story whose source can't be extracted (bot-blocked, client-rendered,
@@ -141,6 +143,7 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
 
   let fetched = 0;
   let newItems = 0;
+  const insertedSlugs: string[] = [];
   // Lead images seen in this run's feeds, keyed by canonical URL. Used to fill
   // tiles for rows ingested before images were captured, without refetching any
   // article page.
@@ -180,12 +183,12 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     // Supabase/PostgREST caps a single select at 1000 rows, so page through
     // the whole table; otherwise dedup only sees the first page and re-imports
     // duplicates for any story beyond row 1000.
-    const existing: { source_url: string; slug: string }[] = [];
+    const existing: { source_url: string; slug: string; title?: string; event_date?: string }[] = [];
     let existingErr: { message: string } | null = null;
     for (let from = 0; ; from += 1000) {
       const { data: page, error: pageErr } = await supabase
         .from('stories')
-        .select('source_url, slug')
+        .select('source_url, slug, title, event_date')
         .range(from, from + 999);
       if (pageErr) { existingErr = pageErr; break; }
       if (!page || page.length === 0) break;
@@ -214,10 +217,17 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     const existingSlugs = new Set<string>(
       existing.map((r) => r.slug),
     );
-    const toInsert = unique.filter(
-      (s) =>
-        !existingUrls.has(canonicalizeUrl(s.source_url)) && !existingSlugs.has(s.slug),
-    );
+    const toInsert = deduplicateStories(unique).filter((s) => {
+      if (existingUrls.has(canonicalizeUrl(s.source_url))) return false;
+      if (existingSlugs.has(s.slug)) return false;
+      return !existing.some((ex) => {
+        if (!ex.title || !ex.event_date || !s.event_date) return false;
+        const diffDays = Math.abs(
+          (new Date(ex.event_date).getTime() - new Date(s.event_date).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return diffDays <= 2 && areDuplicateStories({ title: ex.title, event_date: ex.event_date }, s);
+      });
+    });
 
     // 4. Insert only the new rows (service role bypasses RLS). The company
     //    label is derived once here; enrichStories re-derives it with the body
@@ -241,11 +251,13 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
       const { error: insertErr } = await supabase.from('stories').insert(rows);
       if (!insertErr) {
         newItems = rows.length;
+        insertedSlugs.push(...rows.map((r) => r.slug));
       } else if (isUniqueViolation(insertErr)) {
         // One duplicate slug/URL must not discard the rest of the batch: retry
         // row by row and treat each conflict as an already-present story.
         const perRow = await insertStoriesIndividually(supabase, rows);
         newItems = perRow.inserted;
+        insertedSlugs.push(...rows.slice(0, perRow.inserted).map((r) => r.slug));
         errors.push(...perRow.errors);
       } else {
         errors.push(`Insert failed: ${insertErr.message}`);
@@ -298,6 +310,13 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
     imagesFilled = images.filled;
     imagesRemaining = images.remaining;
     rateLimited = rateLimited || images.rateLimited;
+  }
+
+  // 7b. Notify search engines in real time via IndexNow
+  if (newItems > 0 && insertedSlugs.length > 0) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.neubench.workers.dev';
+    const storyUrls = insertedSlugs.map((slug) => `${siteUrl}/story/${slug}`);
+    submitToIndexNow(storyUrls).catch(() => {});
   }
 
   // 8. Tell the timeline to re-resolve within the hour (only inside Next.js).

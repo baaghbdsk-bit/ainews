@@ -359,49 +359,49 @@ html[data-theme="light"] .story-code-block {
   background-size: auto, auto, 8px 8px;
   transition: background-image 450ms ease, opacity 450ms ease;}
 .archive-page.mode-latest {
-  --shell-bg: #000000;}
+  --shell-bg: var(--bg) !important;}
 .archive-page.mode-latest::before,  .archive-page:not(.mode-digest):not(.mode-trending):not(.mode-saved):not(.mode-feedback):not(.mode-about)::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, rgba(139, 92, 246, 0.12), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, rgba(192, 132, 252, 0.08), transparent 60%),
     radial-gradient(rgba(58, 48, 96, 0.16) 0.7px, transparent 0.7px);}
 .archive-page.mode-digest {
-  --shell-bg: #000000;}
+  --shell-bg: var(--bg) !important;}
 .archive-page.mode-digest::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, rgba(168, 85, 247, 0.11), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, rgba(192, 132, 252, 0.07), transparent 60%),
     radial-gradient(rgba(168, 85, 247, 0.08) 0.7px, transparent 0.7px);}
 .archive-page.mode-trending {
-  --shell-bg: #000000;}
+  --shell-bg: var(--bg) !important;}
 .archive-page.mode-trending::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, rgba(245, 158, 11, 0.09), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, rgba(239, 68, 68, 0.06), transparent 60%),
     radial-gradient(rgba(245, 158, 11, 0.08) 0.7px, transparent 0.7px);}
 .archive-page.mode-saved {
-  --shell-bg: #000000;}
+  --shell-bg: var(--bg) !important;}
 .archive-page.mode-saved::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, rgba(16, 185, 129, 0.09), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, rgba(52, 211, 153, 0.06), transparent 60%),
     radial-gradient(rgba(16, 185, 129, 0.08) 0.7px, transparent 0.7px);}
 .archive-page.mode-feedback {
-  --shell-bg: #000000;}
+  --shell-bg: var(--bg) !important;}
 .archive-page.mode-feedback::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, rgba(56, 189, 248, 0.09), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, rgba(99, 102, 241, 0.07), transparent 60%),
     radial-gradient(rgba(56, 189, 248, 0.08) 0.7px, transparent 0.7px);}
 .archive-page.mode-about {
-  --shell-bg: #000000;}
+  --shell-bg: var(--bg) !important;}
 .archive-page.mode-about::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, rgba(6, 182, 212, 0.09), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, rgba(59, 130, 246, 0.06), transparent 60%),
     radial-gradient(rgba(6, 182, 212, 0.08) 0.7px, transparent 0.7px);}
 .archive-page.mode-benchmarks {
-  --shell-bg: #000000;
+  --shell-bg: var(--bg) !important;
   --shell-accent: #F472B6;}
 .archive-page.mode-benchmarks::before {
   background-image:
@@ -2756,9 +2756,9 @@ html[data-theme="light"] .sidebar-connect-link:hover {
 
 
 
-/* Force fully black background: remove mode-specific colored overlays */
+/* Unified background matching Home broadsheet palette */
 .archive-page {
-  --shell-bg: #000000 !important;
+  --shell-bg: var(--bg) !important;
 }
 .archive-page::before {
   background-image: none !important;
@@ -2770,5 +2770,17 @@ html[data-theme="light"] .sidebar-connect-link:hover {
 .archive-page.mode-feedback,
 .archive-page.mode-about,
 .archive-page.mode-benchmarks {
-  --shell-bg: #000000 !important;
+  --shell-bg: var(--bg) !important;
+}
+.archive-page::before {
+  background-image: none !important;
+}
+.archive-page.mode-latest,
+.archive-page.mode-digest,
+.archive-page.mode-trending,
+.archive-page.mode-saved,
+.archive-page.mode-feedback,
+.archive-page.mode-about,
+.archive-page.mode-benchmarks {
+  --shell-bg: var(--bg) !important;
 }

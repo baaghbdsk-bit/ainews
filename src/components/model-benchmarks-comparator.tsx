@@ -23,15 +23,23 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AI_MODELS_DATA, BENCHMARK_DEFINITIONS } from '@/lib/benchmarks/data';
-import type { BenchmarkCategory } from '@/lib/benchmarks/types';
-import { ModelRadarGraph } from './benchmarks/model-radar-graph';
-import { ModelQuadrantChart } from './benchmarks/model-quadrant-chart';
+import type { AIModelRecord, BenchmarkCategory } from '@/lib/benchmarks/types';
+import { NeubenchSpinner } from '@/components/loading';
 import { BenchmarkGridCard } from './benchmarks/benchmark-grid-card';
-import { BenchmarkSpecsTable } from './benchmarks/benchmark-specs-table';
 import { CatalogueFreshness } from './benchmarks/catalogue-freshness';
 import type { CatalogueFreshnessAudit } from './benchmarks/catalogue-freshness';
 import { getCatalogueAudit } from '@/lib/benchmarks/service';
-import { HeroBenchmarksArt } from './hero-arts';
+
+// Lazy load the 3 specialized visualization engines on demand
+const ModelRadarGraph = React.lazy(() =>
+  import('./benchmarks/model-radar-graph').then((m) => ({ default: m.ModelRadarGraph }))
+);
+const ModelQuadrantChart = React.lazy(() =>
+  import('./benchmarks/model-quadrant-chart').then((m) => ({ default: m.ModelQuadrantChart }))
+);
+const BenchmarkSpecsTable = React.lazy(() =>
+  import('./benchmarks/benchmark-specs-table').then((m) => ({ default: m.BenchmarkSpecsTable }))
+);
 
 type ViewMode = 'grid' | 'radar' | 'quadrant' | 'specs';
 
@@ -134,20 +142,76 @@ export function ModelBenchmarksComparator({
   );
 
   const [viewMode, setViewMode] = useState<ViewMode>(initialView || 'grid');
+  const [isSwitchingView, setIsSwitchingView] = useState(false);
+  const [pendingView, setPendingView] = useState<ViewMode | null>(null);
+  const switchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [selectedBenchmarkIds, setSelectedBenchmarkIds] = useState<string[]>(() =>
     ALL_BENCHMARKS.map((b) => b.id)
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCatalogueLoading, setIsCatalogueLoading] = useState(false);
+  const [isCatalogueLoaded, setIsCatalogueLoaded] = useState(false);
+  const [catalogueModels, setCatalogueModels] = useState<AIModelRecord[]>([]);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
-  const handleViewChange = (mode: ViewMode) => {
-    setViewMode(mode);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('view', mode);
-      window.history.replaceState({}, '', url.toString());
+  const handleOpenAddModelDrawer = async () => {
+    setIsDrawerOpen(true);
+    if (!isCatalogueLoaded) {
+      setIsCatalogueLoading(true);
+      try {
+        const res = await fetch('/api/benchmarks');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.models && Array.isArray(data.models) && data.models.length > 0) {
+            setCatalogueModels(
+              data.models.filter(
+                (m: AIModelRecord) => m.benchmarks && Object.keys(m.benchmarks).length > 0
+              )
+            );
+          } else {
+            setCatalogueModels(SCORED_MODELS);
+          }
+        } else {
+          setCatalogueModels(SCORED_MODELS);
+        }
+      } catch {
+        setCatalogueModels(SCORED_MODELS);
+      } finally {
+        setIsCatalogueLoaded(true);
+        setIsCatalogueLoading(false);
+      }
     }
   };
+
+  const handleViewChange = (mode: ViewMode) => {
+    if (mode === viewMode && !isSwitchingView) return;
+    setIsSwitchingView(true);
+    setPendingView(mode);
+
+    if (switchTimeoutRef.current) {
+      clearTimeout(switchTimeoutRef.current);
+    }
+
+    switchTimeoutRef.current = setTimeout(() => {
+      React.startTransition(() => {
+        setViewMode(mode);
+        setIsSwitchingView(false);
+        setPendingView(null);
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('view', mode);
+          window.history.replaceState({}, '', url.toString());
+        }
+      });
+    }, 240);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (switchTimeoutRef.current) clearTimeout(switchTimeoutRef.current);
+    };
+  }, []);
 
   // Search & filter state inside drawer
   const [searchQuery, setSearchQuery] = useState('');
@@ -222,12 +286,13 @@ export function ModelBenchmarksComparator({
   };
 
   const selectedModels = useMemo(() => {
-    const list = SCORED_MODELS.filter((m) => selectedModelIds.includes(m.id));
+    const pool = catalogueModels.length > 0 ? catalogueModels : SCORED_MODELS;
+    const list = pool.filter((m) => selectedModelIds.includes(m.id));
     if (list.length > 0) return list;
     const defaultIds = topIds('aa-intelligence');
-    const fallbackList = SCORED_MODELS.filter((m) => defaultIds.includes(m.id));
-    return fallbackList.length > 0 ? fallbackList.slice(0, 4) : SCORED_MODELS.slice(0, 4);
-  }, [selectedModelIds]);
+    const fallbackList = pool.filter((m) => defaultIds.includes(m.id));
+    return fallbackList.length > 0 ? fallbackList.slice(0, 4) : pool.slice(0, 4);
+  }, [selectedModelIds, catalogueModels]);
 
   const benchmarkList = useMemo(
     () => ALL_BENCHMARKS.filter((b) => selectedBenchmarkIds.includes(b.id)),
@@ -266,7 +331,10 @@ export function ModelBenchmarksComparator({
   const selectAllBenchmarks = () => setSelectedBenchmarkIds(ALL_BENCHMARKS.map((b) => b.id));
 
   const filteredDrawerModels = useMemo(() => {
-    let list = SCORED_MODELS;
+    if (!isCatalogueLoaded && catalogueModels.length === 0) {
+      return [];
+    }
+    let list = catalogueModels.length > 0 ? catalogueModels : SCORED_MODELS;
 
     if (activeLabFilter === 'OpenWeights') {
       list = list.filter((m) => m.specs.isOpenWeights);
@@ -286,7 +354,7 @@ export function ModelBenchmarksComparator({
     }
 
     return list;
-  }, [searchQuery, activeLabFilter]);
+  }, [searchQuery, activeLabFilter, catalogueModels, isCatalogueLoaded]);
 
   const scoredModelPercent = freshness.totalModels
     ? Math.round((freshness.scoredModelCount / freshness.totalModels) * 100)
@@ -300,44 +368,45 @@ export function ModelBenchmarksComparator({
       className={`benchmarks-container${embedded ? ' is-embedded' : ''}`}
       aria-label="AI Model Benchmarks Comparator"
     >
-      {/* ── 01. Hero Header with Animated Art & Metric Stats ── */}
-      <header className="bench-header-panel" aria-label="Frontier Model Benchmarks Header">
-        <div className="bench-header-content">
-          <div className="bench-header-brand">
-            <span className="bench-badge-chip">
-              <Sparkles size={12} className="text-rose-400" />
-              <span>Audited Model Intelligence</span>
-            </span>
-            <h1 className="bench-headline">
-              Frontier Model Benchmarks.
-              <br />
-              <span className="bench-title-accent">Living Capability Radar.</span>
-            </h1>
-            <p className="bench-lede">
-              Side-by-side empirical performance across {SCORED_MODELS.length} frontier reasoning, coding, and open-weights models with at least one published score. {AI_MODELS_DATA.length - SCORED_MODELS.length} catalogue records without tracked benchmark evidence are withheld from comparison; individual unreported results remain blank rather than inferred.
-            </p>
+      {/* ── 01. Bespoke Empirical Benchmarks Header ── */}
+      <header className="bench-custom-hero" aria-label="About NeuBench Benchmarks">
+        <div className="bench-custom-kicker">
+          <ShieldCheck size={13} className="bench-kicker-icon" />
+          <span>Empirical Evaluation & Capability Index</span>
+        </div>
+        <h1 className="bench-custom-title">
+          Frontier Model Benchmarks & <span className="bench-custom-title-gradient">Capability Radar.</span>
+        </h1>
+        <p className="bench-custom-lede">
+          Side-by-side empirical performance across {SCORED_MODELS.length}+ frontier reasoning, coding, and open-weights models. Benchmarked against standardized academic and autonomous harnesses — with verified context windows and token economics.
+        </p>
 
-            {/* Brought down below the description */}
-            <div className="bench-header-metrics-strip" aria-label="Benchmark summary metrics">
-              <div className="bench-metric-chip">
-                <span className="metric-val">{AI_MODELS_DATA.length}</span>
-                <span className="metric-lbl">Models Audited</span>
-              </div>
-              <div className="bench-metric-chip">
-                <span className="metric-val">{freshness.totalBenchmarkScores}</span>
-                <span className="metric-lbl">Published Scores</span>
-              </div>
-              <div className="bench-metric-chip is-verified">
-                <ShieldCheck size={15} className="text-emerald-400" />
-                <span className="metric-val">{scoredModelPercent}%</span>
-                <span className="metric-lbl">Models With Data</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bench-header-art-wrap">
-            <HeroBenchmarksArt />
-          </div>
+        {/* Telemetry Test Suite Badges */}
+        <div className="bench-custom-tags" aria-label="Evaluated test suites">
+          <span className="bench-custom-tag">
+            <span className="bench-tag-bullet bullet-agent" />
+            Terminal-Bench (Agents)
+          </span>
+          <span className="bench-custom-tag">
+            <span className="bench-tag-bullet bullet-code" />
+            SWE-bench Verified
+          </span>
+          <span className="bench-custom-tag">
+            <span className="bench-tag-bullet bullet-reason" />
+            GPQA Diamond
+          </span>
+          <span className="bench-custom-tag">
+            <span className="bench-tag-bullet bullet-math" />
+            AIME 2024
+          </span>
+          <span className="bench-custom-tag">
+            <span className="bench-tag-bullet bullet-livecode" />
+            LiveCodeBench
+          </span>
+          <span className="bench-custom-tag">
+            <span className="bench-tag-bullet bullet-pricing" />
+            API Pricing & Context
+          </span>
         </div>
       </header>
 
@@ -448,7 +517,7 @@ export function ModelBenchmarksComparator({
                   <button
                     type="button"
                     className="bench-model-add"
-                    onClick={() => setIsDrawerOpen(true)}
+                    onClick={handleOpenAddModelDrawer}
                   >
                     <Plus size={12} />
                     <span>Add model</span>
@@ -496,44 +565,69 @@ export function ModelBenchmarksComparator({
                     </div>
                   )}
 
-                  <div className="drawer-filter-row">
-                    <div className="drawer-search-box">
-                      <Search size={13} className="drawer-search-icon" />
-                      <input
-                        type="text"
-                        placeholder="Search model, provider or architecture (e.g. Claude, o1, Qwen, MoE)..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="drawer-search-input"
-                      />
-                      {searchQuery && (
-                        <button
-                          type="button"
-                          onClick={() => setSearchQuery('')}
-                          className="drawer-search-clear"
-                          aria-label="Clear search query"
-                        >
-                          <X size={12} />
-                        </button>
-                      )}
+                  {isCatalogueLoading ? (
+                    <div
+                      className="drawer-loading-container"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '48px 24px',
+                        gap: 14,
+                        minHeight: 200,
+                      }}
+                    >
+                      <NeubenchSpinner size={28} strokeWidth={4.5} />
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--fg)' }}>
+                          Loading Frontier AI Models...
+                        </p>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: 4, display: 'block' }}>
+                          Fetching verified model records and benchmark scores on demand
+                        </span>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <div className="drawer-filter-row">
+                        <div className="drawer-search-box">
+                          <Search size={13} className="drawer-search-icon" />
+                          <input
+                            type="text"
+                            placeholder="Search model, provider or architecture (e.g. Claude, o1, Qwen, MoE)..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="drawer-search-input"
+                          />
+                          {searchQuery && (
+                            <button
+                              type="button"
+                              onClick={() => setSearchQuery('')}
+                              className="drawer-search-clear"
+                              aria-label="Clear search query"
+                            >
+                              <X size={12} />
+                            </button>
+                          )}
+                        </div>
 
-                    <div className="drawer-filter-pills">
-                      {LAB_FILTERS.map((f) => (
-                        <button
-                          type="button"
-                          key={f.value}
-                          onClick={() => setActiveLabFilter(f.value)}
-                          className={`drawer-pill-filter ${activeLabFilter === f.value ? 'is-active' : ''}`}
-                        >
-                          {f.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                        <div className="drawer-filter-pills">
+                          {LAB_FILTERS.map((f) => (
+                            <button
+                              type="button"
+                              key={f.value}
+                              onClick={() => setActiveLabFilter(f.value)}
+                              className={`drawer-pill-filter ${activeLabFilter === f.value ? 'is-active' : ''}`}
+                            >
+                              {f.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                  {/* Model Selection Chips Grid */}
-                  <div className="drawer-chips-grid">
+                      {/* Model Selection Chips Grid */}
+                      <div className="drawer-chips-grid">
                     {filteredDrawerModels.length === 0 ? (
                       <div className="drawer-empty-search text-center py-6 px-4 col-span-full">
                         <AlertCircle size={20} className="mx-auto mb-2 text-zinc-400 opacity-60" />
@@ -583,8 +677,10 @@ export function ModelBenchmarksComparator({
                       })
                     )}
                   </div>
-                </div>
+                </>
               )}
+            </div>
+          )}
             </div>
 
             {/* Divider between Models and Benchmarks */}
@@ -681,6 +777,16 @@ export function ModelBenchmarksComparator({
 
 
 
+      {/* ── Top Progress Spinner Bar ── */}
+      {isSwitchingView && (
+        <div className="neubench-top-loading-bar" role="status" aria-live="polite">
+          <NeubenchSpinner size={16} strokeWidth={4.5} />
+          <span>
+            Loading {pendingView === 'grid' ? 'Benchmark Grid' : pendingView === 'radar' ? 'Frontier Capability Radar' : pendingView === 'quadrant' ? 'Capability vs Price Quadrant' : 'Technical Specifications'}…
+          </span>
+        </div>
+      )}
+
       {/* ── 05. Interactive View Switcher Toolbar ── */}
       <section className="bench-views-toolbar" aria-label="Benchmark Visualizations Toolbar">
         <div className="views-segmented-control" role="tablist" aria-label="Benchmark Visualizations">
@@ -691,7 +797,11 @@ export function ModelBenchmarksComparator({
             onClick={() => handleViewChange('grid')}
             className={`view-tab-btn view-tab-grid ${viewMode === 'grid' ? 'is-active' : ''}`}
           >
-            <BarChart2 size={16} />
+            {isSwitchingView && pendingView === 'grid' ? (
+              <NeubenchSpinner size={14} strokeWidth={4.5} />
+            ) : (
+              <BarChart2 size={16} />
+            )}
             <span>Benchmark Grid</span>
           </button>
 
@@ -702,7 +812,11 @@ export function ModelBenchmarksComparator({
             onClick={() => handleViewChange('radar')}
             className={`view-tab-btn view-tab-radar ${viewMode === 'radar' ? 'is-active' : ''}`}
           >
-            <Compass size={16} />
+            {isSwitchingView && pendingView === 'radar' ? (
+              <NeubenchSpinner size={14} strokeWidth={4.5} />
+            ) : (
+              <Compass size={16} />
+            )}
             <span>Capability Radar</span>
           </button>
 
@@ -713,7 +827,11 @@ export function ModelBenchmarksComparator({
             onClick={() => handleViewChange('quadrant')}
             className={`view-tab-btn view-tab-quadrant ${viewMode === 'quadrant' ? 'is-active' : ''}`}
           >
-            <Zap size={16} />
+            {isSwitchingView && pendingView === 'quadrant' ? (
+              <NeubenchSpinner size={14} strokeWidth={4.5} />
+            ) : (
+              <Zap size={16} />
+            )}
             <span>Capability vs Price</span>
           </button>
 
@@ -724,7 +842,11 @@ export function ModelBenchmarksComparator({
             onClick={() => handleViewChange('specs')}
             className={`view-tab-btn view-tab-specs ${viewMode === 'specs' ? 'is-active' : ''}`}
           >
-            <Layers size={16} />
+            {isSwitchingView && pendingView === 'specs' ? (
+              <NeubenchSpinner size={14} strokeWidth={4.5} />
+            ) : (
+              <Layers size={16} />
+            )}
             <span>Technical Specs</span>
           </button>
         </div>
@@ -732,35 +854,56 @@ export function ModelBenchmarksComparator({
 
       {/* ── 06. Dynamic Main Visual Display ── */}
       <main className="bench-main-content">
-        {/* VIEW 1: Benchmark Grid of Cards */}
-        {viewMode === 'grid' && (
-          <div className="benchmarks-matrix-grid">
-            {benchmarkList.map((benchmark) => (
-              <BenchmarkGridCard
-                key={benchmark.id}
-                benchmark={benchmark}
-                selectedModels={selectedModels}
-              />
-            ))}
+        {isSwitchingView ? (
+          <div className="bench-subview-loading" role="status" aria-live="polite">
+            <NeubenchSpinner size={42} strokeWidth={4.5} />
+            <h3 className="bench-subview-loading-title">
+              Loading {pendingView === 'grid' ? 'Benchmark Grid Matrix' : pendingView === 'radar' ? 'Frontier Capability Radar' : pendingView === 'quadrant' ? 'Capability vs Price Scatter Quadrant' : 'Technical Specifications Table'}…
+            </h3>
+            <p className="bench-subview-loading-desc">
+              Lazy loading benchmark parameters, evaluations, and interactive chart layers
+            </p>
           </div>
-        )}
+        ) : (
+          <React.Suspense
+            fallback={
+              <div className="bench-subview-loading" role="status" aria-live="polite">
+                <NeubenchSpinner size={42} strokeWidth={4.5} />
+                <h3 className="bench-subview-loading-title">Rendering benchmark evaluation view…</h3>
+              </div>
+            }
+          >
+            {/* VIEW 1: Benchmark Grid of Cards */}
+            {viewMode === 'grid' && (
+              <div className="benchmarks-matrix-grid">
+                {benchmarkList.map((benchmark) => (
+                  <BenchmarkGridCard
+                    key={benchmark.id}
+                    benchmark={benchmark}
+                    selectedModels={selectedModels}
+                  />
+                ))}
+              </div>
+            )}
 
-        {/* VIEW 2: Radar Graph */}
-        {viewMode === 'radar' && (
-          <ModelRadarGraph selectedModels={selectedModels} />
-        )}
+            {/* VIEW 2: Radar Graph */}
+            {viewMode === 'radar' && (
+              <ModelRadarGraph selectedModels={selectedModels} />
+            )}
 
-        {/* VIEW 3: Capability vs Pricing Quadrant */}
-        {viewMode === 'quadrant' && (
-          <ModelQuadrantChart
-            selectedModels={selectedModels}
-            allModels={SCORED_MODELS}
-          />
-        )}
+            {/* VIEW 3: Capability vs Pricing Quadrant */}
+            {viewMode === 'quadrant' && (
+              <ModelQuadrantChart
+                selectedModels={selectedModels}
+                allModels={SCORED_MODELS}
+              />
+            )}
 
-        {/* VIEW 4: Technical Specs Table */}
-        {viewMode === 'specs' && (
-          <BenchmarkSpecsTable selectedModels={selectedModels} />
+            {/* VIEW 4: Technical Specs Table */}
+            {viewMode === 'specs' && (
+              <BenchmarkSpecsTable selectedModels={selectedModels} />
+            )}
+          </React.Suspense>
         )}
       </main>
 

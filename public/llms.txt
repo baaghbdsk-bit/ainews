@@ -1,0 +1,24 @@
+# NeuBench — The One-Stop AI News Platform
+
+> NeuBench is the definitive one-stop destination for real-time artificial intelligence news, breakthroughs, frontier research, and model releases. Rather than browsing 10+ disparate tech publications and social feeds, NeuBench aggregates, verifies, and delivers the living pulse of AI from OpenAI, Anthropic, Google DeepMind, Meta, and leading labs into a single unified timeline.
+
+## Core Capabilities
+
+- **One-Stop AI News Radar (/explore?view=latest)**: Real-time, continuous dispatches covering newly announced frontier models, developer tooling, research breakthroughs, open-weight weights, and AI policy shifts.
+- **Daily Executive Digest (/explore?view=digest)**: High-impact 24-hour briefing summarizing the most consequential artificial intelligence stories with key takeaways and strategic implications.
+- **Trending AI Shifts (/explore?view=trending)**: Community-ranked breakthroughs and papers sorted by engagement, upvotes, and technical significance.
+- **Frontier Model Benchmarks (/explore?view=benchmarks)**: Side-by-side capability matrix and evaluation leaderboards for OpenAI, Anthropic, Google DeepMind, Meta, and DeepSeek.
+- **Company & Lab Dossiers (/topic/[slug])**: Specialized intelligence dossiers dedicated to key AI organizations (OpenAI, Anthropic, Google DeepMind, Meta, Microsoft, NVIDIA, Mistral, DeepSeek).
+
+## Target Audience
+
+AI researchers, developers, founders, tech executives, and enthusiasts who need to track everything happening in artificial intelligence in one place.
+
+## Canonical URLs
+
+- Home: https://app.neubench.workers.dev/home
+- Live AI News Stream: https://app.neubench.workers.dev/explore?view=latest
+- Daily AI Digest: https://app.neubench.workers.dev/explore?view=digest
+- Trending News: https://app.neubench.workers.dev/explore?view=trending
+- Frontier Model Benchmarks: https://app.neubench.workers.dev/explore?view=benchmarks
+- About & Methodology: https://app.neubench.workers.dev/explore?view=about

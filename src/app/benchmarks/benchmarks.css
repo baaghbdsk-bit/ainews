@@ -9,8 +9,12 @@
   --bench-surface: var(--surface);
   --bench-surface-elevated: var(--surface-elevated);
   --bench-line: var(--border);
+  --bench-line-strong: var(--border-strong);
   --bench-text: var(--fg);
   --bench-muted: var(--fg-muted);
+  --bench-faint: var(--fg-faint);
+  --bench-accent: var(--accent);
+  --bench-accent-soft: var(--accent-soft);
   --bench-violet: var(--brand-violet);
   --bench-violet-strong: var(--brand-violet-hover);
   --bench-violet-soft: var(--brand-violet-soft);
@@ -27,10 +31,10 @@
   --bench-dev-teal: var(--brand-teal);
   --bench-dev-lime: #84CC16;
   --bench-dev-orange: #F97316;
-  --bench-dev-pink: #DB2777;
+  --bench-dev-pink: var(--brand-violet);
   --bench-dev-purple: var(--brand-violet);
   --bench-dev-red: #DC2626;
-  --bench-dev-slate: #64748B;
+  --bench-dev-slate: var(--fg-muted);
 }
 
 html[data-theme="light"] {
@@ -64,6 +68,8 @@ html[data-theme="light"] {
 
 .benchmarks-page {
   min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 .benchmarks-container {
@@ -86,44 +92,87 @@ html[data-theme="light"] {
 
 .bench-loading-shell {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 40px 22px;
+  justify-content: center;
+  gap: 16px;
+  min-height: 320px;
+  padding: 60px 24px;
   border: 1px solid var(--bench-line);
   border-radius: 14px;
   background: var(--bench-surface);
   color: var(--bench-muted);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  text-align: center;
 }
 
 .bench-loading-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--bench-violet);
-  animation: bench-loading-pulse 900ms ease-in-out infinite;
+  display: none;
 }
 
-@keyframes bench-loading-pulse {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.15); }
+/* ── Benchmark Sub-View Lazy Loading Container ── */
+.bench-subview-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  gap: 18px;
+  padding: 70px 24px;
+  border: 1px solid var(--bench-line);
+  border-radius: 14px;
+  background: var(--bench-surface);
+  text-align: center;
+  animation: bench-subview-appear 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bench-subview-loading-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--bench-text);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.bench-subview-loading-desc {
+  font-size: 0.8rem;
+  color: var(--bench-muted);
+  margin: 0;
+  max-width: 420px;
+}
+
+@keyframes bench-subview-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── 01. Header Panel ── */
 .bench-header-panel {
   position: relative;
-  background: linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface) 100%);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 32px 36px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 30px 34px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 230px;
-  box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
   margin-bottom: 20px;
   overflow: hidden;
+}
+
+html[data-theme="light"] .bench-header-panel {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
 }
 
 .bench-header-panel::before {
@@ -132,8 +181,8 @@ html[data-theme="light"] {
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(244, 114, 182, 0.5) 30%, rgba(219, 39, 119, 0.6) 70%, transparent 100%);
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--brand-violet) 25%, var(--accent) 75%, transparent 100%);
 }
 
 .bench-header-content {
@@ -160,11 +209,11 @@ html[data-theme="light"] {
   align-items: center;
   gap: 6px;
   align-self: flex-start;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgba(244, 114, 182, 0.12);
-  border: 1px solid rgba(244, 114, 182, 0.35);
-  color: #f472b6;
+  padding: 3.5px 10px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  color: var(--accent);
   font-size: 11px;
   font-weight: 750;
   text-transform: uppercase;
@@ -173,15 +222,16 @@ html[data-theme="light"] {
 
 .bench-headline {
   margin: 0;
+  font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", Georgia, serif;
   font-size: 34px;
   line-height: 1.15;
   font-weight: 750;
-  color: var(--bench-text);
+  color: var(--fg);
   letter-spacing: -0.025em;
 }
 
 .bench-title-accent {
-  background: linear-gradient(96deg, #f472b6, #db2777 78%);
+  background: linear-gradient(96deg, var(--brand-violet) 0%, var(--accent) 85%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -675,44 +725,29 @@ html[data-theme="light"] {
   transform: scale(1.08);
 }
 
-/* Grid view: Royal Blue / Indigo */
-.view-tab-btn.view-tab-grid.is-active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.28) 0%, rgba(37, 99, 235, 0.2) 100%);
-  border-color: rgba(96, 165, 250, 0.65);
-  box-shadow: 0 4px 18px -2px rgba(59, 130, 246, 0.45);
-}
-.view-tab-btn.view-tab-grid.is-active svg {
-  color: #60a5fa;
+/* Cohesive NeuBench Gold Tab Styling across all Benchmark views */
+.view-tab-btn {
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
 }
 
-/* Radar view: Electric Violet */
-.view-tab-btn.view-tab-radar.is-active {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.2) 100%);
-  border-color: rgba(192, 132, 252, 0.65);
-  box-shadow: 0 4px 18px -2px rgba(139, 92, 246, 0.45);
-}
-.view-tab-btn.view-tab-radar.is-active svg {
-  color: #c084fc;
+.view-tab-btn:hover {
+  background: var(--surface-hover) !important;
+  color: var(--fg) !important;
 }
 
-/* Capability vs Price (Quadrant): Emerald / Mint */
-.view-tab-btn.view-tab-quadrant.is-active {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.2) 100%);
-  border-color: rgba(52, 211, 153, 0.65);
-  box-shadow: 0 4px 18px -2px rgba(16, 185, 129, 0.45);
-}
-.view-tab-btn.view-tab-quadrant.is-active svg {
-  color: #34d399;
+.view-tab-btn.is-active {
+  background: var(--accent-soft) !important;
+  border: 1px solid var(--accent) !important;
+  color: var(--fg) !important;
+  box-shadow: 0 0 0 1px var(--accent) !important;
+  font-weight: 700 !important;
 }
 
-/* Specs view: Amber / Gold */
-.view-tab-btn.view-tab-specs.is-active {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.28) 0%, rgba(217, 119, 6, 0.2) 100%);
-  border-color: rgba(251, 191, 36, 0.65);
-  box-shadow: 0 4px 18px -2px rgba(245, 158, 11, 0.45);
-}
-.view-tab-btn.view-tab-specs.is-active svg {
-  color: #fbbf24;
+.view-tab-btn.is-active svg {
+  color: var(--accent) !important;
 }
 
 /* ── 05. Benchmark Matrix Grid Layout ── */
@@ -724,18 +759,23 @@ html[data-theme="light"] {
 
 /* ── Benchmark Grid Card ── */
 .bench-grid-card {
-  background: linear-gradient(180deg, rgba(20, 24, 38, 0.85) 0%, rgba(13, 16, 26, 0.94) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+  transition: all 180ms ease;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(12px);
+}
+
+html[data-theme="light"] .bench-grid-card {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
 }
 
 .bench-grid-card::before {
@@ -745,7 +785,7 @@ html[data-theme="light"] {
   left: 0;
   right: 0;
   height: 2.5px;
-  background: linear-gradient(90deg, transparent 0%, var(--card-accent, rgba(139, 92, 246, 0.8)) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
   opacity: 0.85;
   transition: opacity 200ms ease, height 200ms ease;
   z-index: 1;
@@ -3772,3 +3812,97 @@ html[data-theme="light"] .bench-picker-groups {
   background: #F8FAFC;
   border-color: #E2E8F0;
 }
+
+/* Bespoke Empirical Benchmarks Header */
+.bench-custom-hero {
+  text-align: center;
+  padding: 24px 16px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.bench-custom-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bench-kicker-icon {
+  color: #F59E0B;
+}
+
+.bench-custom-title {
+  font-size: clamp(26px, 3.8vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--fg);
+  margin: 0;
+  max-width: 840px;
+}
+
+.bench-custom-title-gradient {
+  background: linear-gradient(96deg, #F59E0B 0%, #EF4444 85%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="light"] .bench-custom-title-gradient {
+  background: linear-gradient(96deg, #D97706 0%, #DC2626 85%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bench-custom-lede {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 760px;
+  margin: 0;
+}
+
+.bench-custom-tags {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.bench-custom-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--line2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.bench-tag-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.bullet-agent { background: #38BDF8; }
+.bullet-code { background: #A78BFA; }
+.bullet-reason { background: #F472B6; }
+.bullet-math { background: #FBBF24; }
+.bullet-livecode { background: #34D399; }
+.bullet-pricing { background: #94A3B8; }

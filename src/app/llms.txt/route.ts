@@ -10,8 +10,6 @@ NeuBench (https://neubench.netlify.app) is an independent historical index and r
   Real-time chronological stream of AI milestones, filtered by topic (Models, Products, Research, Business, Policy, Dev Tools), company, and date.
 - **Frontier Model Benchmarks**: https://neubench.netlify.app/benchmarks
   Side-by-side interactive comparator across 130+ frontier AI models, covering terminal coding, agentic capabilities, reasoning, mathematics, context windows, and API pricing.
-- **Daily Executive Digest**: https://neubench.netlify.app/?feed=digest
-  24-hour synthesized intelligence briefing summarizing dominant themes, lead companies, and breaking announcements.
 - **Entity Topic Dossiers**: https://neubench.netlify.app/topic/{entity-slug}
   Curated chronological coverage for key AI labs and ecosystems including OpenAI, Anthropic, Google DeepMind, Meta, DeepSeek, Mistral, xAI, and Microsoft.
 

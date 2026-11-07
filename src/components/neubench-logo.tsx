@@ -15,7 +15,7 @@ interface NeubenchLogoProps {
 const BARS = (
   <>
     <rect className="neubench-logo-bar neubench-logo-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#4777FF" />
-    <rect className="neubench-logo-bar neubench-logo-bar--violet" x="0" y="28" width="65" height="16" rx="8" fill="#8055F5" />
+    <rect className="neubench-logo-bar neubench-logo-bar--yellow" x="0" y="28" width="65" height="16" rx="8" fill="#FDE047" />
     <rect className="neubench-logo-bar neubench-logo-bar--teal" x="0" y="56" width="65" height="16" rx="8" fill="#13DCCB" />
   </>
 );

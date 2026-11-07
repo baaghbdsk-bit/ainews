@@ -1,46 +1,94 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { after } from "next/server";
-import { ArrowUpRight, BookOpen, Sparkles } from "lucide-react";
-import { notFound } from "next/navigation";
-import { getStoryBySlug, getStoryBySlugFresh, getStoryBySlugPrefix, getUpvoteCount } from "@/lib/actions/stories";
-import { getMergedTimeline } from "@/lib/timeline";
-import type { Story } from "@/lib/schemas/story";
-import { matchEntities } from "@/lib/dossier/entities";
-import { stories as seedStories } from "../../stories";
-import type { Story as SeedStory } from "../../stories";
-import { slugify } from "@/lib/slug";
-import { colorForTopic } from "@/lib/story-colors";
-import { extractCompany } from "@/lib/story-company";
-import { SiteHeader } from "../../site-header";
-import { UpvoteButton, BookmarkButton, ShareButton } from "@/components/story-actions";
-import { extractStoryAnalytics } from "@/lib/story-stats";
-import { extractArticle, type ExtractOutcome } from "@/lib/feeds/extract-article";
-import { StoryStatsDashboard } from "@/components/story-stats-dashboard";
-import { ReadingProgress } from "@/components/reading-progress";
-import { extractiveSummary } from "@/lib/feeds/summarize";
-import { unstable_cache } from "next/cache";
-
-const getCachedExtraction = unstable_cache(
-  async (url: string): Promise<ExtractOutcome> => {
-    return Promise.race([
-      extractArticle(url),
-      new Promise<ExtractOutcome>((resolve) =>
-        setTimeout(() => resolve({ status: "unavailable" }), 6000),
-      ),
-    ]);
-  },
-  ["article-extraction"],
-  { revalidate: 3600, tags: ["article-extraction"] },
-);
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { ArrowLeft, ArrowUpRight, BookOpen, ExternalLink, Sparkles } from 'lucide-react';
+import { getStoryBySlug, getStoryBySlugPrefix, getUpvoteCount } from '@/lib/actions/stories';
+import { stories as seedStories } from '../../stories';
+import { slugify } from '@/lib/slug';
+import { SiteHeader } from '../../site-header';
+import { UpvoteButton, BookmarkButton, ShareButton } from '@/components/story-actions';
+import { cleanTitleEditorial } from '@/lib/editorial-overview';
+import '@/styles/story-article.css';
 
 type StoryPageProps = {
   params: Promise<{ storyId: string }>;
 };
 
-/**
- * Generate static params for seed data (for initial deployment)
- */
+async function resolveStory(storyId: string) {
+  if (!storyId || storyId.length > 250) return null;
+
+  // 1. Direct DB lookup
+  try {
+    const bySlug = await getStoryBySlug(storyId);
+    if (bySlug) {
+      return {
+        id: bySlug.id,
+        slug: bySlug.slug,
+        title: bySlug.title,
+        summary: bySlug.summary,
+        body: bySlug.body,
+        deck: bySlug.deck,
+        significance: bySlug.why_it_matters || bySlug.significance,
+        why_it_matters: bySlug.why_it_matters,
+        key_points: bySlug.key_points || [],
+        source: bySlug.source,
+        source_url: bySlug.source_url,
+        company: bySlug.company,
+        topic: bySlug.topic,
+        event_date: bySlug.event_date || (bySlug.published_at ? bySlug.published_at.slice(0, 10) : ''),
+      };
+    }
+  } catch {}
+
+  // 2. Seed stories
+  const seed = seedStories.find(
+    (s) => s.id === storyId || slugify(s.title) === storyId
+  );
+  if (seed) {
+    return {
+      id: seed.id,
+      slug: slugify(seed.title),
+      title: seed.title,
+      summary: seed.summary,
+      body: seed.summary,
+      deck: seed.summary,
+      significance: seed.significance,
+      why_it_matters: seed.significance,
+      key_points: [] as string[],
+      source: seed.source,
+      source_url: seed.sourceUrl,
+      company: seed.company,
+      topic: seed.topic,
+      event_date: seed.date,
+    };
+  }
+
+  // 3. Slug prefix lookup (for truncated URLs)
+  try {
+    const byPrefix = await getStoryBySlugPrefix(storyId);
+    if (byPrefix) {
+      return {
+        id: byPrefix.id,
+        slug: byPrefix.slug,
+        title: byPrefix.title,
+        summary: byPrefix.summary,
+        body: byPrefix.body,
+        deck: byPrefix.deck,
+        significance: byPrefix.why_it_matters || byPrefix.significance,
+        why_it_matters: byPrefix.why_it_matters,
+        key_points: byPrefix.key_points || [],
+        source: byPrefix.source,
+        source_url: byPrefix.source_url,
+        company: byPrefix.company,
+        topic: byPrefix.topic,
+        event_date: byPrefix.event_date || '',
+      };
+    }
+  } catch {}
+
+  return null;
+}
+
 export function generateStaticParams() {
   return seedStories.map(({ title }) => ({
     storyId: slugify(title),
@@ -49,549 +97,123 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: StoryPageProps): Promise<Metadata> {
   const { storyId } = await params;
-
-  // The same resolution the page uses. Calling notFound() here — before the
-  // response streams — is what makes a missing story return a real HTTP 404
-  // instead of a streamed 200 with a "not found" title. The lookup reads
-  // cached data, so it is quick enough to decide before the shell is sent.
   const story = await resolveStory(storyId);
   if (!story) notFound();
 
+  const title = cleanTitleEditorial(story.title) || 'AI Dispatch';
+  const desc = story.summary || story.deck || 'Read the full intelligence analysis on NeuBench.';
+
   return {
-    title: `${story.title} | NeuBench`,
-    description: story.summary,
-    alternates: { canonical: `/story/${storyId}` },
+    title: `${title} | NeuBench`,
+    description: desc,
+    alternates: {
+      canonical: `/story/${storyId}`,
+    },
     openGraph: {
-      title: story.title,
-      description: story.summary,
-      type: "article",
-      publishedTime: `${story.date}T00:00:00Z`,
-      images: story.imageUrl ? [{ url: story.imageUrl, alt: story.title }] : undefined,
+      title,
+      description: desc,
+      type: 'article',
+      url: `/story/${storyId}`,
     },
     twitter: {
-      card: "summary_large_image",
-      title: story.title,
-      description: story.summary,
-      images: story.imageUrl ? [story.imageUrl] : undefined,
+      card: 'summary_large_image',
+      title,
+      description: desc,
     },
   };
-}
-
-/**
- * Format a story for display with computed fields
- */
-type DisplayStory = (Story | SeedStory) & {
-  slug: string;
-  date: string;
-  day: string;
-  month: string;
-  year: string;
-  color: string;
-  sourceUrl: string;
-  imageUrl?: string | null;
-  body?: string | null;
-  deck?: string | null;
-  brief?: string | null;
-  key_points?: string[] | null;
-  why_it_matters?: string | null;
-};
-
-function formatStory(story: Story | SeedStory | null, color: string): DisplayStory | null {
-  if (!story) return null;
-
-  const hasEventDate = 'event_date' in story && typeof story.event_date === 'string';
-  const hasSourceUrl = 'source_url' in story && typeof story.source_url === 'string';
-  const dateStr = hasEventDate ? story.event_date : 'date' in story ? story.date : null;
-  if (!dateStr) return null;
-  const [year, month, day] = dateStr.split("-");
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  const computedSlug =
-    'slug' in story && typeof story.slug === 'string' && story.slug
-      ? story.slug
-      : slugify(story.title);
-
-  const imageUrl = 'image_url' in story && typeof story.image_url === 'string' ? story.image_url : null;
-
-  return {
-    ...story,
-    slug: computedSlug,
-    date: dateStr,
-    day: day?.replace(/^0/, "") ?? "",
-    month: monthNames[(parseInt(month ?? "", 10) || 1) - 1] ?? "",
-    year: year ?? "",
-    color,
-    sourceUrl: hasSourceUrl ? story.source_url : 'sourceUrl' in story ? story.sourceUrl : "",
-    imageUrl,
-  };
-}
-
-
-async function persistEnrichedStory(
-  storyId: string,
-  body: string,
-  deck: string,
-  keyPoints: string[],
-  brief: string | null,
-  whyItMatters: string | null,
-  imageUrl: string | null,
-) {
-  try {
-    const { supabaseUrl, supabaseServiceRoleKey } = await import('@/lib/env');
-    const { createClient } = await import('@supabase/supabase-js');
-    const url = supabaseUrl();
-    const serviceKey = supabaseServiceRoleKey();
-    if (!url || !serviceKey) return;
-    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
-    await admin
-      .from('stories')
-      .update({
-        body,
-        ...(deck ? { summary: deck } : {}),
-        deck: deck || null,
-        key_points: keyPoints.length > 0 ? keyPoints : null,
-        brief: brief || null,
-        why_it_matters: whyItMatters || null,
-        ...(imageUrl ? { image_url: imageUrl } : {}),
-      })
-      .eq('id', storyId);
-  } catch {
-    // Non-fatal background persistence failure
-  }
-}
-
-/**
- * Store a story that only existed in the feed.
- *
- * The ingest job runs on a schedule, so a brand new story can be missing from
- * the database for a while - which meant every visit to it re-downloaded
- * every feed. Storing it here, while a reader is already looking at it, means
- * the corpus catches up with real traffic instead of waiting for a scheduler.
- *
- * Best effort: a duplicate (the ingest job got there first) is ignored.
- */
-async function persistFeedStory(story: {
-  slug: string;
-  title: string;
-  summary: string;
-  significance: string;
-  company?: string | null;
-  source: string;
-  sourceUrl: string;
-  imageUrl?: string | null;
-  topic: Story['topic'];
-  date: string;
-}) {
-  try {
-    const { supabaseUrl, supabaseServiceRoleKey } = await import('@/lib/env');
-    const { createClient } = await import('@supabase/supabase-js');
-    const url = supabaseUrl();
-    const serviceKey = supabaseServiceRoleKey();
-    if (!url || !serviceKey) return;
-    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
-    // Same shape the ingest job writes, so the two paths cannot disagree.
-    await admin.from('stories').upsert(
-      {
-        slug: story.slug,
-        title: story.title,
-        summary: story.summary,
-        significance: story.significance,
-        company:
-          story.company ??
-          extractCompany({ title: story.title, summary: story.summary, source: story.source }) ??
-          null,
-        source: story.source,
-        source_url: story.sourceUrl,
-        image_url: story.imageUrl ?? null,
-        topic: story.topic,
-        event_date: story.date,
-        status: 'published',
-        published_at: null,
-      },
-      { onConflict: 'slug', ignoreDuplicates: true },
-    );
-  } catch {
-    // Non-fatal background persistence failure
-  }
-}
-
-/**
- * Find a story by slug, wherever it lives.
- *
- * The order matters. The database first - it holds the extracted body, the
- * key points and the lead image. Then the same story under a different slug,
- * for when a feed has moved a post's date. Then the curated seeds. Then the
- * merged timeline, which is the one cached copy of the live feeds: reading it
- * is far cheaper than downloading every feed again for a single story.
- */
-async function resolveStory(storyId: string): Promise<DisplayStory | null> {
-  // 1. The stored row.
-  let dbStory: Story | null = null;
-  try {
-    dbStory = await getStoryBySlug(storyId);
-  } catch {
-    // Fall through; the timeline below may still have it.
-  }
-  if (dbStory) return formatStory(dbStory, colorForTopic(dbStory.topic));
-
-  // 2. The same story under a different slug.
-  try {
-    const prefixStory = await getStoryBySlugPrefix(storyId);
-    if (prefixStory) return formatStory(prefixStory, colorForTopic(prefixStory.topic));
-  } catch {
-    // Fall through.
-  }
-
-  // 3. A curated seed story.
-  const seedStory = seedStories.find((s) => slugify(s.title) === storyId);
-  if (seedStory) return formatStory(seedStory, colorForTopic(seedStory.topic));
-
-  // 4. The merged timeline, which already includes the live feeds. It is the
-  //    one cached copy of the feeds, so a lookup here is a cache read rather
-  //    than a download of every source - which is what keeps this fast enough
-  //    to decide the status before the response streams.
-  try {
-    const merged = await getMergedTimeline();
-    const found = merged.find((s) => s.slug === storyId);
-    if (found) {
-      // Store it so the corpus catches up with real traffic. `after` runs the
-      // write once the response is on its way and the platform waits for it; a
-      // bare floating promise is killed when the response completes.
-      after(async () => {
-        await persistFeedStory({
-          slug: found.slug,
-          title: found.title,
-          summary: found.summary,
-          significance: found.significance,
-          company: found.company ?? null,
-          source: found.source,
-          sourceUrl: found.sourceUrl,
-          imageUrl: found.imageUrl ?? null,
-          topic: found.topic,
-          date: found.date,
-        });
-      });
-
-      return {
-        ...found,
-        body: null,
-        brief: null,
-        key_points: found.keyPoints ?? null,
-        why_it_matters: found.whyItMatters ?? null,
-        deck: found.deck ?? null,
-        sourceUrl: found.sourceUrl,
-        source: found.source,
-        summary: found.summary,
-        significance: found.significance,
-      } as DisplayStory;
-    }
-  } catch {
-    // Fall through to not-found.
-  }
-
-  return null;
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
   const { storyId } = await params;
-
-  // The same resolution the metadata uses, so the two never disagree.
-  const storyToRender = await resolveStory(storyId);
-
-  // The row this story was stored as, when there is one, so the enriched
-  // content can be written back to it.
-  let dbStoryId: string | null = null;
-  try {
-    const dbStory = await getStoryBySlug(storyId);
-    dbStoryId = dbStory?.id ?? null;
-  } catch {
-    // Not fatal.
+  const story = await resolveStory(storyId);
+  if (!story) {
+    notFound();
   }
 
-  if (!storyToRender) notFound();
-
-  let finalStory: DisplayStory = storyToRender;
-
-  const isSeedStory = seedStories.some((s) => slugify(s.title) === storyId);
-
-  // If the story doesn't have an extracted body yet, extract it (cached so the
-  // route stays static) from the source URL.
-  const hasSubstantialBody =
-    "body" in finalStory &&
-    typeof finalStory.body === "string" &&
-    finalStory.body.length >= 300;
-
-  if (!isSeedStory && !hasSubstantialBody && finalStory.sourceUrl) {
-    try {
-      const outcome = await getCachedExtraction(finalStory.sourceUrl);
-
-      if (outcome.status === "ok") {
-        const enriched = extractiveSummary({
-          title: finalStory.title,
-          summary: finalStory.summary,
-          body: outcome.article.body,
-          source: finalStory.source,
-          significance: finalStory.significance,
-        });
-
-        const resolvedDeck =
-          "deck" in finalStory && typeof finalStory.deck === "string" && finalStory.deck
-            ? finalStory.deck
-            : enriched.deck;
-        const resolvedBrief =
-          "brief" in finalStory && typeof finalStory.brief === "string" && finalStory.brief
-            ? finalStory.brief
-            : enriched.brief;
-        const resolvedKeyPoints =
-          "key_points" in finalStory && Array.isArray(finalStory.key_points) && finalStory.key_points.length > 0
-            ? finalStory.key_points
-            : enriched.keyPoints;
-        const resolvedWhyItMatters =
-          "why_it_matters" in finalStory && typeof finalStory.why_it_matters === "string"
-            ? finalStory.why_it_matters
-            : enriched.whyItMatters;
-        const resolvedImageUrl = finalStory.imageUrl || outcome.article.imageUrl;
-
-        finalStory = {
-          ...finalStory,
-          body: outcome.article.body,
-          deck: resolvedDeck,
-          brief: resolvedBrief,
-          key_points: resolvedKeyPoints,
-          why_it_matters: resolvedWhyItMatters,
-          imageUrl: resolvedImageUrl,
-        };
-
-        const persistedStoryId = dbStoryId;
-        if (persistedStoryId) {
-          after(async () => {
-            await persistEnrichedStory(
-              persistedStoryId,
-              outcome.article.body,
-              resolvedDeck ?? "",
-              resolvedKeyPoints ?? [],
-              resolvedBrief ?? null,
-              resolvedWhyItMatters ?? null,
-              resolvedImageUrl ?? null,
-            );
-          });
-        }
-      }
-    } catch (err) {
-      console.warn("Failed on-demand article extraction:", err);
-    }
-  }
-
-  const upvoteCount = await getUpvoteCount(storyToRender.slug);
-
-  return renderStoryPage(finalStory, upvoteCount);
-}
-
-function renderStoryPage(story: DisplayStory, upvoteCount: number) {
-  const bodyText = "body" in story && typeof story.body === "string" ? story.body : null;
-  const bodyParagraphs = bodyText
-    ? bodyText.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean)
-    : [];
-
-  const deck = "deck" in story && typeof story.deck === "string" ? story.deck : null;
-  const keyPoints =
-    "key_points" in story && Array.isArray(story.key_points) ? story.key_points : [];
-  const brief = "brief" in story && typeof story.brief === "string" ? story.brief : null;
-  const whyItMatters =
-    "why_it_matters" in story && typeof story.why_it_matters === "string" ? story.why_it_matters : null;
-
-  // Entities named anywhere in this story, so the reader can jump to the
-  // long-form dossier that puts it in context.
-  const topics = matchEntities(
-    [story.title, deck, brief, whyItMatters, story.summary, bodyText].filter(Boolean).join(" "),
-  );
-
-  // The generated brief reads better than raw extracted prose; otherwise show
-  // the extracted body, and only fall back to the terse feed summary last.
-  const briefParagraphs = brief
-    ? brief.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean)
-    : [];
-  const proseParagraphs = briefParagraphs.length
-    ? briefParagraphs
-    : bodyParagraphs.length
-      ? bodyParagraphs
-      : [story.summary, story.significance].filter(Boolean);
-
-  const totalWords = [story.title, deck, ...proseParagraphs, whyItMatters, ...(keyPoints ?? [])]
-    .filter(Boolean)
-    .join(" ")
-    .split(/\s+/)
-    .length;
-  const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 180));
-
-  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://neubench.netlify.app").replace(/\/$/, "");
-  const canonicalUrl = `${siteOrigin}/story/${story.slug}`;
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: story.title,
-    description: deck || story.summary,
-    image: story.imageUrl ? [story.imageUrl] : undefined,
-    datePublished: `${story.date}T00:00:00.000Z`,
-    dateModified: ('updated_at' in story && typeof story.updated_at === 'string' ? story.updated_at : undefined) ?? `${story.date}T00:00:00.000Z`,
-    author: {
-      "@type": "Organization",
-      name: "NeuBench",
-      url: siteOrigin,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "NeuBench",
-      url: siteOrigin,
-      logo: {
-        "@type": "ImageObject",
-        url: `${siteOrigin}/neubench-logo.svg`,
-      },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": canonicalUrl,
-    },
-    speakable: {
-      "@type": "SpeakableSpecification",
-      cssSelector: [".story-article-standfirst", ".story-article-why p", ".key-points li"],
-    },
-    articleSection: story.topic,
-    keywords: [story.topic, story.company, "Artificial Intelligence", "AI News"].filter(Boolean).join(", "),
-    about: [
-      { "@type": "Thing", name: story.topic },
-      ...(story.company ? [{ "@type": "Organization", name: story.company }] : []),
-    ],
-  };
-  const analytics = extractStoryAnalytics({
-    title: story.title,
-    summary: story.summary,
-    body: bodyText,
-    deck,
-    brief,
-    keyPoints,
-    whyItMatters,
-    topic: story.topic,
-  });
+  const cleanTitle = cleanTitleEditorial(story.title);
+  const cleanSummary = story.summary || story.body || '';
+  const upvoteCount = await getUpvoteCount(story.slug).catch(() => 0);
 
   return (
-    <main className="site-frame archive-page story-article-page">
-      <ReadingProgress />
+    <main className="site-frame story-article-page">
       <SiteHeader className="story-article-topbar" />
 
-      <article className={`story-article article-${story.color}`} data-tour-target="story-page">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+      <article className="story-article">
         <div className="story-article-meta">
-          <span className="story-article-topic">
-            <span className={`topic-dot dot-${story.color}`} />
-            {story.topic}
-          </span>
-          <time dateTime={story.date}>
-            {story.month} {story.day}, {story.year}
-          </time>
-          <span className="story-article-readtime">{readTimeMinutes} min read</span>
+          <Link href="/explore?view=latest" className="story-back-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--muted)', textDecoration: 'none', marginRight: 12 }}>
+            <ArrowLeft size={14} />
+            <span>Timeline</span>
+          </Link>
+          {story.topic && (
+            <span className="story-article-topic">
+              {story.topic}
+            </span>
+          )}
+          {story.event_date && (
+            <time dateTime={story.event_date}>{story.event_date}</time>
+          )}
+          {story.company && (
+            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{story.company}</span>
+          )}
         </div>
 
-        <h1>{story.title}</h1>
+        <h1>{cleanTitle}</h1>
 
-        {story.imageUrl ? (
-          <figure className="story-article-hero">
-            <img src={story.imageUrl} alt={story.title} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-          </figure>
-        ) : null}
-
-        {deck ? <p className="story-article-standfirst">{deck}</p> : null}
-
-        <div className="story-article-actions">
-          <UpvoteButton slug={story.slug} size="md" initialCount={upvoteCount} />
-          <BookmarkButton slug={story.slug} size="md" />
-          <ShareButton
-            title={story.title}
-            slug={story.slug}
-            summary={story.summary}
-            topic={story.topic}
-          />
+        <div className="story-article-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0 28px' }}>
+          <UpvoteButton slug={story.slug} initialCount={upvoteCount} />
+          <BookmarkButton slug={story.slug} />
+          <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} />
         </div>
 
-        <nav className="story-article-toc" aria-label="Table of contents">
-          <span>Contents</span>
-          {keyPoints.length ? <a href="#key-takeaways">Key takeaways</a> : null}
-          <a href="#why-it-matters">Why it matters</a>
-          {topics.length ? <a href="#topics">Topics</a> : null}
-        </nav>
+        {cleanSummary && (
+          <div className="story-article-body">
+            <p className="story-article-standfirst">{cleanSummary}</p>
+          </div>
+        )}
 
-        {keyPoints.length ? (
-          <aside className="story-article-keypoints" aria-label="Key takeaways" id="key-takeaways">
-            <h2>Key takeaways</h2>
-            <ul>
-              {keyPoints.map((point, index) => (
-                <li key={index}>{point}</li>
+        {story.key_points && story.key_points.length > 0 && (
+          <aside className="story-article-keypoints" style={{ margin: '28px 0', padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 12px', color: 'var(--fg)' }}>Key Takeaways</h2>
+            <ul style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 8 }}>
+              {story.key_points.map((pt, idx) => (
+                <li key={idx} style={{ color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>{pt}</li>
               ))}
             </ul>
           </aside>
-        ) : null}
+        )}
 
-        {/* ── Visual Stats Grid, Capability Graph & Structured Sections ── */}
-        <StoryStatsDashboard analytics={analytics} topicColor={story.color} />
+        {story.why_it_matters && (
+          <section className="story-article-context" style={{ margin: '28px 0', padding: '20px', background: 'rgba(253, 224, 71, 0.04)', borderRadius: 12, border: '1px solid rgba(253, 224, 71, 0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem' }}>
+              <Sparkles size={16} />
+              <span>Why It Matters</span>
+            </div>
+            <p style={{ margin: 0, color: 'var(--fg)', fontSize: '0.95rem', lineHeight: 1.6 }}>{story.why_it_matters}</p>
+          </section>
+        )}
 
-        <div className="story-article-divider">
-          <span />
-        </div>
-
-        <section className={`story-article-context context-${story.color}`} id="why-it-matters">
-          <div className="story-article-context-header">
-            <Sparkles aria-hidden="true" size={16} strokeWidth={2.2} />
-            <h2>Why it matters</h2>
-          </div>
-          <p>{whyItMatters || story.significance}</p>
-        </section>
-
-        {topics.length ? (
-          <div className="story-article-topics" id="topics">
-            <span>Topic dossiers</span>
-            {topics.map((topic) => (
-              <Link key={topic.slug} href={`/topic/${topic.slug}`}>
-                <Sparkles size={12} /> {topic.label}
-              </Link>
-            ))}
-          </div>
-        ) : null}
-
-        <footer className="story-article-source flex items-center justify-between flex-wrap gap-3">
-          <div className="inline-flex items-center gap-2">
-            <BookOpen size={16} />
+        <footer className="story-article-source" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 40, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: '0.88rem' }}>
+            <BookOpen size={16} style={{ color: 'var(--muted)' }} />
             <span>
-              Source: <strong>{story.source}</strong>
+              Source: <strong style={{ color: 'var(--fg)' }}>{story.source || story.company || 'Primary Lab'}</strong>
             </span>
-            <a href={story.sourceUrl} rel="noreferrer" target="_blank">
-              Read original source <ArrowUpRight size={14} />
-            </a>
+            {story.source_url && (
+              <a
+                href={story.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--accent)', marginLeft: 8, textDecoration: 'none', fontWeight: 600 }}
+              >
+                <span>Read Original</span>
+                <ArrowUpRight size={14} />
+              </a>
+            )}
           </div>
-          <div className="inline-flex items-center gap-2">
-            <BookmarkButton slug={story.slug} size="md" />
-            <ShareButton
-              title={story.title}
-              slug={story.slug}
-              summary={story.summary}
-              topic={story.topic}
-            />
+
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+            <BookmarkButton slug={story.slug} />
+            <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} />
           </div>
         </footer>
       </article>

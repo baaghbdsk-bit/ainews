@@ -28,14 +28,15 @@ export function useBookmarks(): [Set<string>, (slug: string) => void, (slugs: Se
 
   const toggleBookmark = useCallback(
     (slug: string) => {
-      if (status !== 'signed-in' || !user) {
-        if (status === 'guest') showGuestNotice('Sign in to save stories.');
-        return;
-      }
       const current = store.read();
       if (current.has(slug)) current.delete(slug);
       else current.add(slug);
       store.write(current);
+
+      if (status !== 'signed-in' || !user) {
+        if (status === 'guest') showGuestNotice('Story saved locally. Sign in to sync across devices.');
+        return;
+      }
     },
     [status, store, user],
   );
@@ -47,7 +48,7 @@ export function useBookmarks(): [Set<string>, (slug: string) => void, (slugs: Se
     [store],
   );
 
-  return [user ? bookmarks : NO_BOOKMARKS, toggleBookmark, replaceBookmarks];
+  return [user || bookmarks.size > 0 ? bookmarks : NO_BOOKMARKS, toggleBookmark, replaceBookmarks];
 }
 
 interface BookmarkButtonProps {
@@ -66,7 +67,7 @@ export function BookmarkButton({
   const { user, clientId, status } = useAuth();
   const store = useMemo(() => getBookmarkStore(clientId), [clientId]);
   const bookmarks = useBookmarkMirror(clientId);
-  const bookmarked = user ? bookmarks.has(slug) : false;
+  const bookmarked = bookmarks.has(slug);
 
   // A signed-in reader's saved stories live on the account, so the local copy
   // is reconciled when the identity changes. The reconciliation is shared by
@@ -80,13 +81,6 @@ export function BookmarkButton({
     e.preventDefault();
     e.stopPropagation();
 
-    // Saving is an account action. A guest gets a quiet nudge instead of a
-    // dialog being forced open over the story.
-    if (status !== 'signed-in' || !user) {
-      if (status === 'guest') showGuestNotice('Sign in to save stories.');
-      return;
-    }
-
     const current = store.read();
     const wasBookmarked = current.has(slug);
     if (wasBookmarked) current.delete(slug);
@@ -94,7 +88,10 @@ export function BookmarkButton({
     store.write(current);
     onBookmarkChange?.(slug, !wasBookmarked);
 
-    if (!user) return;
+    if (status !== 'signed-in' || !user) {
+      if (status === 'guest') showGuestNotice('Story saved locally. Sign in to sync across devices.');
+      return;
+    }
 
     // Keep the account in step, but never block the local change on it.
     try {

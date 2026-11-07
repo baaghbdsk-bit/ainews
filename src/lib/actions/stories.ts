@@ -67,6 +67,62 @@ export async function getPublishedStories(): Promise<Story[]> {
   }
 }
 
+/**
+ * Fast count of published stories for a specific date (YYYY-MM-DD).
+ * Executes an exact head count query in Supabase without downloading story payloads.
+ */
+export async function getPublishedStoriesCountForDate(dateStr: string): Promise<number> {
+  const supabase = createPublicClient();
+  if (!supabase) return 0;
+
+  try {
+    const { count, error } = await supabase
+      .from('stories')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .eq('event_date', dateStr);
+
+    if (error) {
+      console.error('Failed to count published stories for date:', dateStr, error);
+      return 0;
+    }
+
+    return count ?? 0;
+  } catch (err) {
+    console.error('Error counting published stories for date:', dateStr, err);
+    return 0;
+  }
+}
+
+/**
+ * Fetch published stories for a specific date (YYYY-MM-DD).
+ * Used for lazy-loading historical archive dates without fetching the full archive upfront.
+ */
+export async function getPublishedStoriesForDate(dateStr: string, limit = 300): Promise<Story[]> {
+  const supabase = createPublicClient();
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('stories')
+      .select(PUBLISHED_STORY_COLUMNS)
+      .eq('status', 'published')
+      .eq('event_date', dateStr)
+      .order('id', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Failed to fetch published stories for date:', dateStr, error);
+      return [];
+    }
+
+    return (data ?? []) as Story[];
+  } catch (err) {
+    console.error('Error fetching published stories for date:', dateStr, err);
+    return [];
+  }
+}
+
 type StoryWithVotes = Story & { upvote_count: number };
 
 interface VoteCountRow {

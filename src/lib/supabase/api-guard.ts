@@ -24,8 +24,10 @@ export function jsonNoStore(data: unknown, init: JsonInit = {}): NextResponse {
   });
 }
 
-/** Best-effort client address; Vercel sets x-forwarded-for at the edge. */
+/** Best-effort client address; Cloudflare sets cf-connecting-ip at the edge, Vercel sets x-forwarded-for. */
 export function clientIp(request: Request): string {
+  const cfIp = request.headers.get('cf-connecting-ip');
+  if (cfIp) return cfIp.trim();
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
     const first = forwarded.split(',')[0]?.trim();

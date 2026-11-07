@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { AboutClient } from "./about-client";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "About NeuBench — The Pulse of AI",
+  title: "About NeuBench — The One-Stop AI News Platform",
   description:
-    "NeuBench is a living archive and radar for artificial intelligence breakthroughs, model architectures, foundational research, and global governance.",
+    "NeuBench is the one-stop platform unifying artificial intelligence news, research breakthroughs, model architectures, and frontier evaluations in a single live timeline.",
   alternates: {
     canonical: "/about",
   },
   openGraph: {
-    title: "About NeuBench — Intelligence through time",
+    title: "About NeuBench — The One-Stop AI News Platform",
     description:
-      "A living index documenting the pivotal releases, architectural leaps, and regulatory shifts shaping the future of AI.",
+      "A living index and real-time news radar documenting every pivotal release, breakthrough, and shift shaping the future of AI.",
     type: "website",
   },
 };
 
 export default function AboutPage() {
-  return <AboutClient />;
+  redirect("/explore?view=about");
 }
-

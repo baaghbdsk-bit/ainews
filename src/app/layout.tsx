@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { WelcomeGate } from "@/components/auth/welcome-gate";
 import { GuestNotice } from "@/components/auth/guest-notice";
 import { PwaRegister } from "@/components/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
-import { ThemeFab } from "@/components/theme-fab";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,33 +15,73 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://neubench.netlify.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://app.neubench.workers.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "NeuBench",
+  title: {
+    default: "NeuBench — The One-Stop AI News Platform | Real-Time AI News & Radar",
+    template: "%s | NeuBench — The One-Stop AI News Platform",
+  },
   description:
-    "The living pulse of artificial intelligence: comprehensive frontier model benchmarks, capability economics, and real-time breakthrough radar.",
-  // Relative canonical: Next resolves './' against each page's own URL, so
-  // every route gets a self-referencing canonical without hardcoding paths.
+    "Your one-stop destination for real-time AI news, breakthroughs, frontier research, and model releases. Curating the pulse of artificial intelligence from OpenAI, Anthropic, Google DeepMind, Meta, and top labs in a single unified feed — never browse 10 different sites again.",
+  keywords: [
+    "AI news",
+    "one stop AI news",
+    "artificial intelligence news",
+    "latest AI news",
+    "real-time AI news",
+    "daily AI news",
+    "AI breakthroughs",
+    "frontier AI news",
+    "OpenAI news",
+    "Anthropic Claude news",
+    "Google DeepMind news",
+    "Meta AI news",
+    "generative AI news",
+    "LLM news",
+    "tech news",
+    "AI models benchmarks",
+    "NeuBench",
+  ],
+  authors: [{ name: "NeuBench Editorial & Intelligence Team" }],
+  creator: "NeuBench",
+  publisher: "NeuBench",
   alternates: {
     canonical: "./",
+    types: {
+      "application/rss+xml": `${siteUrl}/rss.xml`,
+    },
   },
-  // The `?v=2` query forces browsers to re-fetch the favicon
-  // instead of serving a stale cached copy from the favicon database.
   icons: {
-    icon: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }],
-    apple: [{ url: "/icon.svg?v=2" }],
+    icon: [{ url: "/icon.svg?v=4", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg?v=4" }],
   },
   openGraph: {
-title: "NeuBench",
+    title: "NeuBench — The One-Stop AI News Platform",
     description:
-      "The living pulse of artificial intelligence: comprehensive frontier model benchmarks, capability economics, and real-time breakthrough radar.",
-    siteName: "NeuBench",
+      "All artificial intelligence news, breakthroughs, research, and model releases in one live feed. Never miss an AI shift — no need to check 10 different sites.",
+    url: siteUrl,
+    siteName: "NeuBench — One-Stop AI News",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
+    title: "NeuBench — The One-Stop AI News Platform",
+    description:
+      "All AI news, breakthroughs, and frontier releases in a single live feed. Don't go to 10 places — get the living pulse of AI in one place.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -57,6 +98,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} h-full antialiased`}>
       <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="NeuBench — Real-Time AI News & Intelligence Radar"
+          href="/rss.xml"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `try{const t=localStorage.getItem("neubench-theme");if(t==="light")document.documentElement.dataset.theme="light";}catch(e){}`,
@@ -69,19 +116,32 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               "@context": "https://schema.org",
               "@graph": [
                 {
-                  "@type": "Organization",
+                  "@type": "NewsMediaOrganization",
                   "@id": `${siteUrl}/#organization`,
                   "name": "NeuBench",
                   "url": siteUrl,
                   "logo": `${siteUrl}/neubench-logo.svg`,
-                  "description": "Frontier AI model benchmarking, capability economics, and real-time intelligence observatory.",
+                  "description":
+                    "NeuBench is the world's real-time one-stop AI news platform and intelligence observatory, aggregating, categorizing, and delivering verified dispatches across artificial intelligence research, products, models, and industry shifts in a single unified feed.",
+                  "knowsAbout": [
+                    "Artificial Intelligence",
+                    "AI News",
+                    "Machine Learning",
+                    "Large Language Models",
+                    "Generative AI",
+                    "Frontier Model Benchmarks",
+                    "OpenAI",
+                    "Anthropic",
+                    "Google DeepMind",
+                    "Meta AI"
+                  ],
                 },
                 {
                   "@type": "WebSite",
                   "@id": `${siteUrl}/#website`,
                   "url": siteUrl,
                   "name": "NeuBench",
-                  "description": "The Pulse of AI ? Frontier Model Benchmarks, Capability Economics & Living Intelligence",
+                  "description": "The premier one-stop destination for all artificial intelligence news, model launches, breakthroughs, and executive highlights.",
                   "publisher": {
                     "@id": `${siteUrl}/#organization`,
                   },
@@ -89,7 +149,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     "@type": "SearchAction",
                     "target": {
                       "@type": "EntryPoint",
-                      "urlTemplate": `${siteUrl}/?q={search_term_string}`,
+                      "urlTemplate": `${siteUrl}/explore?view=latest&q={search_term_string}`,
                     },
                     "query-input": "required name=search_term_string",
                   },
@@ -222,8 +282,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GuestNotice />
         <PwaRegister />
         <PwaInstallPrompt />
-        <ThemeFab />
+
         {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
+        {/* Cloudflare Web Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "c03e81fe4bf048ea987977175ca067f9"}'
+        />
       </body>
     </html>
   );

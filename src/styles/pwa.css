@@ -89,11 +89,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 900px) {
   .pwa-install-prompt {
     right: 12px;
-    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
     width: calc(100vw - 24px);
+    z-index: 120;
   }
 }
 

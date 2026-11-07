@@ -8,7 +8,7 @@
   <!-- Blue bar -->
   <rect x="0" y="0" width="60" height="13" rx="6.5" fill="#4777FF"/>
   <!-- Violet bar -->
-  <rect x="0" y="24" width="60" height="13" rx="6.5" fill="#8055F5"/>
+  <rect x="0" y="24" width="60" height="13" rx="6.5" fill="#FDE047"/>
   <!-- Teal bar -->
   <rect x="0" y="48" width="60" height="13" rx="6.5" fill="#13DCCB"/>
 </svg>

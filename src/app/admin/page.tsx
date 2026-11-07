@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/app/site-header";
 import { isAdmin } from "@/lib/auth/editor";
 import { getSessionUser } from "@/lib/auth/session-server";
 import { getFeedbackFeed } from "@/lib/admin/feedback";
+import { getAdminUsersList } from "@/lib/admin/users";
 import { AdminDashboardClient } from "./dashboard-client";
 import "./admin.css";
 
@@ -21,22 +20,19 @@ export default async function AdminPage() {
   const user = await getSessionUser();
   if (!user || !isAdmin(user)) notFound();
 
-  const feed = await getFeedbackFeed();
+  const [feed, initialUsers] = await Promise.all([
+    getFeedbackFeed(),
+    getAdminUsersList(),
+  ]);
 
   return (
     <main className="site-frame archive-page admin-page">
-      <SiteHeader
-        className="story-article-topbar"
-        right={
-          <div className="header-actions">
-            <Link className="story-back-link" href="/">
-              <ArrowLeft size={16} />
-              <span>Back to timeline</span>
-            </Link>
-          </div>
-        }
+      <SiteHeader className="story-article-topbar" />
+      <AdminDashboardClient
+        feed={feed}
+        initialUsers={initialUsers}
+        reviewerEmail={user.email ?? "admin"}
       />
-      <AdminDashboardClient feed={feed} reviewerEmail={user.email ?? "admin"} />
     </main>
   );
 }

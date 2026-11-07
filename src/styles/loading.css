@@ -25,9 +25,17 @@
 }
 
 .app-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  background: conic-gradient(from 0deg, #4777FF 0deg, #FDE047 120deg, #13DCCB 240deg, #4777FF 360deg) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: app-loading-spin 850ms linear infinite;
   flex-shrink: 0;
-  color: var(--violet, #a78bfa);
-  animation: app-loading-spin 900ms linear infinite;
 }
 
 .app-loading-label {
@@ -237,4 +245,177 @@ html[data-theme="light"] .timeline-spinner-pill {
 
 html[data-theme="light"] .timeline-spinner-text {
   color: #3f3f46;
+}
+
+
+/* ============================================================
+ * NeuBench Official Animated "E" Loading Screen
+ * ============================================================ */
+.neubench-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.neubench-loading-panel {
+  min-height: 240px;
+  padding: 48px 24px;
+}
+
+.neubench-loading-inline {
+  padding: 16px 12px;
+  min-height: 120px;
+}
+
+.neubench-loading-fullscreen {
+  min-height: 100dvh;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: var(--bg, #0f1117);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 7px 7px;
+}
+
+html[data-theme="light"] .neubench-loading-fullscreen {
+  background-color: #fbfbf9;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 7px 7px;
+}
+
+.neubench-loading-pulse-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(128, 85, 245, 0.07);
+  border: 1px solid rgba(128, 85, 245, 0.2);
+  box-shadow: 0 0 32px -4px rgba(71, 119, 255, 0.22);
+  animation: neubench-loader-glow 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
+}
+
+@keyframes neubench-loader-glow {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 20px -4px rgba(71, 119, 255, 0.18);
+    border-color: rgba(71, 119, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 34px 2px rgba(128, 85, 245, 0.28);
+    border-color: rgba(128, 85, 245, 0.35);
+  }
+  100% {
+    transform: scale(1.04);
+    box-shadow: 0 0 32px -2px rgba(19, 220, 203, 0.22);
+    border-color: rgba(19, 220, 203, 0.3);
+  }
+}
+
+.neubench-loading-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted, #94a3b8);
+  margin: 0;
+  text-align: center;
+  animation: neubench-label-fade 2s ease-in-out infinite alternate;
+}
+
+@keyframes neubench-label-fade {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ============================================================
+ * NeuBench Universal 3-Color Circular Spinner
+ * Electric Blue (#4777FF) • Solar Yellow (#FDE047) • Teal (#13DCCB)
+ * ============================================================ */
+.neubench-spinner-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.neubench-spinner-svg {
+  display: block;
+  transform-origin: 22px 22px;
+  animation: neubench-circular-spin 0.85s linear infinite;
+}
+
+@keyframes neubench-circular-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.neubench-spinner-track {
+  opacity: 0.14;
+}
+
+html[data-theme="light"] .neubench-spinner-track {
+  opacity: 0.10;
+}
+
+.neubench-inline-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.neubench-inline-loader-text {
+  font-size: 0.82rem;
+  color: var(--muted, #94a3b8);
+  font-weight: 500;
+}
+
+/* ============================================================
+ * NeuBench Sticky Top Progress Loading Bar
+ * ============================================================ */
+.neubench-top-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  background: rgba(13, 14, 18, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(71, 119, 255, 0.35);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  letter-spacing: 0.02em;
+  z-index: 99999;
+  animation: neubench-top-bar-slide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html[data-theme="light"] .neubench-top-loading-bar {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom-color: rgba(71, 119, 255, 0.4);
+  color: #0f172a;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes neubench-top-bar-slide {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

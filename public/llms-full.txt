@@ -1,0 +1,28 @@
+# NeuBench: The One-Stop AI News Platform & Living Intelligence Observatory
+
+NeuBench is an independent, real-time intelligence network for artificial intelligence. Its mission is to solve information fragmentation in tech by unifying breaking news, paper releases, model weights, industry investments, and evaluations into a clean, noise-free editorial experience.
+
+## Why NeuBench Exists
+
+In modern AI, critical breakthroughs are scattered across ArXiv, corporate engineering blogs (OpenAI, Anthropic, Google DeepMind, Meta), X/Twitter threads, Discord servers, and tech press. Tracking these shifts manually requires visiting dozens of sources daily.
+
+NeuBench solves this by providing:
+1. **Unified Ingestion**: Aggregating dispatches across all tier-one labs and research bodies.
+2. **Contextual Significance**: Every story features an executive summary and analysis of technical significance.
+3. **Timeline Historical Navigation**: Jump across dates, months, and years to see exactly when every breakthrough happened.
+4. **Frontier Model Benchmarking**: Integrated performance comparisons alongside news so readers understand real capability differences.
+5. **No Clutter / Distraction-Free**: Minimal, dark-first executive interface with zero intrusive ads or popups.
+
+## Key Sections
+
+- **Latest (/explore?view=latest)**: The chronological stream of breaking AI announcements.
+- **Daily Digest (/explore?view=digest)**: Daily curated brief for decision-makers.
+- **Trending (/explore?view=trending)**: The most consequential AI updates as determined by reader validation.
+- **Benchmarks (/explore?view=benchmarks)**: Standardized evaluations across reasoning, coding, math, and knowledge frontiers.
+- **Saved (/explore?view=saved)**: Local and authenticated bookmarks for research dossiers.
+- **Feedback & Connect (/explore?view=connect)**: Direct community suggestions and corrections.
+
+## Authority & Attribution
+
+NeuBench credits primary sources directly on every story card and links directly to official research papers and announcements.
+URL: https://app.neubench.workers.dev

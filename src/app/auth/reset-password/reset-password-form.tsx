@@ -12,6 +12,7 @@ import {
   MailCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/store';
+import { NeubenchSpinner } from '@/components/loading';
 
 export function ResetPasswordForm() {
   const { status, user, updatePassword, resetPassword, openAuth } = useAuth();
@@ -94,7 +95,7 @@ export function ResetPasswordForm() {
             <h1 id="reset-title" className="sr-only">
               Reset password
             </h1>
-            <Loader2 size={20} className="animate-spin" />
+            <NeubenchSpinner size={22} strokeWidth={4.5} />
             <p className="auth-reset-state-text">Checking your reset link…</p>
           </div>
         ) : done ? (
@@ -171,7 +172,7 @@ export function ResetPasswordForm() {
 
               <button type="submit" className="auth-submit" disabled={busy}>
                 {busy ? (
-                  <Loader2 size={15} className="animate-spin" />
+                  <NeubenchSpinner size={15} strokeWidth={5} />
                 ) : (
                   <KeyRound size={15} />
                 )}
@@ -236,7 +237,7 @@ export function ResetPasswordForm() {
 
                 <button type="submit" className="auth-submit" disabled={resending}>
                   {resending ? (
-                    <Loader2 size={15} className="animate-spin" />
+                    <NeubenchSpinner size={15} strokeWidth={5} />
                   ) : (
                     <Mail size={15} />
                   )}

@@ -7,9 +7,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  Loader2,
   Search,
 } from 'lucide-react';
+import { NeubenchSpinner } from '@/components/loading';
 import type { NewsReviewCandidate, NewsReviewStatus } from '@/lib/admin/news-review';
 
 interface FeedResponse {
@@ -215,7 +215,7 @@ export function NewsReviewClient() {
 
       {loading ? (
         <div className="admin-news-review-loading" role="status" aria-live="polite">
-          <Loader2 size={18} className="admin-spin" />
+          <NeubenchSpinner size={20} strokeWidth={4.5} />
           <span>Loading review queue…</span>
         </div>
       ) : feed && feed.candidates.length === 0 ? (

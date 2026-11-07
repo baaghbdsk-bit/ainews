@@ -347,13 +347,7 @@ function firstMeaningfulSentence(summary: string, title: string): string {
  *  back gracefully when the summary is thin. Kept short — a single, useful line. */
 function buildSignificance(title: string, summary: string, feed: FeedSource, eventDate: string): string {
   const lead = firstMeaningfulSentence(summary, title);
-  const when = new Date(eventDate).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-  if (lead) return `${lead} Reported by ${feed.name} on ${when}.`;
-  return `${title}. Covered by ${feed.name} on ${when}.`;
+  return lead || '';
 }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

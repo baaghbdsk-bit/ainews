@@ -13,6 +13,7 @@ import {
 const BodySchema = z.object({
   email: z.string().trim().email().max(254),
   password: z.string().min(6).max(72),
+  fullName: z.string().trim().max(100).optional(),
 });
 
 /**
@@ -45,7 +46,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { email, password } = parsed.data;
+  const { email, password, fullName } = parsed.data;
+  const displayName = fullName && fullName.trim().length > 0 ? fullName.trim() : email.split('@')[0];
 
   try {
     const admin = createClient(supabaseUrl(), supabaseServiceRoleKey(), {
@@ -56,7 +58,11 @@ export async function POST(request: NextRequest) {
       email,
       password,
       email_confirm: true,
-      user_metadata: { neubench_email_verified: false },
+      user_metadata: {
+        neubench_email_verified: false,
+        full_name: displayName,
+        name: displayName,
+      },
     });
 
     if (error) {
@@ -68,6 +74,19 @@ export async function POST(request: NextRequest) {
       }
       console.error('Signup failed:', error);
       return jsonNoStore({ error: 'Could not create the account. Try again.' }, { status: 500 });
+    }
+
+    if (data.user?.id) {
+      try {
+        await admin.from('profiles').upsert({
+          id: data.user.id,
+          email: data.user.email,
+          full_name: displayName,
+          updated_at: new Date().toISOString(),
+        });
+      } catch {
+        // Table may not exist yet, user_metadata preserves the profile data
+      }
     }
 
     return jsonNoStore({ ok: true, userId: data.user?.id ?? null }, { status: 201 });

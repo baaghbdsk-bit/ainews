@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neubench.netlify.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.neubench.workers.dev';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: ['/api/', '/admin/'],
       },
-      // GEO & AEO: Explicitly permit AI engines and search synthesis bots
+      // GEO & AEO: Explicitly permit AI engines and search synthesis crawlers
       {
         userAgent: [
           'GPTBot',
@@ -20,6 +20,10 @@ export default function robots(): MetadataRoute.Robots {
           'Google-Extended',
           'Applebot-Extended',
           'Amazonbot',
+          'Meta-ExternalAgent',
+          'Bytespider',
+          'cohere-ai',
+          'CCBot',
         ],
         allow: '/',
         disallow: ['/api/', '/admin/'],

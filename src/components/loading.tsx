@@ -1,101 +1,145 @@
+'use client';
+
 import React from 'react';
+import '@/styles/loading.css';
+
+export interface NeubenchSpinnerProps {
+  size?: number;
+  className?: string;
+  strokeWidth?: number;
+  label?: string;
+}
 
 /**
- * Shared loading indicator.
- *
- * Uses the NeuBench "E" logo with a continuous spin animation instead of a
- * generic spinner, so loading states feel branded.
- *
- * Used as the Suspense fallback wherever a route streams its content in, so
- * the reader sees motion and a clear message instead of a blank frame.
+ * Universal NeuBench 3-Color Circular Spinner.
+ * 
+ * Features a circular continuous spin displaying the 3 brand colors:
+ * - Electric Blue (#4777FF)
+ * - Solar Yellow (#FDE047)
+ * - Mint / Emerald Teal (#13DCCB)
+ * 
+ * Scales seamlessly from 14px (buttons) to 64px (full-page loading).
  */
-export function LoadingSpinner({
-  label = 'Loading',
-  variant = 'panel',
-  size = 22,
-}: {
-  label?: string;
-  /** `panel` is a centred card; `inline` sits inside an existing surface. */
-  variant?: 'panel' | 'inline';
-  /** Width/height of the "E" logo in px. */
+export function NeubenchSpinner({
+  size = 24,
+  className = '',
+  strokeWidth = 4.5,
+  label,
+}: NeubenchSpinnerProps) {
+  return (
+    <span
+      className={`neubench-spinner-wrap ${className}`.trim()}
+      role="status"
+      aria-label={label || 'Loading'}
+      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <svg
+        className="neubench-spinner-svg"
+        width={size}
+        height={size}
+        viewBox="0 0 44 44"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        focusable="false"
+        aria-hidden="true"
+      >
+        {/* Subtle background track */}
+        <circle
+          className="neubench-spinner-track"
+          cx="22"
+          cy="22"
+          r="16"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          opacity="0.12"
+          fill="none"
+        />
+        {/* Arc 1: Electric Blue */}
+        <circle
+          cx="22"
+          cy="22"
+          r="16"
+          stroke="#4777FF"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray="25 75.53"
+          strokeDashoffset="0"
+          fill="none"
+        />
+        {/* Arc 2: Solar Yellow */}
+        <circle
+          cx="22"
+          cy="22"
+          r="16"
+          stroke="#FDE047"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray="25 75.53"
+          strokeDashoffset="-33.51"
+          fill="none"
+        />
+        {/* Arc 3: Mint / Emerald Teal */}
+        <circle
+          cx="22"
+          cy="22"
+          r="16"
+          stroke="#13DCCB"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray="25 75.53"
+          strokeDashoffset="-67.02"
+          fill="none"
+        />
+      </svg>
+      {label && <span className="sr-only">{label}</span>}
+    </span>
+  );
+}
+
+export interface NeubenchLoadingLogoProps {
   size?: number;
-}) {
+  label?: string;
+  variant?: 'fullscreen' | 'panel' | 'inline';
+  className?: string;
+}
+
+export function NeubenchLoadingLogo({
+  size = 48,
+  label = 'Loading…',
+  variant = 'panel',
+  className = '',
+}: NeubenchLoadingLogoProps) {
   return (
     <div
-      className={`app-loading app-loading-${variant}`}
+      className={`neubench-loading-container neubench-loading-${variant} ${className}`.trim()}
       role="status"
       aria-live="polite"
-      aria-busy="true"
+      aria-label={label}
     >
-      <span
-        className="neubench-spinner"
-        aria-hidden="true"
-        style={{ width: size, height: size }}
-      >
-        <svg
-          viewBox="0 0 65 72"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <rect
-            className="neubench-spinner-bar neubench-spinner-bar--blue"
-            x="0"
-            y="0"
-            width="65"
-            height="16"
-            rx="8"
-            fill="#4777FF"
-          />
-          <rect
-            className="neubench-spinner-bar neubench-spinner-bar--violet"
-            x="0"
-            y="28"
-            width="65"
-            height="16"
-            rx="8"
-            fill="#8055F5"
-          />
-          <rect
-            className="neubench-spinner-bar neubench-spinner-bar--teal"
-            x="0"
-            y="56"
-            width="65"
-            height="16"
-            rx="8"
-            fill="#13DCCB"
-          />
-        </svg>
-      </span>
-      <span className="app-loading-label">{label}</span>
+      <NeubenchSpinner size={size} strokeWidth={4.5} />
+      {label && <p className="neubench-loading-label">{label}</p>}
     </div>
   );
 }
 
-/**
- * A shimmering placeholder block, used where the shape of the content is
- * known (a list of story rows) and a spinner alone would feel abrupt.
- */
-export function LoadingSkeleton({
-  rows = 4,
-  label = 'Loading',
+export function LoadingSpinner({
+  label = 'Loading…',
+  variant = 'panel',
+  size = 32,
 }: {
-  rows?: number;
   label?: string;
+  variant?: 'panel' | 'inline';
+  size?: number;
 }) {
-  return (
-    <div className="app-skeleton" role="status" aria-live="polite" aria-busy="true">
-      <span className="sr-only">{label}</span>
-      {Array.from({ length: rows }).map((_, i) => (
-        <div className="app-skeleton-row" key={i}>
-          <span className="app-skeleton-node" />
-          <span className="app-skeleton-lines">
-            <span className="app-skeleton-line" style={{ width: `${72 - i * 7}%` }} />
-            <span className="app-skeleton-line app-skeleton-line-sm" style={{ width: `${44 - i * 5}%` }} />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+  if (variant === 'inline') {
+    return (
+      <span className="neubench-inline-loader" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <NeubenchSpinner size={size} strokeWidth={4.5} />
+        {label && <span className="neubench-inline-loader-text">{label}</span>}
+      </span>
+    );
+  }
+  return <NeubenchLoadingLogo size={size} label={label} variant={variant} />;
 }
+
+export default NeubenchSpinner;

@@ -35,11 +35,6 @@
   color: var(--fg) !important;
 }
 
-.archive-page.mode-digest {
-  --shell-accent: var(--secondary) !important;
-  --shell-accent-2: var(--secondary) !important;
-  --shell-accent-soft: var(--secondary-soft) !important;
-}
 
 .archive-page.mode-trending {
   --shell-accent: var(--warning) !important;

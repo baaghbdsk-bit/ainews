@@ -26,7 +26,7 @@ export interface AuthState {
   clientId: string;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<SignUpResult>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<SignUpResult>;
   sendMagicLink: (email: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
@@ -228,20 +228,21 @@ export async function signIn(email: string, password: string): Promise<void> {
     ready = true;
     snapshot = buildSnapshot();
     emit();
-    await ensureGuestClaim(data.user.id);
+    void ensureGuestClaim(data.user.id);
   }
 }
 
 export async function signUp(
   email: string,
   password: string,
+  fullName?: string,
 ): Promise<SignUpResult> {
   // The account is created server-side so it can sign in right away instead of
   // waiting on an email. It is recorded as unverified, which the profile shows.
   const res = await fetch('/api/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, fullName }),
   });
 
   if (!res.ok) {

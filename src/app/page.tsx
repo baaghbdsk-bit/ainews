@@ -1,6 +1,19 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { HomeLauncher } from "@/components/home-launcher";
 
-// The launcher landing is the default page.
+export const metadata: Metadata = {
+  title: "NeuBench — The One-Stop AI News Platform",
+  description:
+    "Get all your artificial intelligence news in one place. Real-time shifts, model launches, research breakthroughs, and executive highlights — never check 10 different sites again.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "NeuBench — The One-Stop AI News Platform",
+    description:
+      "All artificial intelligence news, breakthroughs, and model releases in one place. The living pulse of AI without checking 10 different sites.",
+  },
+};
+
+// Direct home launcher rendering avoids the 307 redirect round-trip
 export default function RootPage() {
-  redirect("/home");
+  return <HomeLauncher />;
 }

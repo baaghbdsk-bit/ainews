@@ -1,13 +1,21 @@
 import { fetchAiNews, AI_NEWS_TAG } from '@/lib/feeds/fetch-ai-news';
-import { getPublishedStoriesWithVotes, getUpvoteCounts } from '@/lib/actions/stories';
+import {
+  getPublishedStories,
+  getPublishedStoriesForDate,
+  getPublishedStoriesCountForDate,
+  getUpvoteCounts,
+} from '@/lib/actions/stories';
 import { STORIES_TAG } from '@/lib/cache-tags';
 import { stories as seedStories } from '@/app/stories';
 import { canonicalizeUrl, slugify } from '@/lib/slug';
 import { colorForTopic } from '@/lib/story-colors';
 import { extractCompany } from '@/lib/story-company';
+import { deduplicateStories } from '@/lib/story-dedup';
+import { selectDigestHighlights } from '@/lib/digest-priority';
 import type { Story } from '@/lib/schemas/story';
 import type { StoryDisplay, TimelineFilters } from '@/lib/timeline-shared';
 import { PAGE_SIZE, filterTimelineStories } from '@/lib/timeline-shared';
+import { generateDeterministicDispatchesForDate } from '@/lib/editorial-overview';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -57,7 +65,7 @@ function formatStoryForDisplay(
     id: story.id || story.slug,
     slug: story.slug,
     title: story.title,
-    summary: story.deck ?? story.summary,
+    summary: story.summary || story.deck || '',
     significance: story.significance,
     source: story.source,
     sourceUrl: story.source_url,
@@ -65,7 +73,7 @@ function formatStoryForDisplay(
       story.company ??
       extractCompany({
         title: story.title,
-        summary: story.deck ?? story.summary,
+        summary: story.summary || story.deck || '',
         source: story.source,
       }),
     imageUrl: story.image_url ?? null,
@@ -82,37 +90,49 @@ function formatStoryForDisplay(
   };
 }
 
-/**
- * The full merged timeline (live RSS + published DB rows + seed history),
- * de-duplicated by URL and (title, date), newest first, projected to the slim
- * display shape. Cached under both feed and story tags: a feed refresh or an
- * editorial publish invalidates it.
- */
-/** True during `next build` prerender; skips slow external feeds/DB so builds
- *  are fast and deterministic. Live data is fetched on first runtime visit. */
 const IS_BUILD_TIME = process.env.NEXT_PHASE === 'phase-production-build';
 
-export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
 
-  // During production build, skip slow external sources so prerender completes
-  // quickly. Seed stories provide a static snapshot; live data fills in on the
-  // first runtime visit once the cache warms. Each source already enforces its
-  // own timeout internally (fetchAiNews: 3s per feed; Supabase: its own timeouts),
-  // so no wrapper deadline is needed here.
+// In-memory worker cache to eliminate Supabase egress & avoid subrequest limits
+let cachedTimeline: CacheEntry<TimelineStoryDisplay[]> | null = null;
+const TIMELINE_CACHE_TTL_MS = 300_000; // 5 minutes TTL
+let inFlightTimelinePromise: Promise<TimelineStoryDisplay[]> | null = null;
 
-  const dbStories = IS_BUILD_TIME ? [] : await getPublishedStoriesWithVotes();
-  const upvoteCounts = IS_BUILD_TIME ? {} : await getUpvoteCounts();
+export interface DateStoriesResult {
+  stories: TimelineStoryDisplay[];
+  total: number;
+  mode: 'highlights' | 'all';
+}
+
+const dateStoriesCache = new Map<string, CacheEntry<TimelineStoryDisplay[]>>();
+const dateHighlightsCache = new Map<string, CacheEntry<DateStoriesResult>>();
+const DATE_CACHE_TTL_MS = 120_000; // 2 minutes TTL for historical dates
+
+export function invalidateTimelineCache(): void {
+  cachedTimeline = null;
+  dateStoriesCache.clear();
+  dateHighlightsCache.clear();
+}
+
+async function fetchMergedTimelineInternal(): Promise<TimelineStoryDisplay[]> {
+  // Concurrently fetch published stories and upvotes ONCE without duplicated queries
+  const [dbStories, upvoteCounts] = IS_BUILD_TIME
+    ? [[], {}]
+    : await Promise.all([
+        getPublishedStories(),
+        getUpvoteCounts().catch(() => ({})),
+      ]);
+
   const liveStories =
     IS_BUILD_TIME || (dbStories && dbStories.length > 0) ? [] : await fetchAiNews();
   const seedConverted = seedStories.map(convertSeedStory);
 
   const sources = [...liveStories, ...(dbStories ?? []), ...seedConverted];
 
-  // A live feed copy wins for the text (it is the publisher's current version)
-  // but usually carries no image, while the stored row for the same story has a
-  // lead image resolved by the ingest job. Index every image up front, by URL
-  // and by (title, date), so whichever copy survives de-duplication can borrow
-  // the image instead of falling back to a monogram tile.
   const imageByUrl = new Map<string, string>();
   const imageByTitleDate = new Map<string, string>();
   for (const story of sources) {
@@ -123,14 +143,6 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
     if (!imageByTitleDate.has(titleDate)) imageByTitleDate.set(titleDate, story.image_url);
   }
 
-  // The stored row for a story carries the enriched content the ingest job
-  // produced: the extracted body, the key points, the deck, the lead image.
-  // It also carries the slug the story is published under, which is stable -
-  // a feed copy mints a fresh slug whenever the publisher moves a post's date,
-  // so the feed slug and the stored slug drift apart. Serving the feed's slug
-  // meant the article page could not find the stored row, and fell through to
-  // re-downloading every feed on each visit. Index the stored rows by URL so
-  // the surviving copy can adopt their slug and their enrichment.
   const storedByUrl = new Map<string, Story>();
   for (const story of dbStories ?? []) {
     const urlKey = canonicalizeUrl(story.source_url);
@@ -140,30 +152,21 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
   const merged: Story[] = [];
   const seenUrls = new Set<string>();
   const seenTitleDate = new Set<string>();
-  // Votes are recorded against the slug the reader saw, so a story that adopts
-  // the stored row's slug must keep counting the votes under the slug it had.
   const aliasSlugs = new Map<string, string[]>();
+
   const pushStory = (story: Story) => {
     const urlKey = canonicalizeUrl(story.source_url);
-    // Primary dedup: canonical URL is the ground truth. Stories covered by
-    // multiple outlets have different titles across feeds, so a title-based
-    // check lets both copies through. URL wins when present.
     if (seenUrls.has(urlKey)) return;
     seenUrls.add(urlKey);
-    // Secondary dedup: same title + same day catches cross-feed duplicates of
-    // the same news that carry different source URLs (RSS feeds each link to
-    // their own copy of the story). Applies to every story, not only those
-    // without a URL, so syndicated stories don't appear 2–3 times.
+
     const titleDate = `${story.title.trim().toLowerCase()}|${story.event_date}`;
     if (seenTitleDate.has(titleDate)) return;
     seenTitleDate.add(titleDate);
+
     if (!story.image_url) {
       story.image_url = imageByUrl.get(urlKey) ?? imageByTitleDate.get(titleDate);
     }
 
-    // Adopt the stored row's slug and enrichment when this copy came from the
-    // feed. The text still comes from the feed, so a corrected publisher
-    // summary still wins.
     const stored = storedByUrl.get(urlKey);
     if (stored && stored.slug !== story.slug) {
       const previousSlug = story.slug;
@@ -183,16 +186,15 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
 
     merged.push(story);
   };
+
   sources.forEach(pushStory);
   merged.sort((a, b) => b.event_date.localeCompare(a.event_date));
 
-  return merged.map((s) => {
-    // Count votes under the story's current slug, falling back to any slug it
-    // was previously published under so a rename never drops a reader's vote.
-    let upvotes = upvoteCounts[s.slug] ?? 0;
+  const formatted = merged.map((s) => {
+    let upvotes = (upvoteCounts as Record<string, number>)[s.slug] ?? 0;
     if (!upvotes) {
       for (const alias of aliasSlugs.get(s.slug) ?? []) {
-        const aliased = upvoteCounts[alias];
+        const aliased = (upvoteCounts as Record<string, number>)[alias];
         if (aliased) {
           upvotes = aliased;
           break;
@@ -201,6 +203,54 @@ export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
     }
     return formatStoryForDisplay(s, colorForTopic(s.topic), upvotes);
   });
+
+  return deduplicateStories(formatted);
+}
+
+/**
+ * The full merged timeline (live RSS + published DB rows + seed history),
+ * cached in memory with a sliding TTL to eliminate repetitive Supabase egress.
+ */
+export async function getMergedTimeline(): Promise<TimelineStoryDisplay[]> {
+  if (IS_BUILD_TIME) {
+    return fetchMergedTimelineInternal();
+  }
+
+  const now = Date.now();
+  if (cachedTimeline) {
+    // If cache is fresh, return immediately (0ms)
+    if (now - cachedTimeline.timestamp < TIMELINE_CACHE_TTL_MS) {
+      return cachedTimeline.data;
+    }
+    // Stale-While-Revalidate: Return cached data immediately without blocking the user,
+    // while refreshing cache in background
+    if (!inFlightTimelinePromise) {
+      inFlightTimelinePromise = fetchMergedTimelineInternal()
+        .then((data) => {
+          cachedTimeline = { data, timestamp: Date.now() };
+          return data;
+        })
+        .finally(() => {
+          inFlightTimelinePromise = null;
+        });
+    }
+    return cachedTimeline.data;
+  }
+
+  if (inFlightTimelinePromise) {
+    return inFlightTimelinePromise;
+  }
+
+  inFlightTimelinePromise = fetchMergedTimelineInternal()
+    .then((data) => {
+      cachedTimeline = { data, timestamp: Date.now() };
+      return data;
+    })
+    .finally(() => {
+      inFlightTimelinePromise = null;
+    });
+
+  return inFlightTimelinePromise;
 }
 
 export interface TimelinePage {
@@ -222,4 +272,136 @@ export async function getTimelinePage(filters: TimelineFilters, offset = 0, limi
     matching: filtered.length,
     hasMore: offset + limit < filtered.length,
   };
+}
+
+/**
+ * Lazy-load stories specifically for a given date (YYYY-MM-DD).
+ * Supports on-demand 'highlights' mode (fast count + top 5 milestones)
+ * and 'all' mode (full chronological stream).
+ */
+export async function getStoriesForDate(
+  dateStr: string,
+  mode: 'highlights' | 'all' = 'highlights',
+): Promise<DateStoriesResult> {
+  const now = Date.now();
+
+  // 1. If full stories are already cached for this date, fulfill either mode instantly with 0 queries
+  const fullCached = dateStoriesCache.get(dateStr);
+  if (fullCached && now - fullCached.timestamp < DATE_CACHE_TTL_MS) {
+    if (mode === 'all') {
+      return { stories: fullCached.data, total: fullCached.data.length, mode: 'all' };
+    }
+    const deduped = deduplicateStories(fullCached.data);
+    const ranked = selectDigestHighlights(deduped as any, 5) as TimelineStoryDisplay[];
+    const top5 = ranked.length > 0 ? ranked : deduped.slice(0, 5);
+    return { stories: top5, total: fullCached.data.length, mode: 'highlights' };
+  }
+
+  // 2. Highlights-Only Fast Path (High Performance & Low Egress):
+  if (mode === 'highlights') {
+    const hlCached = dateHighlightsCache.get(dateStr);
+    if (hlCached && now - hlCached.timestamp < DATE_CACHE_TTL_MS) {
+      return hlCached.data;
+    }
+
+    // Fast count query (0 row payloads) + fetch only 12 rows (instead of 300+)
+    const [dbCount, dbRows, upvoteCounts] = await Promise.all([
+      getPublishedStoriesCountForDate(dateStr),
+      getPublishedStoriesForDate(dateStr, 12),
+      getUpvoteCounts().catch((): Record<string, number> => ({})),
+    ]);
+
+    const matchingSeeds = seedStories
+      .filter((s) => s.date === dateStr)
+      .map(convertSeedStory);
+
+    const combined = [...dbRows, ...matchingSeeds];
+    const seen = new Set<string>();
+    const unique: TimelineStoryDisplay[] = [];
+
+    for (const s of combined) {
+      const key = canonicalizeUrl(s.source_url) || s.slug || s.title;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const votes = upvoteCounts[s.slug] ?? 0;
+      unique.push(formatStoryForDisplay(s, colorForTopic(s.topic), votes));
+    }
+
+    if (unique.length < 5) {
+      const fallbacks = generateDeterministicDispatchesForDate(dateStr) as TimelineStoryDisplay[];
+      for (const fb of fallbacks) {
+        if (unique.length >= 6) break;
+        const key = fb.slug || fb.title;
+        if (!seen.has(key)) {
+          seen.add(key);
+          unique.push(fb);
+        }
+      }
+    }
+
+    let totalCount = Math.max(dbCount + matchingSeeds.length, unique.length);
+    if (totalCount < 5) {
+      totalCount = Math.max(5, unique.length);
+    }
+
+    const deduped = deduplicateStories(unique);
+    const ranked = selectDigestHighlights(deduped as any, 5) as TimelineStoryDisplay[];
+    const top5 = ranked.length > 0 ? ranked : deduped.slice(0, 5);
+
+    const result: DateStoriesResult = {
+      stories: top5,
+      total: totalCount,
+      mode: 'highlights',
+    };
+
+    dateHighlightsCache.set(dateStr, { data: result, timestamp: now });
+    return result;
+  }
+
+  // 3. All Feed Mode (Full Chronological Ingestion):
+  const [dbRows, upvoteCounts] = await Promise.all([
+    getPublishedStoriesForDate(dateStr, 300),
+    getUpvoteCounts().catch((): Record<string, number> => ({})),
+  ]);
+
+  const matchingSeeds = seedStories
+    .filter((s) => s.date === dateStr)
+    .map(convertSeedStory);
+
+  const combined = [...dbRows, ...matchingSeeds];
+  const seen = new Set<string>();
+  const unique: TimelineStoryDisplay[] = [];
+
+  for (const s of combined) {
+    const key = canonicalizeUrl(s.source_url) || s.slug || s.title;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const votes = upvoteCounts[s.slug] ?? 0;
+    unique.push(formatStoryForDisplay(s, colorForTopic(s.topic), votes));
+  }
+
+  if (unique.length < 5) {
+    const fallbacks = generateDeterministicDispatchesForDate(dateStr) as TimelineStoryDisplay[];
+    for (const fb of fallbacks) {
+      if (unique.length >= 6) break;
+      const key = fb.slug || fb.title;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(fb);
+      }
+    }
+  }
+
+  const dedupedUnique = deduplicateStories(unique);
+  dateStoriesCache.set(dateStr, { data: dedupedUnique, timestamp: now });
+
+  // Pre-warm highlights cache from this complete set
+  const ranked = selectDigestHighlights(dedupedUnique as any, 5) as TimelineStoryDisplay[];
+  const top5 = ranked.length > 0 ? ranked : dedupedUnique.slice(0, 5);
+  dateHighlightsCache.set(dateStr, {
+    data: { stories: top5, total: dedupedUnique.length, mode: 'highlights' },
+    timestamp: now,
+  });
+
+  return { stories: dedupedUnique, total: dedupedUnique.length, mode: 'all' };
 }

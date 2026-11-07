@@ -1,61 +1,48 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ChevronUp } from 'lucide-react';
-import { useAuth, whenAuthSettled } from '@/lib/auth/store';
-import { showGuestNotice } from '@/components/auth/guest-notice';
+import { useAuth } from '@/lib/auth/store';
 import { getVoteStore, useVoteMirror } from './vote-store';
 
 interface UpvoteButtonProps {
   slug: string;
   initialCount?: number;
   initialVoted?: boolean;
+  baseCount?: number;
   onVoteChange?: (slug: string, voted: boolean, newCount: number) => void;
   size?: 'sm' | 'md';
   className?: string;
 }
 
-interface VoteState {
-  voted: boolean;
-  count: number;
-}
+// In-memory debounce queue for background Supabase synchronization:
+// storySlug -> { timer, targetVoted }
+const dbSyncQueue = new Map<string, { timer: NodeJS.Timeout; targetVoted: boolean }>();
 
 export function UpvoteButton({
   slug,
   initialCount = 0,
   initialVoted,
+  baseCount: explicitBaseCount,
   onVoteChange,
   size = 'sm',
   className = '',
 }: UpvoteButtonProps) {
-  const [state, setState] = useState<VoteState>({
-    voted: initialVoted ?? false,
-    count: initialCount,
-  });
-  const [isPending, setIsPending] = useState(false);
-  const stateRef = useRef(state);
-  const pendingRef = useRef(false);
-  const requestIdRef = useRef(0);
-  const syncedPropsRef = useRef({ count: initialCount, voted: initialVoted });
-  const interactedRef = useRef(false);
-  // The identity the vote is recorded against: the account when signed in.
-  const { clientId, status, user } = useAuth();
+  const { clientId, user } = useAuth();
   const store = useMemo(() => getVoteStore(clientId), [clientId]);
   const localVotes = useVoteMirror(clientId);
-  const parentOwnsVote = initialVoted !== undefined;
 
-  const applyVoteState = useCallback((next: VoteState) => {
-    stateRef.current = next;
-    setState(next);
-  }, []);
+  // Compute baseline count: votes from all other readers excluding current user
+  const effectiveBaseCount = useMemo(() => {
+    if (explicitBaseCount !== undefined) return explicitBaseCount;
+    return initialVoted ? Math.max(0, initialCount - 1) : initialCount;
+  }, [explicitBaseCount, initialCount, initialVoted]);
 
-  const commit = useCallback(
-    (next: VoteState) => {
-      applyVoteState(next);
-      onVoteChange?.(slug, next.voted, next.count);
-    },
-    [applyVoteState, onVoteChange, slug],
-  );
+  // Is this story currently voted by the user?
+  const isVoted = initialVoted !== undefined ? initialVoted : localVotes.has(slug);
+
+  // Display count is 100% deterministic: baseline + 1 if voted, else baseline
+  const displayCount = effectiveBaseCount + (isVoted ? 1 : 0);
 
   const applyLocalVote = useCallback(
     (targetSlug: string, voted: boolean) => {
@@ -67,173 +54,74 @@ export function UpvoteButton({
     [store],
   );
 
-  useEffect(() => {
-    const last = syncedPropsRef.current;
-    const countChanged = initialCount !== last.count;
-    const votedChanged = parentOwnsVote && initialVoted !== last.voted;
-    if (!countChanged && !votedChanged) return;
-
-    syncedPropsRef.current = { count: initialCount, voted: initialVoted };
-
-    const current = stateRef.current;
-    applyVoteState({
-      voted: votedChanged ? (initialVoted as boolean) : current.voted,
-      count: countChanged ? initialCount : current.count,
-    });
-  }, [applyVoteState, initialCount, initialVoted, parentOwnsVote]);
-
-  useEffect(() => {
-    if (parentOwnsVote) return;
-    const localVoted = localVotes.has(slug);
-    const current = stateRef.current;
-    if (current.voted === localVoted) return;
-    applyVoteState({ voted: localVoted, count: current.count });
-  }, [applyVoteState, localVotes, parentOwnsVote, slug]);
-
-  useEffect(() => {
-    if (parentOwnsVote) return;
-    if (!clientId) return;
-
-    let cancelled = false;
-
-    const load = async () => {
-      // Let a sign-in finish moving the guest's votes first, so the reader's
-      // own votes are not read as empty.
-      await whenAuthSettled();
-      if (cancelled) return;
-
-      const res = await fetch(`/api/upvotes?clientId=${encodeURIComponent(clientId)}`);
-      if (!res.ok || cancelled) return;
-      const payload = await res.json();
-      if (cancelled || !payload || typeof payload !== 'object') return;
-
-      const serverCount = payload.counts?.[slug];
-      if (typeof serverCount === 'number' && !interactedRef.current) {
-        const current = stateRef.current;
-        if (current.count !== serverCount) {
-          applyVoteState({ voted: current.voted, count: serverCount });
-        }
-      }
-
-      if (!Array.isArray(payload.userVotes)) return;
-      const votes = store.read();
-      let changed = false;
-      for (const votedSlug of payload.userVotes) {
-        if (typeof votedSlug === 'string' && !votes.has(votedSlug)) {
-          votes.add(votedSlug);
-          changed = true;
-        }
-      }
-      if (changed) store.write(votes);
-    };
-
-    load().catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [applyVoteState, clientId, parentOwnsVote, slug, store]);
-
-  // A guest can read the count but has no vote of their own to show.
-  const voted = user ? (parentOwnsVote ? state.voted : localVotes.has(slug)) : false;
-
-  const handleVote = async (e: React.MouseEvent) => {
+  const handleVote = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Voting is an account action. A guest gets a quiet nudge instead of a
-    // dialog being forced open over the story.
-    if (status !== 'signed-in' || !user) {
-      if (status === 'guest') showGuestNotice('Sign in to vote on stories.');
-      return;
+    const nextVoted = !isVoted;
+    const nextCount = effectiveBaseCount + (nextVoted ? 1 : 0);
+
+    // 1. Instant local & session state update (0ms UI latency)
+    applyLocalVote(slug, nextVoted);
+
+    // 2. Broadcast event across tabs and parent views (ExploreTabs, Trending list, etc.)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('neubench_vote_changed', {
+          detail: { slug, voted: nextVoted, count: nextCount },
+        })
+      );
     }
 
-    // One request at a time: a double click cannot toggle twice.
-    if (pendingRef.current) return;
-    pendingRef.current = true;
-    setIsPending(true);
+    onVoteChange?.(slug, nextVoted, nextCount);
 
-    const requestId = ++requestIdRef.current;
-    const currentVoted = parentOwnsVote ? stateRef.current.voted : localVotes.has(slug);
-    interactedRef.current = true;
-    const previous: VoteState = {
-      voted: currentVoted,
-      count: stateRef.current.count,
-    };
-    const next: VoteState = {
-      voted: !currentVoted,
-      count: Math.max(0, previous.count + (currentVoted ? -1 : 1)),
-    };
-
-    // Optimistic update against the latest state, not a render snapshot.
-    commit(next);
-    applyLocalVote(slug, next.voted);
-
-    if (!clientId) {
-      if (requestId === requestIdRef.current) {
-        pendingRef.current = false;
-        setIsPending(false);
+    // 3. Debounce server DB sync:
+    // Only signed-in users persist to Supabase. Guests keep votes in session/localStorage.
+    // While the user clicks rapidly, we reset the timer so only the FINAL state is pushed to DB!
+    if (user && user.id) {
+      const existing = dbSyncQueue.get(slug);
+      if (existing) {
+        clearTimeout(existing.timer);
       }
-      return;
-    }
 
-    try {
-      const res = await fetch('/api/upvotes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storySlug: slug, clientId }),
-      });
+      const timer = setTimeout(async () => {
+        dbSyncQueue.delete(slug);
+        try {
+          await fetch('/api/upvotes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              storySlug: slug,
+              action: nextVoted ? 'up' : 'unvote',
+            }),
+          });
+        } catch (err) {
+          console.warn('Debounced upvote push notice:', err);
+        }
+      }, 1200); // 1.2s after last click
 
-      // A newer request supersedes this one; its response is stale.
-      if (requestId !== requestIdRef.current) return;
-
-      if (!res.ok) throw new Error(`Upvote failed with ${res.status}`);
-
-      const data = await res.json();
-      if (requestId !== requestIdRef.current) return;
-      if (typeof data.hasVoted === 'boolean' && typeof data.totalVotes === 'number') {
-        commit({ voted: data.hasVoted, count: data.totalVotes });
-        applyLocalVote(slug, data.hasVoted);
-      }
-    } catch (err) {
-      if (requestId !== requestIdRef.current) return;
-      console.error('Failed to sync vote:', err);
-      // Roll back only this, the latest, request.
-      commit(previous);
-      applyLocalVote(slug, previous.voted);
-    } finally {
-      if (requestId === requestIdRef.current) {
-        pendingRef.current = false;
-        setIsPending(false);
-      }
+      dbSyncQueue.set(slug, { timer, targetVoted: nextVoted });
     }
   };
 
   const isSmall = size === 'sm';
-  const { count } = state;
 
   return (
     <button
       type="button"
       onClick={handleVote}
       data-tour-target="vote"
-      aria-label={
-        user
-          ? `${voted ? 'Remove upvote' : 'Upvote'} story (${count} votes)`
-          : `Upvote story (${count} votes) - sign in to vote`
-      }
-      aria-pressed={voted}
-      aria-busy={isPending}
-      disabled={isPending}
-      className={`story-action-btn upvote-btn ${voted ? 'is-active' : ''} ${isPending ? 'is-pending' : ''} ${className}`}
-      title={!user ? 'Sign in to vote' : voted ? 'Upvoted (click to undo)' : 'Upvote this story'}
+      aria-label={`${isVoted ? 'Remove upvote' : 'Upvote'} story (${displayCount} votes)`}
+      aria-pressed={isVoted}
+      className={`story-action-btn upvote-btn ${isVoted ? 'is-active' : ''} ${className}`}
+      title={isVoted ? 'Upvoted (click to undo)' : 'Upvote this story'}
     >
       <ChevronUp
         size={isSmall ? 15 : 18}
-        strokeWidth={voted ? 2.8 : 2}
-        className={`upvote-icon ${voted ? 'translate-y-[-1px]' : ''}`}
+        strokeWidth={isVoted ? 2.8 : 2}
+        className={`upvote-icon ${isVoted ? 'translate-y-[-1px]' : ''}`}
       />
-      <span className="upvote-count">{count}</span>
+      <span className="upvote-count">{displayCount}</span>
     </button>
   );
 }

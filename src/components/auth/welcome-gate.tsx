@@ -59,7 +59,7 @@ export function WelcomeGate() {
   const primaryRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const isAuthRoute = pathname?.startsWith('/auth') ?? false;
+  const isAuthRoute = (pathname?.startsWith('/auth') || pathname === '/login' || pathname === '/signup') ?? false;
   const visible = !seen && status === 'guest' && !authOpen && !isAuthRoute;
 
   useEffect(() => {

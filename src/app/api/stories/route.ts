@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { getTimelinePage } from '@/lib/timeline';
+import { getTimelinePage, getStoriesForDate } from '@/lib/timeline';
 import { PAGE_SIZE, type TimelineFilters } from '@/lib/timeline-shared';
 
 /**
@@ -13,6 +13,27 @@ import { PAGE_SIZE, type TimelineFilters } from '@/lib/timeline-shared';
  */
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
+
+
+  const dateParam = params.get('date');
+  if (dateParam) {
+    try {
+      const modeParam = params.get('mode') === 'all' ? 'all' : 'highlights';
+      const result = await getStoriesForDate(dateParam, modeParam);
+      return Response.json(
+        result,
+        {
+          headers: {
+            'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600',
+          },
+        },
+      );
+    } catch (err) {
+      console.error('Failed to load stories for date:', dateParam, err);
+      return Response.json({ stories: [], total: 0, mode: 'highlights', error: 'Failed to load stories for date' }, { status: 500 });
+    }
+  }
+
 
   const readInt = (name: string, fallback: number, min: number, max: number): number => {
     const raw = Number.parseInt(params.get(name) ?? '', 10);
