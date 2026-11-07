@@ -172,10 +172,11 @@ export function SavedStoriesView() {
             {savedStories.map((story, index) => (
               <article key={story.id || story.slug} className="ex-timeline-panel-item">
                 <div className="ex-timeline-rail">
-                  <div className="ex-timeline-date-badge">
+                  <time className="ex-timeline-date-badge" dateTime={story.date}>
                     <span className="ex-timeline-date-day">{story.day}</span>
                     <span className="ex-timeline-date-month">{story.month}</span>
-                  </div>
+                    <span className="ex-timeline-date-year">{story.year}</span>
+                  </time>
                   {index < savedStories.length - 1 && <span className="ex-timeline-rail-line" />}
                 </div>
                 <div className="ex-panel-card">

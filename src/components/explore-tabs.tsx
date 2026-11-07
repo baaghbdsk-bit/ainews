@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Filter,
   Sparkles,
   Zap,
   Search,
@@ -361,6 +362,7 @@ export function ExploreTabs({
 
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [openDropdown, setOpenDropdown] = useState<'day' | 'month' | 'year' | null>(null);
@@ -441,6 +443,8 @@ export function ExploreTabs({
   // In All Feed Mode: loads full chronological stream on-demand
   // Dedicated, non-blocking asynchronous data loader with deduplicated in-flight guards
   useEffect(() => {
+    if (view !== 'latest') return;
+
     const inFlightFetches = inFlightFetchRef.current;
 
     if (feedMode === 'all') {
@@ -520,7 +524,7 @@ export function ExploreTabs({
         inFlightFetches.delete(fetchKey);
       };
     }
-  }, [selectedDateKey, feedMode, dateHighlightsCache, dateAllCache]);
+  }, [view, selectedDateKey, feedMode, dateHighlightsCache, dateAllCache]);
 
   // Exact total available feed dispatches for the active date
   const totalFeedCount = useMemo(() => {
@@ -731,6 +735,22 @@ export function ExploreTabs({
     }
   };
 
+  const handleShiftWeek = (weekOffset: number) => {
+    const monthIndex = MONTHS.findIndex(
+      (month) => month.name.toLowerCase() === selectedMonth.toLowerCase(),
+    );
+    const selectedDate = new Date(
+      Number(selectedYear),
+      monthIndex >= 0 ? monthIndex : 0,
+      Number(selectedDay),
+      12,
+    );
+    selectedDate.setDate(selectedDate.getDate() + weekOffset * 7);
+    resetFeedBatch(setSelectedYear, String(selectedDate.getFullYear()));
+    resetFeedBatch(setSelectedMonth, MONTHS[selectedDate.getMonth()].name);
+    resetFeedBatch(setSelectedDay, String(selectedDate.getDate()));
+  };
+
   const handleGoToToday = () => {
     resetFeedBatch(setSelectedYear, defaultYear);
     resetFeedBatch(setSelectedMonth, defaultMonth);
@@ -764,8 +784,12 @@ export function ExploreTabs({
     endPrev.setDate(endPrev.getDate() - 1);
     const endM = MONTHS[endPrev.getMonth()]?.name || selectedMonth;
     const endD = String(endPrev.getDate()).padStart(2, '0');
-    const y = weekBounds.startDate.getFullYear();
-    return `${startM} ${startD} – ${endM} ${endD}, ${y}`;
+    const startYear = weekBounds.startDate.getFullYear();
+    const endYear = endPrev.getFullYear();
+    if (startYear === endYear) {
+      return `${startM} ${startD} to ${endM} ${endD}, ${startYear}`;
+    }
+    return `${startM} ${startD}, ${startYear} to ${endM} ${endD}, ${endYear}`;
   }, [weekBounds, selectedMonth]);
 
   // Trending items computed ONLY when view === 'trending'
@@ -798,11 +822,6 @@ export function ExploreTabs({
       return storyTime >= startTime && storyTime < endTime;
     });
 
-    // If none in the exact week window, fallback to all voted stories
-    if (list.length === 0) {
-      list = votedStories;
-    }
-
     // Deduplicate only the small voted set (< 1ms execution)
     list = deduplicateStories(list);
 
@@ -833,6 +852,44 @@ export function ExploreTabs({
     });
   }, [view, stories, weekBounds, localVoteSlugs, selectedCompany, selectedTopic, searchQuery]);
 
+  const renderFeedModeSwitcher = (className: string) => (
+    <div className={`ex-feed-tab-switch ex-feed-mode-switcher ${className}`} role="tablist" aria-label="Feed mode">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={feedMode === 'highlight'}
+        aria-label={`Highlights (${Math.min(5, highlightStories.length)})`}
+        className={`ex-feed-tab-btn ${feedMode === 'highlight' ? 'is-active' : ''}`}
+        onClick={() => resetFeedBatch(setFeedMode, 'highlight')}
+      >
+        <Sparkles size={13} />
+        <span className="ex-feed-tab-label-desktop">
+          Highlight ({Math.min(5, highlightStories.length)})
+        </span>
+        <span className="ex-feed-tab-label-mobile">
+          Highlights ({Math.min(5, highlightStories.length)})
+        </span>
+        <span className="ex-feed-tab-label-header">Highlights</span>
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        aria-selected={feedMode === 'all'}
+        aria-label={`All Feed (${totalFeedCount})`}
+        className={`ex-feed-tab-btn ${feedMode === 'all' ? 'is-active' : ''}`}
+        onClick={() => resetFeedBatch(setFeedMode, 'all')}
+      >
+        <Layers size={13} />
+        <span className="ex-feed-tab-label-desktop">All Feed ({totalFeedCount})</span>
+        <span className="ex-feed-tab-label-mobile">Feed ({totalFeedCount})</span>
+        <span className="ex-feed-tab-label-header">Feed</span>
+      </button>
+    </div>
+  );
+
+  const activeFilterCount = Number(selectedCompany !== 'all') + Number(selectedTopic !== 'all');
+
   return (
     <div className="ex-root">
       {/* Pinned Sticky Header */}
@@ -850,6 +907,7 @@ export function ExploreTabs({
             </Link>
 
             <div className="ex-mobile-top-actions">
+              {view === 'latest' && renderFeedModeSwitcher('ex-header-feed-switcher')}
               <button
                 type="button"
                 className={`ex-mobile-search-toggle ${isSearchOpen ? 'is-active' : ''}`}
@@ -1021,7 +1079,33 @@ export function ExploreTabs({
         {(view === 'latest' || view === 'trending') && (
           <div className="ex-subtoolbar">
             <div className="ex-subtoolbar-inner">
-              <div className="ex-subtoolbar-left">
+              <div className={`ex-subtoolbar-left ${view === 'trending' ? 'is-trending' : ''}`}>
+                {view === 'trending' && (
+                  <div className="ex-week-range-control" aria-label={`Trending week: ${weekRangeStr}`}>
+                    <span className="ex-week-range-label">Trending week</span>
+                    <strong>{weekRangeStr}</strong>
+                    <div className="ex-date-stepper">
+                      <button
+                        type="button"
+                        className="ex-stepper-btn"
+                        onClick={() => handleShiftWeek(-1)}
+                        title="Previous week"
+                        aria-label="Previous week"
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="ex-stepper-btn"
+                        onClick={() => handleShiftWeek(1)}
+                        title="Next week"
+                        aria-label="Next week"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {/* Date Slider as it was earlier: Day, Month, Year hover popovers */}
                 <div className="ex-date-selector">
                   {/* 1. Day Unit */}
@@ -1201,80 +1285,96 @@ export function ExploreTabs({
                 </div>
               </div>
 
+              <div className="ex-subtoolbar-controls">
               {/* Center: Contextual indicator / switcher */}
-              <div className="ex-subtoolbar-center">
+              <div className={`ex-subtoolbar-center ${view === 'latest' ? 'is-feed-mode' : ''}`}>
                 {view === 'latest' && (
-                  <div className="ex-feed-tab-switch" role="tablist" aria-label="Feed mode">
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={feedMode === 'highlight'}
-                      className={`ex-feed-tab-btn ${feedMode === 'highlight' ? 'is-active' : ''}`}
-                      onClick={() => resetFeedBatch(setFeedMode, 'highlight')}
-                    >
-                      <Sparkles size={13} />
-                      <span>Highlight ({Math.min(5, highlightStories.length)})</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={feedMode === 'all'}
-                      className={`ex-feed-tab-btn ${feedMode === 'all' ? 'is-active' : ''}`}
-                      onClick={() => resetFeedBatch(setFeedMode, 'all')}
-                    >
-                      <Layers size={13} />
-                      <span>All Feed ({totalFeedCount})</span>
-                    </button>
-                  </div>
+                  renderFeedModeSwitcher('ex-subtoolbar-feed-switcher')
                 )}
 
                 {view === 'trending' && (
                   <div className="ex-weekly-indicator" title="Weekly Trending Cycle: Resets Sunday Midnight">
                     <TrendingUp size={13} style={{ color: 'var(--accent)' }} />
                     <span className="ex-weekly-indicator-title">Weekly Top</span>
-                    <span className="ex-weekly-indicator-range">{weekRangeStr}</span>
                     <span className="ex-weekly-indicator-badge">Resets Sun 00:00</span>
                   </div>
                 )}
-
               </div>
 
-              {/* Right: Company & Category filters */}
-              <div className="ex-subtoolbar-right">
-                <div className="ex-toolbar-filters">
-                <select
-                  value={selectedCompany}
-                  onChange={(e) => resetFeedBatch(setSelectedCompany, e.target.value)}
-                  className="ex-filter-dropdown"
-                  aria-label="Filter by Company"
+              <div className={`ex-subtoolbar-right ${isFiltersOpen ? 'is-mobile-filters-open' : ''}`}>
+                <button
+                  type="button"
+                  className="ex-mobile-filter-toggle"
+                  aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
+                  aria-expanded={isFiltersOpen}
+                  aria-controls="ex-mobile-filter-fields"
+                  onClick={() => setIsFiltersOpen((open) => !open)}
                 >
-                  <option value="all">All Companies</option>
-                  <option value="OpenAI">OpenAI</option>
-                  <option value="Google">Google / DeepMind</option>
-                  <option value="Anthropic">Anthropic</option>
-                  <option value="Meta">Meta</option>
-                  <option value="NVIDIA">NVIDIA</option>
-                  <option value="DeepSeek">DeepSeek</option>
-                  <option value="Mistral">Mistral AI</option>
-                  <option value="Apple">Apple</option>
-                </select>
+                  <Filter size={15} aria-hidden="true" />
+                  <span>Filters</span>
+                  {activeFilterCount > 0 && (
+                    <span className="ex-mobile-filter-count" aria-hidden="true">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <ChevronDown
+                    size={14}
+                    className={`ex-mobile-filter-chevron ${isFiltersOpen ? 'is-open' : ''}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                <div id="ex-mobile-filter-fields" className="ex-toolbar-filters">
+                  <label className="ex-mobile-filter-field">
+                    <span>Company</span>
+                    <select
+                      value={selectedCompany}
+                      onChange={(e) => resetFeedBatch(setSelectedCompany, e.target.value)}
+                      className="ex-filter-dropdown"
+                      aria-label="Filter by Company"
+                    >
+                      <option value="all">All Companies</option>
+                      <option value="OpenAI">OpenAI</option>
+                      <option value="Google">Google / DeepMind</option>
+                      <option value="Anthropic">Anthropic</option>
+                      <option value="Meta">Meta</option>
+                      <option value="NVIDIA">NVIDIA</option>
+                      <option value="DeepSeek">DeepSeek</option>
+                      <option value="Mistral">Mistral AI</option>
+                      <option value="Apple">Apple</option>
+                    </select>
+                  </label>
 
-                <select
-                  value={selectedTopic}
-                  onChange={(e) => resetFeedBatch(setSelectedTopic, e.target.value)}
-                  className="ex-filter-dropdown"
-                  aria-label="Filter by Category"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="Models">Models</option>
-                  <option value="Dev Tools & Infra">Dev Tools & Infra</option>
-                  <option value="Research">Research</option>
-                  <option value="Policy">Policy</option>
-                  <option value="Business">Business</option>
-                  <option value="Robotics">Robotics</option>
-                  <option value="Products">Products</option>
-                </select>
+                  <label className="ex-mobile-filter-field">
+                    <span>Category</span>
+                    <select
+                      value={selectedTopic}
+                      onChange={(e) => resetFeedBatch(setSelectedTopic, e.target.value)}
+                      className="ex-filter-dropdown"
+                      aria-label="Filter by Category"
+                    >
+                      <option value="all">All Categories</option>
+                      <option value="Models">Models</option>
+                      <option value="Dev Tools & Infra">Dev Tools & Infra</option>
+                      <option value="Research">Research</option>
+                      <option value="Policy">Policy</option>
+                      <option value="Business">Business</option>
+                      <option value="Robotics">Robotics</option>
+                      <option value="Products">Products</option>
+                    </select>
+                  </label>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      className="ex-mobile-filter-clear"
+                      onClick={() => {
+                        resetFeedBatch(setSelectedCompany, 'all');
+                        resetFeedBatch(setSelectedTopic, 'all');
+                      }}
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1646,13 +1746,13 @@ export function ExploreTabs({
                 <div>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Weekly Top AI Dispatches</h2>
                   <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
-                    Weekly Top • Resetting every Sunday midnight • Ranked by community upvotes &amp; engagement
+                    Ranked by community upvotes and engagement
                   </span>
                 </div>
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: 'var(--muted)' }}>
                 <span className="ex-weekly-indicator-badge">Resets Sunday 00:00</span>
-                <span>{trendingStories.length} dispatches for {weekRangeStr}</span>
+                <span>{trendingStories.length} dispatches this week</span>
               </div>
             </div>
 
@@ -1684,9 +1784,8 @@ export function ExploreTabs({
                   <article key={story.id || idx} className="ex-timeline-panel-item">
                     {/* Rank Rail (OUTSIDE the panel card) */}
                     <div className="ex-timeline-rail">
-                      <div className={`ex-timeline-date-badge ${idx < 3 ? 'is-lead-rank' : ''}`}>
-                        <span className="ex-timeline-date-day">#{idx + 1}</span>
-                        <span className="ex-timeline-date-month">{story.month}</span>
+                      <div className={`ex-timeline-date-badge is-trending-rank ${idx < 3 ? 'is-lead-rank' : ''}`}>
+                        <span className="ex-timeline-date-day">Trending #{idx + 1}</span>
                       </div>
                       {!isLast && <span className="ex-timeline-rail-line" />}
                     </div>
@@ -1694,6 +1793,9 @@ export function ExploreTabs({
                     {/* Content Panel Card */}
                     <div className="ex-panel-card">
                       <div className="ex-panel-meta-row">
+                        <time className="ex-trending-story-date" dateTime={story.date}>
+                          {story.month} {story.day}, {story.year}
+                        </time>
                         <span className={`ex-tag ex-tag-topic ex-topic-${getTopicSlug(story.topic)}`}>
                           <span className="ex-tag-dot" />
                           {story.topic || 'Products'}
