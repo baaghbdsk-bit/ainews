@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitToIndexNow } from '@/lib/seo/indexnow';
-import { getTimelinePage } from '@/lib/timeline';
+
 
 export async function GET() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.neubench.workers.dev';
@@ -19,9 +19,8 @@ export async function GET() {
   ];
 
   try {
-    const page = await getTimelinePage({}, 0, 30);
-    const storyUrls = (page.stories || []).map((s) => `${siteUrl}/story/${s.slug || s.id}`);
-    const allUrls = Array.from(new Set([...coreUrls, ...storyUrls]));
+
+    const allUrls = Array.from(new Set(coreUrls));
 
     const result = await submitToIndexNow(allUrls);
 

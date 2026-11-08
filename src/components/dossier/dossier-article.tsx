@@ -202,7 +202,7 @@ export function DossierSources({ sources }: { sources: DossierSourceView[] }) {
           <li key={source.storyId} id={`source-${source.index}`}>
             <span className="dossier-source-marker">[{source.index}]</span>
             <span className="dossier-source-body">
-              <Link href={source.url}>{source.title}</Link>
+              <a href={source.url} target="_blank" rel="noopener noreferrer">{source.title}</a>
               <span className="dossier-source-meta">
                 {source.source} · {source.eventDate}
               </span>
@@ -212,7 +212,7 @@ export function DossierSources({ sources }: { sources: DossierSourceView[] }) {
       </ol>
       <p className="dossier-source-note">
         Read the original reporting{' '}
-        <ArrowUpRight size={12} aria-hidden="true" /> via each story page.
+        <ArrowUpRight size={12} aria-hidden="true" /> directly at the source.
       </p>
     </section>
   );

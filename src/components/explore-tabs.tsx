@@ -1517,15 +1517,22 @@ export function ExploreTabs({
 
                                   <div className="ex-panel-footer">
                                     <div className="ex-panel-footer-links">
-                                      <Link href={`/story/${story.slug}`} className="ex-panel-read-link">
-                                        <span>Read full story</span>
-                                        <ArrowRight size={13} />
-                                      </Link>
+                                      {story.sourceUrl && (
+                                        <a
+                                          href={story.sourceUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="ex-panel-read-link"
+                                        >
+                                          <span>Read original article</span>
+                                          <ArrowRight size={13} />
+                                        </a>
+                                      )}
                                     </div>
                                     <div className="ex-panel-actions">
                                       <UpvoteButton slug={story.slug} baseCount={story.upvoteCount ?? 0} initialVoted={localVoteSlugs.has(story.slug)} />
                                       <BookmarkButton slug={story.slug} />
-                                      <ShareButton title={cleanTitle} slug={story.slug} topic={topic} />
+                                      <ShareButton title={cleanTitle} slug={story.slug} topic={topic} sourceUrl={story.sourceUrl} />
                                     </div>
                                   </div>
                                 </div>
@@ -1670,19 +1677,23 @@ export function ExploreTabs({
 
                                         <div className="ex-panel-footer">
                                           <div className="ex-panel-footer-links">
-                                            <Link
-                                              href={`/story/${story.slug}`}
-                                              className="ex-panel-read-link"
-                                            >
-                                              <span>Read full story</span>
-                                              <ArrowRight size={13} />
-                                            </Link>
+                                            {story.sourceUrl && (
+                                              <a
+                                                href={story.sourceUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="ex-panel-read-link"
+                                              >
+                                                <span>Read original article</span>
+                                                <ArrowRight size={13} />
+                                              </a>
+                                            )}
                                           </div>
 
                                           <div className="ex-panel-actions">
                                             <UpvoteButton slug={story.slug} baseCount={story.upvoteCount ?? 0} initialVoted={localVoteSlugs.has(story.slug)} />
                                             <BookmarkButton slug={story.slug} />
-                                            <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} />
+                                            <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} sourceUrl={story.sourceUrl} />
                                           </div>
                                         </div>
                                       </div>
@@ -1819,19 +1830,23 @@ export function ExploreTabs({
 
                       <div className="ex-panel-footer">
                         <div className="ex-panel-footer-links">
-                          <Link
-                            href={`/story/${story.slug}`}
-                            className="ex-panel-read-link"
-                          >
-                            <span>Read full story</span>
-                            <ArrowRight size={13} />
-                          </Link>
+                          {story.sourceUrl && (
+                            <a
+                              href={story.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ex-panel-read-link"
+                            >
+                              <span>Read original article</span>
+                              <ArrowRight size={13} />
+                            </a>
+                          )}
                         </div>
 
                         <div className="ex-panel-actions">
                           <UpvoteButton slug={story.slug} baseCount={story.upvoteCount ?? 0} initialVoted={localVoteSlugs.has(story.slug)} />
                           <BookmarkButton slug={story.slug} />
-                          <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} />
+                          <ShareButton title={cleanTitle} slug={story.slug} topic={story.topic} sourceUrl={story.sourceUrl} />
                         </div>
                       </div>
                     </div>

@@ -107,11 +107,18 @@ export default async function TopicPage({ params }: TopicPageProps) {
               <ul>
                 {stories.map((story) => (
                   <li key={story.id}>
-                    <Link href={`/story/${story.slug}`}>
+                    {story.source_url ? (
+                      <a href={story.source_url} target="_blank" rel="noopener noreferrer">
                       <time dateTime={story.event_date}>{formatDate(story.event_date)}</time>
                       <span className="entity-hub-title">{story.title}</span>
                       <ArrowUpRight size={14} aria-hidden="true" />
-                    </Link>
+                      </a>
+                    ) : (
+                      <span className="entity-hub-static-item">
+                        <time dateTime={story.event_date}>{formatDate(story.event_date)}</time>
+                        <span className="entity-hub-title">{story.title}</span>
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

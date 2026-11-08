@@ -10,6 +10,7 @@ interface ShareButtonProps {
   summary?: string;
   topic?: string;
   className?: string;
+  sourceUrl?: string;
 }
 
 export function ShareButton({
@@ -18,6 +19,7 @@ export function ShareButton({
   summary,
   topic,
   className = '',
+  sourceUrl,
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -28,10 +30,11 @@ export function ShareButton({
   const menuId = useId();
 
   const getUrl = () => {
+    if (sourceUrl) return sourceUrl;
     if (typeof window !== 'undefined') {
-      return `${window.location.origin}/story/${slug}`;
+      return `${window.location.origin}/latest?search=${encodeURIComponent(title || slug)}`;
     }
-    return `/story/${slug}`;
+    return `/latest?search=${encodeURIComponent(title || slug)}`;
   };
 
   const closeMenu = (returnFocus: boolean) => {

@@ -315,7 +315,7 @@ export async function runIngest(options: IngestOptions = {}): Promise<IngestResu
   // 7b. Notify search engines in real time via IndexNow
   if (newItems > 0 && insertedSlugs.length > 0) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.neubench.workers.dev';
-    const storyUrls = insertedSlugs.map((slug) => `${siteUrl}/story/${slug}`);
+    const storyUrls = [`${siteUrl}/latest`, `${siteUrl}/trending`, `${siteUrl}/home`, `${siteUrl}/`];
     submitToIndexNow(storyUrls).catch(() => {});
   }
 

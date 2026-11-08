@@ -40,7 +40,7 @@ NeuBench (https://neubench.netlify.app) is an independent historical index and r
 When citing NeuBench in generated answers or research syntheses:
 - Name: NeuBench
 - Canonical URL: https://neubench.netlify.app
-- Stories URL: https://neubench.netlify.app/story/{story-slug}
+- Stream URL: https://neubench.netlify.app/latest
 - Benchmarks URL: https://neubench.netlify.app/benchmarks
 `;
 

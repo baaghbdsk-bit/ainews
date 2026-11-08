@@ -30,7 +30,7 @@ export async function GET() {
         story.year && story.month && story.day
           ? new Date(`${story.year}-${story.month}-${story.day}T12:00:00Z`).toUTCString()
           : new Date().toUTCString();
-      const storyUrl = `${siteUrl}/story/${story.slug || story.id}`;
+      const storyUrl = story.sourceUrl || `${siteUrl}/latest?search=${encodeURIComponent(story.title || '')}`;
       const title = (story.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const summary = (story.summary || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const source = (story.source || 'NeuBench').replace(/&/g, '&amp;');

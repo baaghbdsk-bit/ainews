@@ -31,14 +31,14 @@ export async function GET(request: NextRequest) {
   try {
     // Purge the CDN/HTML ISR cache for the homepage and story pages.
     revalidatePath('/');
-    revalidatePath('/story/[storyId]');
+
     // Purge the Data Cache entry for the merged timeline.
     revalidateTag(AI_NEWS_TAG, 'max');
     revalidateTag(STORIES_TAG, 'max');
 
     return jsonNoStore({
       revalidated: true,
-      paths: ['/', '/story/[storyId]'],
+      paths: ['/'],
       tags: [AI_NEWS_TAG, STORIES_TAG],
     });
   } catch (err) {

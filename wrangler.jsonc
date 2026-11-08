@@ -10,6 +10,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "placement": {
+    "mode": "smart"
+  },
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://jteilddgdspedwpmjefa.supabase.co",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZWlsZGRnZHNwZWR3cG1qZWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MjIxNjAsImV4cCI6MjEwNzM5ODE2MH0.N-2qmOoZWf9ToQ2ZBT5w5C_GeASd8gOQzSmviwbzJUc",

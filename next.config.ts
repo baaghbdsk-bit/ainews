@@ -19,7 +19,20 @@ const nextConfig: NextConfig = {
         value: "public, max-age=0, s-maxage=600, stale-while-revalidate=300",
       },
     ];
-    const publicPages = ["/", "/story/:slug*", "/topic/:slug*", "/sitemap.xml", "/robots.txt"];
+    const publicPages = [
+      "/",
+      "/home",
+      "/latest",
+      "/trending",
+      "/saved",
+      "/benchmarks",
+      "/benchmarks/:slug*",
+      "/about",
+      "/connect",
+      "/topic/:slug*",
+      "/sitemap.xml",
+      "/robots.txt",
+    ];
     return publicPages.map((source) => ({ source, headers: cacheHeaders }));
   },
 };

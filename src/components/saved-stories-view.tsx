@@ -2,11 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Bookmark, Search, Sparkles } from 'lucide-react';
+import { Bookmark, Search, Sparkles, ArrowRight } from 'lucide-react';
 import { BookmarkButton, ShareButton, UpvoteButton, useBookmarks } from '@/components/story-actions';
 import { useAuth } from '@/lib/auth/store';
 import type { TimelineStoryDisplay } from '@/lib/timeline';
 import { NeubenchLoadingLogo } from '@/components/loading';
+import {
+  generateFiveToEightLineOverviewEditorial,
+  cleanTitleEditorial,
+} from '@/lib/editorial-overview';
+import { cleanSummaryText } from '@/components/explore-tabs';
 
 interface SavedStoriesResult {
   key: string;
@@ -169,7 +174,14 @@ export function SavedStoriesView() {
           </div>
         ) : (
           <div className="ex-timeline-panels-list" aria-label="Saved AI Dispatches">
-            {savedStories.map((story, index) => (
+            {savedStories.map((story, index) => {
+              const cleanTitle = cleanTitleEditorial(story.title);
+              const cleanSummary =
+                story.summary && story.summary.length > 220
+                  ? cleanSummaryText(story.summary)
+                  : generateFiveToEightLineOverviewEditorial(story);
+
+              return (
               <article key={story.id || story.slug} className="ex-timeline-panel-item">
                 <div className="ex-timeline-rail">
                   <time className="ex-timeline-date-badge" dateTime={story.date}>
@@ -188,24 +200,39 @@ export function SavedStoriesView() {
                     {story.company && <span className="ex-tag ex-tag-entity">{story.company}</span>}
                   </div>
                   <h2 className="ex-panel-title">
-                    <Link href={`/story/${story.slug}`}>{story.title}</Link>
+                    {story.sourceUrl ? (
+                      <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        {cleanTitle}
+                      </a>
+                    ) : (
+                      <span>{cleanTitle}</span>
+                    )}
                   </h2>
-                  {story.summary && <p className="ex-panel-summary">{story.summary}</p>}
+                  <p className="ex-panel-summary">{cleanSummary}</p>
                   <div className="ex-panel-footer">
                     <div className="ex-panel-footer-links">
-                      <Link href={`/story/${story.slug}`} className="ex-panel-read-link">
-                        <span>Read full story</span>
-                      </Link>
+                      {story.sourceUrl && (
+                        <a
+                          href={story.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ex-panel-read-link"
+                        >
+                        <span>Read original article</span>
+                        <ArrowRight size={13} />
+                        </a>
+                      )}
                     </div>
                     <div className="ex-panel-actions">
                       <UpvoteButton slug={story.slug} baseCount={story.upvoteCount ?? 0} />
                       <BookmarkButton slug={story.slug} />
-                      <ShareButton title={story.title} slug={story.slug} topic={story.topic} />
+                      <ShareButton title={story.title} slug={story.slug} topic={story.topic} sourceUrl={story.sourceUrl} />
                     </div>
                   </div>
                 </div>
               </article>
-            ))}
+                );
+              })}
           </div>
         )}
       </div>

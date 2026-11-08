@@ -103,7 +103,7 @@ export async function getDossierBySlug(slug: string): Promise<DossierView | null
             title: story.title,
             source: story.source,
             eventDate: story.event_date,
-            url: `/story/${story.slug}`,
+            url: story.source_url || '#',
           });
         });
       }
