@@ -1,48 +1,63 @@
-/* base — unified color system for NEUBENCH (matching Home broadsheet template) */
+/* base — single-theme color system for NEUBENCH (gunmetal / fog silver / molten orange) */
 
 :root {
   /* ── Brand Colors (single source of truth) ── */
-  --brand-bg: #0f1117;
-  --brand-fg: #f2f3f7;
-  --brand-muted: #9aa1b2;
-  --brand-electric: #d4a24e;
-  --brand-electric-hover: #e0b162;
-  --brand-electric-soft: rgba(212, 162, 78, 0.14);
-  --brand-electric-line: rgba(212, 162, 78, 0.32);
-  --brand-violet: #8055F5;
-  --brand-violet-hover: #6B3FD8;
-  --brand-violet-soft: rgba(128, 85, 245, 0.12);
-  --brand-violet-line: rgba(128, 85, 245, 0.28);
-  --brand-teal: #13DCCB;
-  --brand-teal-hover: #0FC4B3;
-  --brand-teal-soft: rgba(19, 220, 203, 0.12);
-  --brand-teal-line: rgba(19, 220, 203, 0.28);
-  --brand-amber: #f97316;
-  --brand-amber-hover: #ea580c;
-  --brand-amber-soft: rgba(249, 115, 22, 0.14);
-  --brand-amber-line: rgba(249, 115, 22, 0.32);
+  --brand-bg: #14171a;
+  --brand-fg: #e8ecef;
+  --brand-muted: #aab2b8;
+  --brand-electric: #ff6a1a;
+  --brand-electric-hover: #ff7f3a;
+  --brand-electric-soft: rgba(255, 106, 26, 0.14);
+  --brand-electric-line: rgba(255, 106, 26, 0.34);
+  --brand-violet: #c9d0d5;
+  --brand-violet-hover: #e8ecef;
+  --brand-violet-soft: rgba(201, 208, 213, 0.1);
+  --brand-violet-line: rgba(201, 208, 213, 0.26);
+  --brand-teal: #f5d300;
+  --brand-teal-hover: #ffe23a;
+  --brand-teal-soft: rgba(245, 211, 0, 0.14);
+  --brand-teal-line: rgba(245, 211, 0, 0.34);
+  --brand-amber: #ff6a1a;
+  --brand-amber-hover: #e0550c;
+  --brand-amber-soft: rgba(255, 106, 26, 0.14);
+  --brand-amber-line: rgba(255, 106, 26, 0.34);
 
-  /* ── Semantic Surface Tokens (dark mode broadsheet) ── */
-  --bg: #0f1117;
-  --bg-elevated: #171a22;
-  --bg-raised: #1c202a;
-  --surface: #171a22;
-  --surface-elevated: #1c202a;
-  --surface-hover: rgba(255, 255, 255, 0.06);
-  --border: #232733;
-  --border-strong: #2e3444;
-  --border-hover: #3e4559;
-  --border-focus: #d4a24e;
+  /* ── Semantic Surface Tokens (gunmetal black) ── */
+  --bg: #14171a;
+  --bg-elevated: #1a1e22;
+  --bg-raised: #1e2328;
+  --surface: #1e2328;
+  --surface-elevated: #242a30;
+  --surface-hover: rgba(201, 208, 213, 0.06);
+  --border: #2e353c;
+  --border-strong: #3a424a;
+  --border-hover: #4a535a;
+  --border-focus: #ff6a1a;
 
-  --fg: #f2f3f7;
-  --fg-muted: #9aa1b2;
-  --fg-faint: #5f6675;
+  --fg: #e8ecef;
+  --fg-muted: #aab2b8;
+  --fg-faint: #7b848b;
 
-  /* ── Semantic Role Tokens ── */
-  --accent: #d4a24e;
-  --accent-hover: #e0b162;
-  --accent-soft: rgba(212, 162, 78, 0.14);
-  --accent-line: rgba(212, 162, 78, 0.32);
+  /* ── Semantic Role Tokens (molten orange accent) ── */
+  --accent: #ff6a1a;
+  --accent-hover: #ff7f3a;
+  --accent-soft: rgba(255, 106, 26, 0.14);
+  --accent-line: rgba(255, 106, 26, 0.34);
+  --on-accent: #14171a;
+
+  /* Marker accent: the highlighter layer, never a second CTA. */
+  --marker: #f5d300;
+  --marker-hover: #ffe23a;
+  --marker-soft: rgba(245, 211, 0, 0.14);
+  --marker-line: rgba(245, 211, 0, 0.34);
+  --on-marker: #14171a;
+
+  /* Signal accent: live/data only. The one neon in the system. */
+  --signal: #22e6ff;
+  --signal-hover: #6ff0ff;
+  --signal-soft: rgba(34, 230, 255, 0.12);
+  --signal-line: rgba(34, 230, 255, 0.34);
+  --on-signal: #0a1416;
 
   --secondary: var(--brand-violet);
   --secondary-hover: var(--brand-violet-hover);
@@ -59,10 +74,10 @@
   --warning-soft: var(--brand-amber-soft);
   --warning-line: var(--brand-amber-line);
 
-  --danger: #EF4444;
-  --danger-hover: #DC2626;
-  --danger-soft: rgba(239, 68, 68, 0.12);
-  --danger-line: rgba(239, 68, 68, 0.28);
+  --danger: #e5484d;
+  --danger-hover: #f05a5f;
+  --danger-soft: rgba(229, 72, 77, 0.12);
+  --danger-line: rgba(229, 72, 77, 0.3);
 
   /* ── Focus System ── */
   --focus-ring: 2px solid var(--accent);
@@ -112,49 +127,6 @@
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
-html[data-theme="light"] {
-  /* ── Light Mode (Editorial Broadsheet Ivory / Sepia / Gold) ── */
-  --brand-bg: #f7f3ec;
-  --brand-fg: #16130f;
-  --brand-muted: #5f584c;
-  --brand-electric: #b8860b;
-  --brand-electric-hover: #996c00;
-  --brand-electric-soft: #e8e0d2;
-  --brand-electric-line: rgba(184, 134, 11, 0.32);
-  --brand-violet: #6d28d9;
-  --brand-violet-hover: #5b21b6;
-  --brand-violet-soft: rgba(109, 40, 217, 0.1);
-  --brand-violet-line: rgba(109, 40, 217, 0.25);
-  --brand-teal: #0f766e;
-  --brand-teal-hover: #115e59;
-  --brand-teal-soft: rgba(15, 118, 110, 0.1);
-  --brand-teal-line: rgba(15, 118, 110, 0.25);
-  --brand-amber: #c2410c;
-  --brand-amber-hover: #9a3412;
-  --brand-amber-soft: rgba(194, 65, 12, 0.1);
-  --brand-amber-line: rgba(194, 65, 12, 0.25);
-
-  --bg: #f7f3ec;
-  --bg-elevated: #faf6ee;
-  --bg-raised: #f0eae0;
-  --surface: #fffdf8;
-  --surface-elevated: #faf6ee;
-  --surface-hover: #ede6d8;
-  --border: #cfc6b6;
-  --border-strong: #a99e8a;
-  --border-hover: #8f8470;
-  --border-focus: #b8860b;
-
-  --fg: #16130f;
-  --fg-muted: #5f584c;
-  --fg-faint: #948a77;
-
-  --accent: #b8860b;
-  --accent-hover: #996c00;
-  --accent-soft: #e8e0d2;
-  --accent-line: rgba(184, 134, 11, 0.32);
-}
-
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--fg);
@@ -187,13 +159,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button,
-input {
+button, input {
   font: inherit;
 }
 
-button,
-a {
+button, a {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -203,11 +173,7 @@ a {
 }
 
 /* Unified focus system */
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-[role="button"]:focus-visible,
-[role="tab"]:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, [role="button"]:focus-visible, [role="tab"]:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }

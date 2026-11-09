@@ -14,9 +14,9 @@ export interface NeubenchSpinnerProps {
  * Universal NeuBench 3-Color Circular Spinner.
  * 
  * Features a circular continuous spin displaying the 3 brand colors:
- * - Electric Blue (#4777FF)
- * - Solar Yellow (#FDE047)
- * - Mint / Emerald Teal (#13DCCB)
+ * - Signal Cyan (#22E6FF)
+ * - Marker Yellow (#F5D300)
+ * - Molten Orange (#FF6A1A)
  * 
  * Scales seamlessly from 14px (buttons) to 64px (full-page loading).
  */
@@ -54,36 +54,36 @@ export function NeubenchSpinner({
           opacity="0.12"
           fill="none"
         />
-        {/* Arc 1: Electric Blue */}
+        {/* Arc 1: Signal Cyan */}
         <circle
           cx="22"
           cy="22"
           r="16"
-          stroke="#4777FF"
+          stroke="#22E6FF"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray="25 75.53"
           strokeDashoffset="0"
           fill="none"
         />
-        {/* Arc 2: Solar Yellow */}
+        {/* Arc 2: Marker Yellow */}
         <circle
           cx="22"
           cy="22"
           r="16"
-          stroke="#FDE047"
+          stroke="#F5D300"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray="25 75.53"
           strokeDashoffset="-33.51"
           fill="none"
         />
-        {/* Arc 3: Mint / Emerald Teal */}
+        {/* Arc 3: Molten Orange */}
         <circle
           cx="22"
           cy="22"
           r="16"
-          stroke="#13DCCB"
+          stroke="#FF6A1A"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray="25 75.53"

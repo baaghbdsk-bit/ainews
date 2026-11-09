@@ -3,7 +3,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import type { TimelineStoryDisplay } from '@/lib/timeline';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { AccountButton } from '@/components/auth/account-button';
 import { BookmarkButton, ShareButton, UpvoteButton } from '@/components/story-actions';
 import { selectDigestHighlights } from '@/lib/digest-priority';
@@ -11,6 +10,7 @@ import { deduplicateStories } from '@/lib/story-dedup';
 import { extractCompany } from '@/lib/story-company';
 import { colorForTopic } from '@/lib/story-colors';
 import { NeubenchSpinner } from '@/components/loading';
+import { FilterSelect, type FilterOption } from '@/components/filter-select';
 import {
   cleanTitleEditorial,
   detectRealEntityEditorial,
@@ -47,6 +47,29 @@ const MONTHS = [
   { name: 'Oct', fullName: 'October' },
   { name: 'Nov', fullName: 'November' },
   { name: 'Dec', fullName: 'December' },
+];
+
+const COMPANY_OPTIONS: FilterOption[] = [
+  { value: 'all', label: 'All Companies' },
+  { value: 'OpenAI', label: 'OpenAI', tone: '#34d399' },
+  { value: 'Google', label: 'Google / DeepMind', tone: '#60a5fa' },
+  { value: 'Anthropic', label: 'Anthropic', tone: '#fb923c' },
+  { value: 'Meta', label: 'Meta', tone: '#c9d0d5' },
+  { value: 'NVIDIA', label: 'NVIDIA', tone: '#a3e635' },
+  { value: 'DeepSeek', label: 'DeepSeek', tone: '#3fb27f' },
+  { value: 'Mistral', label: 'Mistral AI', tone: '#fbbf24' },
+  { value: 'Apple', label: 'Apple', tone: '#f8fafc' },
+];
+
+const CATEGORY_OPTIONS: FilterOption[] = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'Models', label: 'Models', tone: '#c4b5fd' },
+  { value: 'Dev Tools & Infra', label: 'Dev Tools & Infra', tone: '#4ade80' },
+  { value: 'Research', label: 'Research', tone: '#f472b6' },
+  { value: 'Policy', label: 'Policy', tone: '#f87171' },
+  { value: 'Business', label: 'Business', tone: '#fde047' },
+  { value: 'Robotics', label: 'Robotics', tone: '#f3c26b' },
+  { value: 'Products', label: 'Products', tone: '#7dd3fc' },
 ];
 
 
@@ -353,16 +376,16 @@ export function ExploreTabs({
     return () => window.removeEventListener('neubench_vote_changed', handleVoteEvent);
   }, []);
 
-  // Find latest available date in data or fallback to current calendar date
-  const nowUtc = new Date();
-  const calYear = String(nowUtc.getUTCFullYear());
-  const calMonth = MONTHS[nowUtc.getUTCMonth()]?.name || 'Nov';
-  const calDay = String(nowUtc.getUTCDate());
+  // Find current calendar date in the visitor's local timezone.
+  const now = new Date();
+  const calYear = String(now.getFullYear());
+  const calMonth = MONTHS[now.getMonth()]?.name || 'Nov';
+  const calDay = String(now.getDate());
 
-  const latestDateStory = stories[0];
-  const defaultYear = latestDateStory?.year || calYear;
-  const defaultMonth = latestDateStory?.month || calMonth;
-  const defaultDay = latestDateStory?.day || calDay;
+  // Default to the current calendar date instead of the newest published story.
+  const defaultYear = calYear;
+  const defaultMonth = calMonth;
+  const defaultDay = calDay;
 
   const [selectedYear, setSelectedYear] = useState<string>(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState<string>(defaultMonth);
@@ -587,6 +610,8 @@ export function ExploreTabs({
               const ranked = selectDigestHighlights(deduped, 5);
               fetched = ranked.length > 0 ? ranked : deduped.slice(0, 5);
               total = direct.length;
+            } else {
+              total = 0;
             }
           }
           if (!active) return;
@@ -608,21 +633,10 @@ export function ExploreTabs({
               [selectedDateKey]: { stories: ranked.length > 0 ? ranked : deduped.slice(0, 5), total: direct.length },
             }));
           } else {
-            // Local SSR stories fallback
-            const matchSsr = stories.filter((s) => {
-              const matchYear = String(s.year) === selectedYear;
-              const matchMonth = s.month.toLowerCase() === selectedMonth.toLowerCase();
-              const matchDay = String(s.day).replace(/^0/, '') === String(selectedDay).replace(/^0/, '');
-              return matchYear && matchMonth && matchDay;
-            });
-            if (matchSsr.length > 0) {
-              const deduped = deduplicateStories(matchSsr);
-              const ranked = selectDigestHighlights(deduped, 5);
-              setDateHighlightsCache((prev) => ({
-                ...prev,
-                [selectedDateKey]: { stories: ranked.length > 0 ? ranked : deduped.slice(0, 5), total: matchSsr.length },
-              }));
-            }
+            setDateHighlightsCache((prev) => ({
+              ...prev,
+              [selectedDateKey]: { stories: [], total: 0 },
+            }));
           }
         })
         .finally(() => {
@@ -1013,9 +1027,9 @@ export function ExploreTabs({
             <Link href="/home" className="ex-brand" aria-label="NEUBENCH, home" title="NEUBENCH home">
               <span className="neubench-logo-e" aria-hidden="true" style={{ width: 26, height: 30, display: 'inline-flex' }}>
                 <svg viewBox="0 0 65 72" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                  <rect className="neubench-logo-bar neubench-logo-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#4777FF" />
-                  <rect className="neubench-logo-bar neubench-logo-bar--yellow" x="0" y="28" width="65" height="16" rx="8" fill="#FDE047" />
-                  <rect className="neubench-logo-bar neubench-logo-bar--teal" x="0" y="56" width="65" height="16" rx="8" fill="#13DCCB" />
+              <rect className="neubench-logo-bar neubench-logo-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#22E6FF" />
+              <rect className="neubench-logo-bar neubench-logo-bar--yellow" x="0" y="28" width="65" height="16" rx="8" fill="#F5D300" />
+              <rect className="neubench-logo-bar neubench-logo-bar--teal" x="0" y="56" width="65" height="16" rx="8" fill="#FF6A1A" />
                 </svg>
               </span>
             </Link>
@@ -1035,7 +1049,6 @@ export function ExploreTabs({
               >
                 <Search size={15} />
               </button>
-              <ThemeToggle />
               <AccountButton iconOnly />
             </div>
           </div>
@@ -1184,7 +1197,6 @@ export function ExploreTabs({
                 <Search size={16} />
               </button>
             )}
-            <ThemeToggle />
             <AccountButton iconOnly />
           </div>
         </header>
@@ -1438,44 +1450,26 @@ export function ExploreTabs({
                   />
                 </button>
                 <div id="ex-mobile-filter-fields" className="ex-toolbar-filters">
-                  <label className="ex-mobile-filter-field">
+                  <div className="ex-mobile-filter-field">
                     <span>Company</span>
-                    <select
+                    <FilterSelect
                       value={selectedCompany}
-                      onChange={(e) => resetFeedBatch(setSelectedCompany, e.target.value)}
-                      className="ex-filter-dropdown"
-                      aria-label="Filter by Company"
-                    >
-                      <option value="all">All Companies</option>
-                      <option value="OpenAI">OpenAI</option>
-                      <option value="Google">Google / DeepMind</option>
-                      <option value="Anthropic">Anthropic</option>
-                      <option value="Meta">Meta</option>
-                      <option value="NVIDIA">NVIDIA</option>
-                      <option value="DeepSeek">DeepSeek</option>
-                      <option value="Mistral">Mistral AI</option>
-                      <option value="Apple">Apple</option>
-                    </select>
-                  </label>
+                      options={COMPANY_OPTIONS}
+                      onChange={(next) => resetFeedBatch(setSelectedCompany, next)}
+                      ariaLabel="Filter by Company"
+                    />
+                  </div>
 
-                  <label className="ex-mobile-filter-field">
+                  <div className="ex-mobile-filter-field">
                     <span>Category</span>
-                    <select
+                    <FilterSelect
                       value={selectedTopic}
-                      onChange={(e) => resetFeedBatch(setSelectedTopic, e.target.value)}
-                      className="ex-filter-dropdown"
-                      aria-label="Filter by Category"
-                    >
-                      <option value="all">All Categories</option>
-                      <option value="Models">Models</option>
-                      <option value="Dev Tools & Infra">Dev Tools & Infra</option>
-                      <option value="Research">Research</option>
-                      <option value="Policy">Policy</option>
-                      <option value="Business">Business</option>
-                      <option value="Robotics">Robotics</option>
-                      <option value="Products">Products</option>
-                    </select>
-                  </label>
+                      options={CATEGORY_OPTIONS}
+                      onChange={(next) => resetFeedBatch(setSelectedTopic, next)}
+                      ariaLabel="Filter by Category"
+                      align="right"
+                    />
+                  </div>
                   {activeFilterCount > 0 && (
                     <button
                       type="button"

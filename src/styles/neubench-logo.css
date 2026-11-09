@@ -43,8 +43,7 @@
   animation-delay: 150ms;
 }
 
-.neubench-logo-bar--yellow,
-.neubench-logo-bar--violet {
+.neubench-logo-bar--yellow, .neubench-logo-bar--violet {
   animation-delay: 300ms;
 }
 
@@ -91,8 +90,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .neubench-logo-bar {
-    animation: neubench-bar-expand 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite !important;
-    opacity: 0.3;
-    transform: scaleX(0.3);
+    animation: none !important;
+    opacity: 1;
+    transform: none;
   }
 }

@@ -43,7 +43,7 @@
   padding: 6px 14px;
   border-radius: 999px;
   border: 1px solid var(--shell-accent-soft);
-  background: rgba(139, 92, 246, 0.08);
+  background: rgba(201, 208, 213, 0.08);
   color: var(--accent-2);
   font-size: 11px;
   font-weight: 700;
@@ -179,9 +179,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(201, 208, 213, 0.1);
   color: var(--accent-2);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(201, 208, 213, 0.2);
 }
 
 .about-feature-title {
@@ -378,9 +378,9 @@
 }
 
 .connect-copy-button.is-copied {
-  border-color: #10B981;
+  border-color: #3fb27f;
   background: rgba(16, 185, 129, 0.12);
-  color: #10B981;
+  color: #3fb27f;
 }
 
 /* Social & Developer Channels */
@@ -426,7 +426,7 @@
   padding: 32px 28px;
   border-radius: 16px;
   border: 1px solid var(--shell-line);
-  background: linear-gradient(180deg, var(--shell-surface), rgba(139, 92, 246, 0.03));
+  background: linear-gradient(180deg, var(--shell-surface), rgba(201, 208, 213, 0.03));
 }
 
 .connect-feedback-header {
@@ -471,9 +471,7 @@
   color: var(--shell-muted);
 }
 
-.connect-form-input,
-.connect-form-select,
-.connect-form-textarea {
+.connect-form-input, .connect-form-select, .connect-form-textarea {
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
@@ -490,9 +488,7 @@
   resize: vertical;
 }
 
-.connect-form-input:focus,
-.connect-form-select:focus,
-.connect-form-textarea:focus {
+.connect-form-input:focus, .connect-form-select:focus, .connect-form-textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--shell-accent-soft);
 }
@@ -515,7 +511,7 @@
 
 .connect-form-submit:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 6px 20px rgba(201, 208, 213, 0.3);
 }
 
 .connect-success-box {
@@ -527,50 +523,6 @@
   align-items: center;
   gap: 16px;
   color: var(--shell-text);
-}
-
-/* Light Theme Overrides for About Page */
-html[data-theme="light"] .about-page {
-  background: #F5F2FB;
-}
-
-html[data-theme="light"] .about-kicker {
-  background: rgba(124, 58, 237, 0.08);
-  border-color: rgba(124, 58, 237, 0.25);
-  color: #7C3AED;
-}
-
-html[data-theme="light"] .about-stat-card,
-html[data-theme="light"] .about-feature-card,
-html[data-theme="light"] .about-pillar-card,
-html[data-theme="light"] .connect-card,
-html[data-theme="light"] .connect-feedback-card {
-  background: #ffffff;
-  border-color: #C9BEDB;
-  box-shadow: 0 10px 24px rgba(26, 21, 48, 0.04);
-}
-
-html[data-theme="light"] .about-stat-card:hover,
-html[data-theme="light"] .about-pillar-card:hover {
-  border-color: #A78BFA;
-  box-shadow: 0 14px 30px rgba(26, 21, 48, 0.08);
-}
-
-html[data-theme="light"] .connect-email-box,
-html[data-theme="light"] .connect-channel-button,
-html[data-theme="light"] .connect-form-input,
-html[data-theme="light"] .connect-form-select,
-html[data-theme="light"] .connect-form-textarea,
-html[data-theme="light"] .about-pillar-tag {
-  background: #F3EFFA;
-  border-color: #C9BEDB;
-  color: #1A1530;
-}
-
-html[data-theme="light"] .connect-copy-button {
-  background: #ffffff;
-  border-color: #C9BEDB;
-  color: #1A1530;
 }
 
 /* Responsive adjustments */

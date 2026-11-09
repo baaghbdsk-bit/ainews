@@ -14,7 +14,6 @@ import { selectDigestHighlights } from '@/lib/digest-priority';
 import type { Story } from '@/lib/schemas/story';
 import type { StoryDisplay, TimelineFilters } from '@/lib/timeline-shared';
 import { PAGE_SIZE, filterTimelineStories } from '@/lib/timeline-shared';
-import { generateDeterministicDispatchesForDate } from '@/lib/editorial-overview';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -351,21 +350,11 @@ export async function getStoriesForDate(
     }
 
     if (unique.length < 5) {
-      const fallbacks = generateDeterministicDispatchesForDate(dateStr) as TimelineStoryDisplay[];
-      for (const fb of fallbacks) {
-        if (unique.length >= 6) break;
-        const key = fb.slug || fb.title;
-        if (!seen.has(key)) {
-          seen.add(key);
-          unique.push(fb);
-        }
-      }
+      // Do not fabricate stories for dates without real coverage.
     }
 
-    let totalCount = Math.max(dbCount + matchingSeeds.length, unique.length);
-    if (totalCount < 5) {
-      totalCount = Math.max(5, unique.length);
-    }
+    let totalCount = dbCount + matchingSeeds.length;
+    if (unique.length > totalCount) totalCount = unique.length;
 
     const deduped = deduplicateStories(unique);
     const ranked = selectDigestHighlights(deduped, 5);
@@ -403,17 +392,9 @@ export async function getStoriesForDate(
     unique.push(formatStoryForDisplay(s, colorForTopic(s.topic), votes));
   }
 
-  if (unique.length < 5) {
-    const fallbacks = generateDeterministicDispatchesForDate(dateStr) as TimelineStoryDisplay[];
-    for (const fb of fallbacks) {
-      if (unique.length >= 6) break;
-      const key = fb.slug || fb.title;
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(fb);
-      }
+    if (unique.length < 5) {
+      // Do not fabricate stories for dates without real coverage.
     }
-  }
 
   const dedupedUnique = deduplicateStories(unique);
   dateStoriesCache.set(dateStr, { data: dedupedUnique, timestamp: now });

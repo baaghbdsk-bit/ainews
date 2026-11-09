@@ -19,8 +19,8 @@ export default function GlobalError({
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          background: "#000000",
-          color: "#F4F3FA",
+          background: "#14171A",
+          color: "#E8ECEF",
           fontFamily: "system-ui, sans-serif",
         }}
       >
@@ -36,9 +36,9 @@ export default function GlobalError({
               marginTop: 12,
               padding: "8px 16px",
               borderRadius: 6,
-              border: "1px solid #8B5CF6",
+              border: "1px solid #FF6A1A",
               background: "transparent",
-              color: "#8B5CF6",
+              color: "#FF6A1A",
               cursor: "pointer",
             }}
           >
