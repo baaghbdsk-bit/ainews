@@ -126,7 +126,8 @@ async function fetchMergedTimelineInternal(): Promise<TimelineStoryDisplay[]> {
         getUpvoteCounts(),
       ]);
 
-  const seedConverted = seedStories.map(convertSeedStory);
+  const seedSubset = (dbStories && dbStories.length > 0) ? seedStories.slice(0, 25) : seedStories;
+  const seedConverted = seedSubset.map(convertSeedStory);
   const sources = [...(dbStories ?? []), ...seedConverted];
 
   const imageByUrl = new Map<string, string>();
