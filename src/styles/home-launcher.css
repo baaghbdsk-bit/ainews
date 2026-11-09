@@ -166,6 +166,11 @@
               0 0 0 1px var(--bh-tone, transparent);
 }
 
+.bh-mod:focus-visible {
+  outline: 2px solid var(--bh-tone, var(--fg));
+  outline-offset: 2px;
+}
+
 .bh-mod .bh-ic {
   display: flex;
   align-items: center;
@@ -173,7 +178,7 @@
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--bh-tone, var(--muted));
   font-weight: 700;
   margin-bottom: 12px;
   transition: color 0.18s ease;

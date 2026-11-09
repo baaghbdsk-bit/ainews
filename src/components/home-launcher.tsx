@@ -29,8 +29,8 @@ const MODULES: ModuleConfig[] = [
     icon: Sparkles,
     title: "Latest",
     desc: "The newest launches, papers, and AI developments as they land.",
-    tone: "#c9d0d5",
-    glow: "rgba(201, 208, 213, 0.18)",
+    tone: "#22e6ff",
+    glow: "rgba(34, 230, 255, 0.18)",
     href: "/latest",
   },
   {
@@ -47,8 +47,8 @@ const MODULES: ModuleConfig[] = [
     icon: Flame,
     title: "Trending",
     desc: "What the community is upvoting and discussing right now.",
-    tone: "#ff6a1a",
-    glow: "rgba(255, 106, 26, 0.2)",
+    tone: "#ff4d4d",
+    glow: "rgba(255, 77, 77, 0.2)",
     href: "/trending",
   },
   {
@@ -56,8 +56,8 @@ const MODULES: ModuleConfig[] = [
     icon: Bookmark,
     title: "Saved",
     desc: "Your personal intelligence dossier, synced across devices.",
-    tone: "#c9d0d5",
-    glow: "rgba(201, 208, 213, 0.18)",
+    tone: "#f5d300",
+    glow: "rgba(245, 211, 0, 0.18)",
     href: "/saved",
   },
   {
@@ -65,8 +65,8 @@ const MODULES: ModuleConfig[] = [
     icon: Info,
     title: "About",
     desc: "Our methodology, taxonomy pillars, and archive mission.",
-    tone: "#aab2b8",
-    glow: "rgba(170, 178, 184, 0.18)",
+    tone: "#a78bfa",
+    glow: "rgba(167, 139, 250, 0.18)",
     href: "/about",
   },
   {
@@ -74,8 +74,8 @@ const MODULES: ModuleConfig[] = [
     icon: MessageSquare,
     title: "Connect",
     desc: "Channels to reach the team, share feedback, and shape the product.",
-    tone: "#c9d0d5",
-    glow: "rgba(201, 208, 213, 0.18)",
+    tone: "#34d399",
+    glow: "rgba(52, 211, 153, 0.18)",
     href: "/connect",
   },
 ];
@@ -124,7 +124,7 @@ export function HomeLauncher() {
                 style={{ "--bh-tone": m.tone, "--bh-glow": m.glow } as React.CSSProperties}
               >
                 <span className="bh-ic">
-                  <Icon size={15} /> {m.title}
+                  <Icon size={15} aria-hidden="true" />
                 </span>
                 <h3>{m.title}</h3>
                 <p>{m.desc}</p>

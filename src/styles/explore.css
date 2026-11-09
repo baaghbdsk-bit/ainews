@@ -2088,10 +2088,10 @@
 }
 
 .ex-timeline-date-badge.is-trending-rank {
-  width: max-content;
-  min-width: 76px;
-  padding-right: 8px;
-  padding-left: 8px;
+  width: 64px;
+  min-width: 64px;
+  padding-right: 4px;
+  padding-left: 4px;
 }
 
 .ex-timeline-date-badge.is-trending-rank .ex-timeline-date-day {
@@ -3168,7 +3168,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 54px;
+  width: 64px;
   flex-shrink: 0;
   padding-top: 8px;
 }
@@ -3308,6 +3308,18 @@
 
   .ex-timeline-date-month {
     font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .ex-panel-read-link {
+    min-height: 44px;
+    padding: 0 8px;
+  }
+
+  .ex-panel-actions .story-action-btn {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import type { TimelineStoryDisplay } from '@/lib/timeline';
 import { AccountButton } from '@/components/auth/account-button';
 import { BookmarkButton, ShareButton, UpvoteButton } from '@/components/story-actions';
+import { useVoteMirror } from '@/components/story-actions/vote-store';
+import { useAuth } from '@/lib/auth/store';
 import { selectDigestHighlights } from '@/lib/digest-priority';
 import { deduplicateStories } from '@/lib/story-dedup';
 import { extractCompany } from '@/lib/story-company';
@@ -347,34 +349,8 @@ export function ExploreTabs({
   initialView?: 'latest' | 'trending';
 }) {
   const view = initialView;
-
-  // User upvoted stories state (local votes from localStorage + in-session upvotes)
-  const [localVoteSlugs, setLocalVoteSlugs] = useState<Set<string>>(() => {
-    if (typeof window === 'undefined') return new Set();
-    try {
-      const raw = localStorage.getItem('signal_upvoted_stories');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        return new Set(Array.isArray(parsed) ? parsed : Object.keys(parsed));
-      }
-    } catch {}
-    return new Set();
-  });
-
-  useEffect(() => {
-    const handleVoteEvent = (event: Event) => {
-      const { slug, voted } = (event as CustomEvent<{ slug?: string; voted?: boolean }>).detail ?? {};
-      if (!slug) return;
-      setLocalVoteSlugs((prev) => {
-        const next = new Set(prev);
-        if (voted) next.add(slug);
-        else next.delete(slug);
-        return next;
-      });
-    };
-    window.addEventListener('neubench_vote_changed', handleVoteEvent);
-    return () => window.removeEventListener('neubench_vote_changed', handleVoteEvent);
-  }, []);
+  const { clientId } = useAuth();
+  const localVoteSlugs = useVoteMirror(clientId);
 
   // Find current calendar date in the visitor's local timezone.
   const now = new Date();
@@ -421,19 +397,21 @@ export function ExploreTabs({
     const map: Record<string, TimelineStoryDisplay[]> = {};
     const defaultMIdx = MONTHS.findIndex((m) => m.name.toLowerCase() === defaultMonth.toLowerCase());
     const todayKey = `${defaultYear}-${String(defaultMIdx >= 0 ? defaultMIdx + 1 : 11).padStart(2, '0')}-${String(defaultDay).padStart(2, '0')}`;
-    map[todayKey] = stories.filter((s) => {
+    const todayStories = stories.filter((s) => {
       return (
         String(s.year) === defaultYear &&
         s.month.toLowerCase() === defaultMonth.toLowerCase() &&
         String(s.day).replace(/^0/, '') === String(defaultDay).replace(/^0/, '')
       );
     });
+    if (todayStories.length > 0) map[todayKey] = todayStories;
     return map;
   });
 
-  const [isLoadingHighlights, setIsLoadingHighlights] = useState<boolean>(false);
-  const [isLoadingAllFeed, setIsLoadingAllFeed] = useState<boolean>(false);
-  const inFlightFetchRef = useRef<Set<string>>(new Set());
+  const [loadingFetchKey, setLoadingFetchKey] = useState<string | null>(null);
+  const attemptedFetchRef = useRef<Set<string>>(new Set());
+  const pendingFetchRef = useRef<Set<string>>(new Set());
+  const activeFetchKeyRef = useRef<string | null>(null);
 
   // The Two-Tab Option: 'highlight' vs 'all' (Default: 'highlight')
   const [feedMode, setFeedMode] = useState<'highlight' | 'all'>('highlight');
@@ -520,6 +498,10 @@ export function ExploreTabs({
   const selectedMonthNum = String(selectedMonthIdx >= 0 ? selectedMonthIdx + 1 : 11).padStart(2, '0');
   const selectedDayNum = String(selectedDay).padStart(2, '0');
   const selectedDateKey = `${selectedYear}-${selectedMonthNum}-${selectedDayNum}`;
+  const isLoadingHighlights =
+    feedMode === 'highlight' && loadingFetchKey === `hl:${selectedDateKey}`;
+  const isLoadingAllFeed =
+    feedMode === 'all' && loadingFetchKey === `all:${selectedDateKey}`;
 
   // Automatically lazy-load dispatches when moving to any date
   // In Highlight Mode: loads ONLY the top 5 highlights and total count (fast, lightweight!)
@@ -528,19 +510,33 @@ export function ExploreTabs({
   useEffect(() => {
     if (view !== 'latest') return;
 
-    const inFlightFetches = inFlightFetchRef.current;
+    const attemptedFetches = attemptedFetchRef.current;
 
     if (feedMode === 'all') {
-      if (dateAllCache[selectedDateKey] && dateAllCache[selectedDateKey].length > 0) {
+      if (dateAllCache[selectedDateKey] !== undefined) {
         return;
       }
       const fetchKey = `all:${selectedDateKey}`;
-      if (inFlightFetches.has(fetchKey)) {
+      if (attemptedFetches.has(fetchKey)) {
+        if (pendingFetchRef.current.has(fetchKey)) {
+          activeFetchKeyRef.current = fetchKey;
+          setLoadingFetchKey(fetchKey);
+          return () => {
+            if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
+          };
+        }
         return;
       }
-      inFlightFetches.add(fetchKey);
-      let active = true;
-      setIsLoadingAllFeed(true);
+      attemptedFetches.add(fetchKey);
+      pendingFetchRef.current.add(fetchKey);
+      activeFetchKeyRef.current = fetchKey;
+      setLoadingFetchKey(fetchKey);
+      const finishLoading = () => {
+        if (activeFetchKeyRef.current === fetchKey) {
+          activeFetchKeyRef.current = null;
+        }
+        setLoadingFetchKey((current) => (current === fetchKey ? null : current));
+      };
 
       fetch(`/api/stories?date=${selectedDateKey}&mode=all`)
         .then((res) => {
@@ -548,14 +544,13 @@ export function ExploreTabs({
           return res.json();
         })
         .then(async (data) => {
-          if (!active) return;
           let fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
           if (fetched.length === 0) {
             // Direct client fallback
             const direct = await fetchDirectFromSupabase(selectedDateKey, 100);
             if (direct.length > 0) fetched = direct;
           }
-          if (!active) return;
+          finishLoading();
           setDateAllCache((prev) => ({
             ...prev,
             [selectedDateKey]: fetched,
@@ -563,35 +558,47 @@ export function ExploreTabs({
         })
         .catch(async (err) => {
           console.warn('API stories fetch failed, falling back to direct Supabase:', err);
-          if (!active) return;
           const direct = await fetchDirectFromSupabase(selectedDateKey, 100);
-          if (!active) return;
+          finishLoading();
           setDateAllCache((prev) => ({
             ...prev,
             [selectedDateKey]: direct,
           }));
         })
         .finally(() => {
-          inFlightFetches.delete(fetchKey);
-          if (active) setIsLoadingAllFeed(false);
+          pendingFetchRef.current.delete(fetchKey);
+          finishLoading();
         });
 
       return () => {
-        active = false;
-        inFlightFetches.delete(fetchKey);
+        if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
       };
     } else {
       // feedMode === 'highlight' -> Fast Path: only fetch highlights + total count!
-      if (dateHighlightsCache[selectedDateKey] && dateHighlightsCache[selectedDateKey].stories.length > 0) {
+      if (dateHighlightsCache[selectedDateKey] !== undefined) {
         return;
       }
       const fetchKey = `hl:${selectedDateKey}`;
-      if (inFlightFetches.has(fetchKey)) {
+      if (attemptedFetches.has(fetchKey)) {
+        if (pendingFetchRef.current.has(fetchKey)) {
+          activeFetchKeyRef.current = fetchKey;
+          setLoadingFetchKey(fetchKey);
+          return () => {
+            if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
+          };
+        }
         return;
       }
-      inFlightFetches.add(fetchKey);
-      let active = true;
-      setIsLoadingHighlights(true);
+      attemptedFetches.add(fetchKey);
+      pendingFetchRef.current.add(fetchKey);
+      activeFetchKeyRef.current = fetchKey;
+      setLoadingFetchKey(fetchKey);
+      const finishLoading = () => {
+        if (activeFetchKeyRef.current === fetchKey) {
+          activeFetchKeyRef.current = null;
+        }
+        setLoadingFetchKey((current) => (current === fetchKey ? null : current));
+      };
 
       fetch(`/api/stories?date=${selectedDateKey}&mode=highlights`)
         .then((res) => {
@@ -599,7 +606,6 @@ export function ExploreTabs({
           return res.json();
         })
         .then(async (data) => {
-          if (!active) return;
           let fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
           let total = typeof data?.total === 'number' ? data.total : fetched.length;
           if (fetched.length === 0) {
@@ -614,7 +620,7 @@ export function ExploreTabs({
               total = 0;
             }
           }
-          if (!active) return;
+          finishLoading();
           setDateHighlightsCache((prev) => ({
             ...prev,
             [selectedDateKey]: { stories: fetched, total },
@@ -622,9 +628,8 @@ export function ExploreTabs({
         })
         .catch(async (err) => {
           console.warn('API highlights fetch failed, using resilient direct Supabase fallback:', err);
-          if (!active) return;
           const direct = await fetchDirectFromSupabase(selectedDateKey, 20);
-          if (!active) return;
+          finishLoading();
           if (direct.length > 0) {
             const deduped = deduplicateStories(direct);
             const ranked = selectDigestHighlights(deduped, 5);
@@ -640,13 +645,12 @@ export function ExploreTabs({
           }
         })
         .finally(() => {
-          inFlightFetches.delete(fetchKey);
-          if (active) setIsLoadingHighlights(false);
+          pendingFetchRef.current.delete(fetchKey);
+          finishLoading();
         });
 
       return () => {
-        active = false;
-        inFlightFetches.delete(fetchKey);
+        if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
       };
     }
   }, [view, selectedDateKey, feedMode, dateHighlightsCache, dateAllCache]);
@@ -880,6 +884,14 @@ export function ExploreTabs({
   };
 
   const handleGoToToday = () => {
+    const defaultMonthIdx = MONTHS.findIndex((m) => m.name.toLowerCase() === defaultMonth.toLowerCase());
+    const todayKey = `${defaultYear}-${String(defaultMonthIdx >= 0 ? defaultMonthIdx + 1 : 11).padStart(2, '0')}-${String(defaultDay).padStart(2, '0')}`;
+    attemptedFetchRef.current.delete(`hl:${todayKey}`);
+    setDateHighlightsCache((prev) => {
+      const next = { ...prev };
+      delete next[todayKey];
+      return next;
+    });
     resetFeedBatch(setSelectedYear, defaultYear);
     resetFeedBatch(setSelectedMonth, defaultMonth);
     resetFeedBatch(setSelectedDay, defaultDay);
@@ -1904,7 +1916,7 @@ export function ExploreTabs({
                     {/* Rank Rail (OUTSIDE the panel card) */}
                     <div className="ex-timeline-rail">
                       <div className={`ex-timeline-date-badge is-trending-rank ${idx < 3 ? 'is-lead-rank' : ''}`}>
-                        <span className="ex-timeline-date-day">Trending #{idx + 1}</span>
+                        <span className="ex-timeline-date-day">Rank #{idx + 1}</span>
                       </div>
                       {!isLast && <span className="ex-timeline-rail-line" />}
                     </div>
