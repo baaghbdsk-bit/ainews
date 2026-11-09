@@ -31,23 +31,22 @@ const PUBLISHED_STORY_COLUMNS =
  * The second sort column keeps the order stable across pages, so a row
  * cannot be skipped or repeated at a boundary.
  */
-class QueryTimeoutError extends Error {
-  constructor(operation: string, ms: number) {
-    super(`${operation} timed out after ${ms}ms`);
-    this.name = 'QueryTimeoutError';
-  }
-}
-
-function withTimeout<T>(promise: Promise<T>, ms = 2500, operation = 'Database query'): Promise<T> {
+// Resilient timeout helper that always degrades gracefully with a fallback value instead of crashing SSR
+function withTimeout<T>(promise: Promise<T>, ms = 5000, fallback: T, operation = 'Database query'): Promise<T> {
   let timer: ReturnType<typeof setTimeout>;
-  const timeout = new Promise<T>((_, reject) => {
-    timer = setTimeout(() => reject(new QueryTimeoutError(operation, ms)), ms);
+  const timeout = new Promise<T>((resolve) => {
+    timer = setTimeout(() => {
+      console.warn(`${operation} timed out after ${ms}ms, using fallback`);
+      resolve(fallback);
+    }, ms);
   });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-}
-
-function isQueryTimeoutError(error: unknown): error is QueryTimeoutError {
-  return error instanceof QueryTimeoutError;
+  return Promise.race([
+    promise.catch((err) => {
+      console.error(`${operation} query error:`, err);
+      return fallback;
+    }),
+    timeout,
+  ]).finally(() => clearTimeout(timer));
 }
 
 export async function getPublishedStories(): Promise<Story[]> {
@@ -72,10 +71,9 @@ export async function getPublishedStories(): Promise<Story[]> {
       return ((data ?? []) as Story[]);
     };
 
-    return await withTimeout(fetchQuery(), 2500, 'Published stories query');
+    return await withTimeout(fetchQuery(), 5000, [], 'Published stories query');
   } catch (err) {
     console.error('Error fetching published stories:', err);
-    if (isQueryTimeoutError(err)) throw err;
     return [];
   }
 }
@@ -104,10 +102,9 @@ export async function getPublishedStoriesBySlugs(slugs: string[]): Promise<Story
       return (data ?? []) as Story[];
     };
 
-    return await withTimeout(fetchStories(), 2500, 'Saved stories query');
+    return await withTimeout(fetchStories(), 5000, [], 'Saved stories query');
   } catch (err) {
     console.error('Error fetching saved published stories:', err);
-    if (isQueryTimeoutError(err)) throw err;
     return [];
   }
 }
@@ -135,10 +132,9 @@ export async function getPublishedStoriesCountForDate(dateStr: string): Promise<
       return count ?? 0;
     };
 
-    return await withTimeout(fetchCount(), 2500, 'Published story count query');
+    return await withTimeout(fetchCount(), 5000, 0, 'Published story count query');
   } catch (err) {
     console.error('Error counting published stories for date:', dateStr, err);
-    if (isQueryTimeoutError(err)) throw err;
     return 0;
   }
 }
@@ -168,10 +164,9 @@ export async function getPublishedStoriesForDate(dateStr: string, limit = 300): 
       return (data ?? []) as Story[];
     };
 
-    return await withTimeout(fetchStories(), 2500, 'Published stories by date query');
+    return await withTimeout(fetchStories(), 5000, [], 'Published stories by date query');
   } catch (err) {
     console.error('Error fetching published stories for date:', dateStr, err);
-    if (isQueryTimeoutError(err)) throw err;
     return [];
   }
 }
@@ -219,10 +214,9 @@ export async function getUpvoteCounts(slugs?: string[]): Promise<Record<string, 
       return counts;
     };
 
-    return await withTimeout(fetchVotes(), 2500, 'Upvote counts query');
+    return await withTimeout(fetchVotes(), 5000, counts, 'Upvote counts query');
   } catch (err) {
     console.error('Error fetching upvote counts:', err);
-    if (isQueryTimeoutError(err)) throw err;
     return counts;
   }
 }

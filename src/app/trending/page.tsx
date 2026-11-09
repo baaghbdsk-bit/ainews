@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import { getMergedTimeline } from "@/lib/timeline";
 import { ExploreTabs } from "@/components/explore-tabs";
 
@@ -17,8 +16,15 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 60;
+
 export default async function TrendingPage() {
-  await connection();
-  const stories = await getMergedTimeline();
+  let stories: Awaited<ReturnType<typeof getMergedTimeline>> = [];
+  try {
+    stories = await getMergedTimeline();
+  } catch (err) {
+    console.error("Failed to load timeline on TrendingPage:", err);
+    stories = [];
+  }
   return <ExploreTabs initialView="trending" stories={stories} />;
 }

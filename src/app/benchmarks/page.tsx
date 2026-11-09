@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { SiteHeader } from '@/app/site-header';
 import { ModelBenchmarksComparator } from '@/components/model-benchmarks-comparator';
@@ -24,7 +23,6 @@ export const metadata: Metadata = {
 type BenchmarksSearchParams = Promise<{ view?: string }>;
 
 async function BenchmarksView({ searchParams }: { searchParams: BenchmarksSearchParams }) {
-  await connection();
   const params = await searchParams;
   const initialView =
     params.view === 'radar' ||

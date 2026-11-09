@@ -8,6 +8,8 @@ import { AccountButton } from '@/components/auth/account-button';
 import { BookmarkButton, ShareButton, UpvoteButton } from '@/components/story-actions';
 import { selectDigestHighlights } from '@/lib/digest-priority';
 import { deduplicateStories } from '@/lib/story-dedup';
+import { extractCompany } from '@/lib/story-company';
+import { colorForTopic } from '@/lib/story-colors';
 import { NeubenchSpinner } from '@/components/loading';
 import {
   cleanTitleEditorial,
@@ -46,6 +48,59 @@ const MONTHS = [
   { name: 'Nov', fullName: 'November' },
   { name: 'Dec', fullName: 'December' },
 ];
+
+
+const SUPABASE_REST_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jteilddgdspedwpmjefa.supabase.co';
+const SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZWlsZGRnZHNwZWR3cG1qZWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MjIxNjAsImV4cCI6MjEwNzM5ODE2MH0.N-2qmOoZWf9ToQ2ZBT5w5C_GeASd8gOQzSmviwbzJUc';
+
+async function fetchDirectFromSupabase(dateStr: string, limit = 50): Promise<TimelineStoryDisplay[]> {
+  try {
+    const cols =
+      'id,slug,title,summary,significance,deck,key_points,why_it_matters,company,image_url,source,source_url,topic,event_date,published_at,status,updated_at';
+    const url = `${SUPABASE_REST_URL}/rest/v1/stories?select=${cols}&status=eq.published&event_date=eq.${dateStr}&order=id.desc&limit=${limit}`;
+    const res = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return [];
+    return rows.map((r: any) => {
+      const [year, month, day] = (r.event_date || dateStr).split('-');
+      const mIdx = parseInt(month, 10) - 1;
+      const mName = MONTHS[mIdx]?.name || 'Nov';
+      return {
+        id: r.id || r.slug,
+        slug: r.slug,
+        title: r.title,
+        summary: r.summary || r.deck || '',
+        significance: r.significance,
+        source: r.source,
+        sourceUrl: r.source_url,
+        company: r.company || extractCompany({ title: r.title, summary: r.summary, source: r.source }),
+        imageUrl: r.image_url || null,
+        deck: r.deck || null,
+        keyPoints: r.key_points || null,
+        whyItMatters: r.why_it_matters || null,
+        topic: r.topic || 'Products',
+        date: r.event_date || dateStr,
+        day: (day || '1').replace(/^0/, ''),
+        month: mName,
+        year: year || '2026',
+        color: colorForTopic(r.topic || 'Products'),
+        upvoteCount: 0,
+      };
+    });
+  } catch (err) {
+    console.warn('Client Supabase direct fetch failed:', err);
+    return [];
+  }
+}
 
 /* ==========================================================================
    Title & Text Sanitizers (Zero Publisher Pollution)
@@ -298,11 +353,16 @@ export function ExploreTabs({
     return () => window.removeEventListener('neubench_vote_changed', handleVoteEvent);
   }, []);
 
-  // Find latest available date in data
+  // Find latest available date in data or fallback to current calendar date
+  const nowUtc = new Date();
+  const calYear = String(nowUtc.getUTCFullYear());
+  const calMonth = MONTHS[nowUtc.getUTCMonth()]?.name || 'Nov';
+  const calDay = String(nowUtc.getUTCDate());
+
   const latestDateStory = stories[0];
-  const defaultYear = latestDateStory?.year || '2026';
-  const defaultMonth = latestDateStory?.month || 'Nov';
-  const defaultDay = latestDateStory?.day || '7';
+  const defaultYear = latestDateStory?.year || calYear;
+  const defaultMonth = latestDateStory?.month || calMonth;
+  const defaultDay = latestDateStory?.day || calDay;
 
   const [selectedYear, setSelectedYear] = useState<string>(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState<string>(defaultMonth);
@@ -464,16 +524,29 @@ export function ExploreTabs({
           if (!res.ok) throw new Error('Failed to fetch all stories');
           return res.json();
         })
-        .then((data) => {
+        .then(async (data) => {
           if (!active) return;
-          const fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
+          let fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
+          if (fetched.length === 0) {
+            // Direct client fallback
+            const direct = await fetchDirectFromSupabase(selectedDateKey, 100);
+            if (direct.length > 0) fetched = direct;
+          }
+          if (!active) return;
           setDateAllCache((prev) => ({
             ...prev,
             [selectedDateKey]: fetched,
           }));
         })
-        .catch((err) => {
-          console.error('Lazy loading failed for all stories', selectedDateKey, err);
+        .catch(async (err) => {
+          console.warn('API stories fetch failed, falling back to direct Supabase:', err);
+          if (!active) return;
+          const direct = await fetchDirectFromSupabase(selectedDateKey, 100);
+          if (!active) return;
+          setDateAllCache((prev) => ({
+            ...prev,
+            [selectedDateKey]: direct,
+          }));
         })
         .finally(() => {
           inFlightFetches.delete(fetchKey);
@@ -502,17 +575,55 @@ export function ExploreTabs({
           if (!res.ok) throw new Error('Failed to fetch highlights');
           return res.json();
         })
-        .then((data) => {
+        .then(async (data) => {
           if (!active) return;
-          const fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
-          const total = typeof data?.total === 'number' ? data.total : fetched.length;
+          let fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
+          let total = typeof data?.total === 'number' ? data.total : fetched.length;
+          if (fetched.length === 0) {
+            // Direct client fallback to ensure user never sees empty screen
+            const direct = await fetchDirectFromSupabase(selectedDateKey, 20);
+            if (direct.length > 0) {
+              const deduped = deduplicateStories(direct);
+              const ranked = selectDigestHighlights(deduped, 5);
+              fetched = ranked.length > 0 ? ranked : deduped.slice(0, 5);
+              total = direct.length;
+            }
+          }
+          if (!active) return;
           setDateHighlightsCache((prev) => ({
             ...prev,
             [selectedDateKey]: { stories: fetched, total },
           }));
         })
-        .catch((err) => {
-          console.error('Lazy loading failed for highlights', selectedDateKey, err);
+        .catch(async (err) => {
+          console.warn('API highlights fetch failed, using resilient direct Supabase fallback:', err);
+          if (!active) return;
+          const direct = await fetchDirectFromSupabase(selectedDateKey, 20);
+          if (!active) return;
+          if (direct.length > 0) {
+            const deduped = deduplicateStories(direct);
+            const ranked = selectDigestHighlights(deduped, 5);
+            setDateHighlightsCache((prev) => ({
+              ...prev,
+              [selectedDateKey]: { stories: ranked.length > 0 ? ranked : deduped.slice(0, 5), total: direct.length },
+            }));
+          } else {
+            // Local SSR stories fallback
+            const matchSsr = stories.filter((s) => {
+              const matchYear = String(s.year) === selectedYear;
+              const matchMonth = s.month.toLowerCase() === selectedMonth.toLowerCase();
+              const matchDay = String(s.day).replace(/^0/, '') === String(selectedDay).replace(/^0/, '');
+              return matchYear && matchMonth && matchDay;
+            });
+            if (matchSsr.length > 0) {
+              const deduped = deduplicateStories(matchSsr);
+              const ranked = selectDigestHighlights(deduped, 5);
+              setDateHighlightsCache((prev) => ({
+                ...prev,
+                [selectedDateKey]: { stories: ranked.length > 0 ? ranked : deduped.slice(0, 5), total: matchSsr.length },
+              }));
+            }
+          }
         })
         .finally(() => {
           inFlightFetches.delete(fetchKey);
@@ -592,17 +703,20 @@ export function ExploreTabs({
 
   // Filter and rank stories for the current selected date
   const { allDayStories, highlightStories, displayedStories } = useMemo(() => {
-    // 1. All Day stories: only compute if dateAllCache has it or fallback to SSR stories for today
+    // 1. All Day stories: use dateAllCache or fallback to matching SSR stories for this date
     let rawList: TimelineStoryDisplay[] = [];
     if (dateAllCache[selectedDateKey]) {
       rawList = dateAllCache[selectedDateKey];
-    } else if (isToday) {
-      rawList = stories.filter((s) => {
+    } else {
+      const matchSsr = stories.filter((s) => {
         const matchYear = String(s.year) === selectedYear;
         const matchMonth = s.month.toLowerCase() === selectedMonth.toLowerCase();
         const matchDay = String(s.day).replace(/^0/, '') === String(selectedDay).replace(/^0/, '');
         return matchYear && matchMonth && matchDay;
       });
+      if (matchSsr.length > 0) {
+        rawList = matchSsr;
+      }
     }
 
     let dayList = rawList;

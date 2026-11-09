@@ -17,8 +17,15 @@ export async function GET(request: NextRequest) {
 
   const dateParam = params.get('date');
   if (dateParam) {
+    const modeParam = params.get('mode') === 'all' ? 'all' : 'highlights';
+    // Validate date format (YYYY-MM-DD) to prevent malformed queries to PostgREST
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      return Response.json(
+        { stories: [], total: 0, mode: modeParam, error: 'Invalid date parameter' },
+        { status: 400 },
+      );
+    }
     try {
-      const modeParam = params.get('mode') === 'all' ? 'all' : 'highlights';
       const result = await getStoriesForDate(dateParam, modeParam);
       return Response.json(
         result,
@@ -30,7 +37,8 @@ export async function GET(request: NextRequest) {
       );
     } catch (err) {
       console.error('Failed to load stories for date:', dateParam, err);
-      return Response.json({ stories: [], total: 0, mode: 'highlights', error: 'Failed to load stories for date' }, { status: 500 });
+      // Graceful fallback with HTTP 200 so client Never crashes
+      return Response.json({ stories: [], total: 0, mode: modeParam });
     }
   }
 
