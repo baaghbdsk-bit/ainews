@@ -17,10 +17,8 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
-  Sun,
 } from "lucide-react";
 import { SiteHeader } from "../site-header";
-import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth/store";
 import { showGuestNotice } from "@/components/auth/guest-notice";
 
@@ -64,7 +62,6 @@ function GithubIcon({ size = 16 }: { size?: number }) {
 }
 
 export function AboutClient() {
-  const [isLight, toggleTheme] = useTheme();
   const { status: authStatus } = useAuth();
 
   // Form submission state for story tip / feedback
@@ -96,16 +93,6 @@ export function AboutClient() {
               <ArrowLeft size={15} />
               <span>Back to timeline</span>
             </Link>
-            <button
-              aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}
-              aria-pressed={isLight}
-              className="header-icon-button"
-              onClick={toggleTheme}
-              title={isLight ? "Dark theme" : "Light theme"}
-              type="button"
-            >
-              <Sun size={17} />
-            </button>
           </div>
         }
       />

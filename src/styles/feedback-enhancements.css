@@ -32,15 +32,13 @@
     gap: 14px !important;
   }
 
-  .feedback-console-card,
-  .connect-channels-card {
+  .feedback-console-card, .connect-channels-card {
     padding: 22px 20px !important;
   }
 }
 
 /* 2. Spacious console & channel cards — NeuBench Obsidian / Broadsheet Ivory */
-.feedback-console-card,
-.connect-channels-card {
+.feedback-console-card, .connect-channels-card {
   padding: 30px 32px !important;
   border-radius: 14px !important;
   display: flex !important;
@@ -50,13 +48,6 @@
   background: var(--surface) !important;
   border: 1px solid var(--line2) !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22) !important;
-}
-
-html[data-theme="light"] .feedback-console-card,
-html[data-theme="light"] .connect-channels-card {
-  background: var(--surface) !important;
-  border-color: var(--line2) !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
 }
 
 .console-head {
@@ -215,8 +206,7 @@ html[data-theme="light"] .connect-channels-card {
   transition: border-color 150ms ease, box-shadow 150ms ease !important;
 }
 
-.feedback-input-email::placeholder,
-.feedback-textarea-large::placeholder {
+.feedback-input-email::placeholder, .feedback-textarea-large::placeholder {
   color: var(--faint) !important;
 }
 
@@ -260,7 +250,7 @@ html[data-theme="light"] .connect-channels-card {
   border-radius: 8px !important;
   letter-spacing: 0.01em !important;
   background: var(--accent) !important;
-  color: #ffffff !important;
+  color: var(--on-accent) !important;
   border: none !important;
   cursor: pointer !important;
   box-shadow: 0 4px 16px var(--accent-soft) !important;
@@ -337,9 +327,9 @@ html[data-theme="light"] .connect-channels-card {
 }
 
 .channel-card-link.channel-api .channel-icon-wrap {
-  background: rgba(19, 220, 203, 0.12) !important;
-  color: #13DCCB !important;
-  border: 1px solid rgba(19, 220, 203, 0.25) !important;
+  background: rgba(63, 178, 127, 0.12) !important;
+  color: #3fb27f !important;
+  border: 1px solid rgba(63, 178, 127, 0.25) !important;
 }
 
 .channel-info {
@@ -485,13 +475,7 @@ html[data-theme="light"] .connect-channels-card {
 }
 
 .connect-custom-title-gradient {
-  background: linear-gradient(96deg, #2DD4BF 0%, #06B6D4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-html[data-theme="light"] .connect-custom-title-gradient {
-  background: linear-gradient(96deg, #0D9488 0%, #0891B2 100%);
+  background: linear-gradient(96deg, #3fb27f 0%, #06B6D4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -531,10 +515,10 @@ html[data-theme="light"] .connect-custom-title-gradient {
   height: 6px;
   border-radius: 50%;
 }
-.bullet-feedback { background: #2DD4BF; box-shadow: 0 0 6px rgba(45, 212, 191, 0.6); }
+.bullet-feedback { background: #3fb27f; box-shadow: 0 0 6px rgba(45, 212, 191, 0.6); }
 .bullet-model { background: #A78BFA; }
-.bullet-open { background: #38BDF8; }
-.bullet-editorial { background: #FB7185; }
+.bullet-open { background: #7b848b; }
+.bullet-editorial { background: #aab2b8; }
 
 @media (max-width: 640px) {
   .feedback-connect-dossier {
@@ -566,8 +550,7 @@ html[data-theme="light"] .connect-custom-title-gradient {
     min-height: 36px;
   }
 
-  .feedback-console-card,
-  .connect-channels-card {
+  .feedback-console-card, .connect-channels-card {
     padding: 18px 16px !important;
   }
 

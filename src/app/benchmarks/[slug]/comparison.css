@@ -153,8 +153,7 @@
   font-size: 0.875rem;
 }
 
-.specs-table th,
-.specs-table td {
+.specs-table th, .specs-table td {
   padding: 0.875rem 1.25rem;
   border-bottom: 1px solid var(--border);
 }
@@ -200,7 +199,7 @@ html[data-theme="dark"] .specs-table th {
 }
 
 .score-cell.winner {
-  color: #10b981;
+  color: #3fb27f;
 }
 
 .score-cell.winner::after {

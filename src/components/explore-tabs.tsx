@@ -3,14 +3,16 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import type { TimelineStoryDisplay } from '@/lib/timeline';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { AccountButton } from '@/components/auth/account-button';
 import { BookmarkButton, ShareButton, UpvoteButton } from '@/components/story-actions';
+import { useVoteMirror } from '@/components/story-actions/vote-store';
+import { useAuth } from '@/lib/auth/store';
 import { selectDigestHighlights } from '@/lib/digest-priority';
 import { deduplicateStories } from '@/lib/story-dedup';
 import { extractCompany } from '@/lib/story-company';
 import { colorForTopic } from '@/lib/story-colors';
 import { NeubenchSpinner } from '@/components/loading';
+import { FilterSelect, type FilterOption } from '@/components/filter-select';
 import {
   cleanTitleEditorial,
   detectRealEntityEditorial,
@@ -47,6 +49,29 @@ const MONTHS = [
   { name: 'Oct', fullName: 'October' },
   { name: 'Nov', fullName: 'November' },
   { name: 'Dec', fullName: 'December' },
+];
+
+const COMPANY_OPTIONS: FilterOption[] = [
+  { value: 'all', label: 'All Companies' },
+  { value: 'OpenAI', label: 'OpenAI', tone: '#34d399' },
+  { value: 'Google', label: 'Google / DeepMind', tone: '#60a5fa' },
+  { value: 'Anthropic', label: 'Anthropic', tone: '#fb923c' },
+  { value: 'Meta', label: 'Meta', tone: '#c9d0d5' },
+  { value: 'NVIDIA', label: 'NVIDIA', tone: '#a3e635' },
+  { value: 'DeepSeek', label: 'DeepSeek', tone: '#3fb27f' },
+  { value: 'Mistral', label: 'Mistral AI', tone: '#fbbf24' },
+  { value: 'Apple', label: 'Apple', tone: '#f8fafc' },
+];
+
+const CATEGORY_OPTIONS: FilterOption[] = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'Models', label: 'Models', tone: '#c4b5fd' },
+  { value: 'Dev Tools & Infra', label: 'Dev Tools & Infra', tone: '#4ade80' },
+  { value: 'Research', label: 'Research', tone: '#f472b6' },
+  { value: 'Policy', label: 'Policy', tone: '#f87171' },
+  { value: 'Business', label: 'Business', tone: '#fde047' },
+  { value: 'Robotics', label: 'Robotics', tone: '#f3c26b' },
+  { value: 'Products', label: 'Products', tone: '#7dd3fc' },
 ];
 
 
@@ -324,45 +349,19 @@ export function ExploreTabs({
   initialView?: 'latest' | 'trending';
 }) {
   const view = initialView;
+  const { clientId } = useAuth();
+  const localVoteSlugs = useVoteMirror(clientId);
 
-  // User upvoted stories state (local votes from localStorage + in-session upvotes)
-  const [localVoteSlugs, setLocalVoteSlugs] = useState<Set<string>>(() => {
-    if (typeof window === 'undefined') return new Set();
-    try {
-      const raw = localStorage.getItem('signal_upvoted_stories');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        return new Set(Array.isArray(parsed) ? parsed : Object.keys(parsed));
-      }
-    } catch {}
-    return new Set();
-  });
+  // Find current calendar date in the visitor's local timezone.
+  const now = new Date();
+  const calYear = String(now.getFullYear());
+  const calMonth = MONTHS[now.getMonth()]?.name || 'Nov';
+  const calDay = String(now.getDate());
 
-  useEffect(() => {
-    const handleVoteEvent = (event: Event) => {
-      const { slug, voted } = (event as CustomEvent<{ slug?: string; voted?: boolean }>).detail ?? {};
-      if (!slug) return;
-      setLocalVoteSlugs((prev) => {
-        const next = new Set(prev);
-        if (voted) next.add(slug);
-        else next.delete(slug);
-        return next;
-      });
-    };
-    window.addEventListener('neubench_vote_changed', handleVoteEvent);
-    return () => window.removeEventListener('neubench_vote_changed', handleVoteEvent);
-  }, []);
-
-  // Find latest available date in data or fallback to current calendar date
-  const nowUtc = new Date();
-  const calYear = String(nowUtc.getUTCFullYear());
-  const calMonth = MONTHS[nowUtc.getUTCMonth()]?.name || 'Nov';
-  const calDay = String(nowUtc.getUTCDate());
-
-  const latestDateStory = stories[0];
-  const defaultYear = latestDateStory?.year || calYear;
-  const defaultMonth = latestDateStory?.month || calMonth;
-  const defaultDay = latestDateStory?.day || calDay;
+  // Default to the current calendar date instead of the newest published story.
+  const defaultYear = calYear;
+  const defaultMonth = calMonth;
+  const defaultDay = calDay;
 
   const [selectedYear, setSelectedYear] = useState<string>(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState<string>(defaultMonth);
@@ -398,19 +397,21 @@ export function ExploreTabs({
     const map: Record<string, TimelineStoryDisplay[]> = {};
     const defaultMIdx = MONTHS.findIndex((m) => m.name.toLowerCase() === defaultMonth.toLowerCase());
     const todayKey = `${defaultYear}-${String(defaultMIdx >= 0 ? defaultMIdx + 1 : 11).padStart(2, '0')}-${String(defaultDay).padStart(2, '0')}`;
-    map[todayKey] = stories.filter((s) => {
+    const todayStories = stories.filter((s) => {
       return (
         String(s.year) === defaultYear &&
         s.month.toLowerCase() === defaultMonth.toLowerCase() &&
         String(s.day).replace(/^0/, '') === String(defaultDay).replace(/^0/, '')
       );
     });
+    if (todayStories.length > 0) map[todayKey] = todayStories;
     return map;
   });
 
-  const [isLoadingHighlights, setIsLoadingHighlights] = useState<boolean>(false);
-  const [isLoadingAllFeed, setIsLoadingAllFeed] = useState<boolean>(false);
-  const inFlightFetchRef = useRef<Set<string>>(new Set());
+  const [loadingFetchKey, setLoadingFetchKey] = useState<string | null>(null);
+  const attemptedFetchRef = useRef<Set<string>>(new Set());
+  const pendingFetchRef = useRef<Set<string>>(new Set());
+  const activeFetchKeyRef = useRef<string | null>(null);
 
   // The Two-Tab Option: 'highlight' vs 'all' (Default: 'highlight')
   const [feedMode, setFeedMode] = useState<'highlight' | 'all'>('highlight');
@@ -497,6 +498,10 @@ export function ExploreTabs({
   const selectedMonthNum = String(selectedMonthIdx >= 0 ? selectedMonthIdx + 1 : 11).padStart(2, '0');
   const selectedDayNum = String(selectedDay).padStart(2, '0');
   const selectedDateKey = `${selectedYear}-${selectedMonthNum}-${selectedDayNum}`;
+  const isLoadingHighlights =
+    feedMode === 'highlight' && loadingFetchKey === `hl:${selectedDateKey}`;
+  const isLoadingAllFeed =
+    feedMode === 'all' && loadingFetchKey === `all:${selectedDateKey}`;
 
   // Automatically lazy-load dispatches when moving to any date
   // In Highlight Mode: loads ONLY the top 5 highlights and total count (fast, lightweight!)
@@ -505,19 +510,33 @@ export function ExploreTabs({
   useEffect(() => {
     if (view !== 'latest') return;
 
-    const inFlightFetches = inFlightFetchRef.current;
+    const attemptedFetches = attemptedFetchRef.current;
 
     if (feedMode === 'all') {
-      if (dateAllCache[selectedDateKey] && dateAllCache[selectedDateKey].length > 0) {
+      if (dateAllCache[selectedDateKey] !== undefined) {
         return;
       }
       const fetchKey = `all:${selectedDateKey}`;
-      if (inFlightFetches.has(fetchKey)) {
+      if (attemptedFetches.has(fetchKey)) {
+        if (pendingFetchRef.current.has(fetchKey)) {
+          activeFetchKeyRef.current = fetchKey;
+          setLoadingFetchKey(fetchKey);
+          return () => {
+            if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
+          };
+        }
         return;
       }
-      inFlightFetches.add(fetchKey);
-      let active = true;
-      setIsLoadingAllFeed(true);
+      attemptedFetches.add(fetchKey);
+      pendingFetchRef.current.add(fetchKey);
+      activeFetchKeyRef.current = fetchKey;
+      setLoadingFetchKey(fetchKey);
+      const finishLoading = () => {
+        if (activeFetchKeyRef.current === fetchKey) {
+          activeFetchKeyRef.current = null;
+        }
+        setLoadingFetchKey((current) => (current === fetchKey ? null : current));
+      };
 
       fetch(`/api/stories?date=${selectedDateKey}&mode=all`)
         .then((res) => {
@@ -525,14 +544,13 @@ export function ExploreTabs({
           return res.json();
         })
         .then(async (data) => {
-          if (!active) return;
           let fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
           if (fetched.length === 0) {
             // Direct client fallback
             const direct = await fetchDirectFromSupabase(selectedDateKey, 100);
             if (direct.length > 0) fetched = direct;
           }
-          if (!active) return;
+          finishLoading();
           setDateAllCache((prev) => ({
             ...prev,
             [selectedDateKey]: fetched,
@@ -540,35 +558,47 @@ export function ExploreTabs({
         })
         .catch(async (err) => {
           console.warn('API stories fetch failed, falling back to direct Supabase:', err);
-          if (!active) return;
           const direct = await fetchDirectFromSupabase(selectedDateKey, 100);
-          if (!active) return;
+          finishLoading();
           setDateAllCache((prev) => ({
             ...prev,
             [selectedDateKey]: direct,
           }));
         })
         .finally(() => {
-          inFlightFetches.delete(fetchKey);
-          if (active) setIsLoadingAllFeed(false);
+          pendingFetchRef.current.delete(fetchKey);
+          finishLoading();
         });
 
       return () => {
-        active = false;
-        inFlightFetches.delete(fetchKey);
+        if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
       };
     } else {
       // feedMode === 'highlight' -> Fast Path: only fetch highlights + total count!
-      if (dateHighlightsCache[selectedDateKey] && dateHighlightsCache[selectedDateKey].stories.length > 0) {
+      if (dateHighlightsCache[selectedDateKey] !== undefined) {
         return;
       }
       const fetchKey = `hl:${selectedDateKey}`;
-      if (inFlightFetches.has(fetchKey)) {
+      if (attemptedFetches.has(fetchKey)) {
+        if (pendingFetchRef.current.has(fetchKey)) {
+          activeFetchKeyRef.current = fetchKey;
+          setLoadingFetchKey(fetchKey);
+          return () => {
+            if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
+          };
+        }
         return;
       }
-      inFlightFetches.add(fetchKey);
-      let active = true;
-      setIsLoadingHighlights(true);
+      attemptedFetches.add(fetchKey);
+      pendingFetchRef.current.add(fetchKey);
+      activeFetchKeyRef.current = fetchKey;
+      setLoadingFetchKey(fetchKey);
+      const finishLoading = () => {
+        if (activeFetchKeyRef.current === fetchKey) {
+          activeFetchKeyRef.current = null;
+        }
+        setLoadingFetchKey((current) => (current === fetchKey ? null : current));
+      };
 
       fetch(`/api/stories?date=${selectedDateKey}&mode=highlights`)
         .then((res) => {
@@ -576,7 +606,6 @@ export function ExploreTabs({
           return res.json();
         })
         .then(async (data) => {
-          if (!active) return;
           let fetched: TimelineStoryDisplay[] = Array.isArray(data?.stories) ? data.stories : [];
           let total = typeof data?.total === 'number' ? data.total : fetched.length;
           if (fetched.length === 0) {
@@ -587,9 +616,11 @@ export function ExploreTabs({
               const ranked = selectDigestHighlights(deduped, 5);
               fetched = ranked.length > 0 ? ranked : deduped.slice(0, 5);
               total = direct.length;
+            } else {
+              total = 0;
             }
           }
-          if (!active) return;
+          finishLoading();
           setDateHighlightsCache((prev) => ({
             ...prev,
             [selectedDateKey]: { stories: fetched, total },
@@ -597,9 +628,8 @@ export function ExploreTabs({
         })
         .catch(async (err) => {
           console.warn('API highlights fetch failed, using resilient direct Supabase fallback:', err);
-          if (!active) return;
           const direct = await fetchDirectFromSupabase(selectedDateKey, 20);
-          if (!active) return;
+          finishLoading();
           if (direct.length > 0) {
             const deduped = deduplicateStories(direct);
             const ranked = selectDigestHighlights(deduped, 5);
@@ -608,31 +638,19 @@ export function ExploreTabs({
               [selectedDateKey]: { stories: ranked.length > 0 ? ranked : deduped.slice(0, 5), total: direct.length },
             }));
           } else {
-            // Local SSR stories fallback
-            const matchSsr = stories.filter((s) => {
-              const matchYear = String(s.year) === selectedYear;
-              const matchMonth = s.month.toLowerCase() === selectedMonth.toLowerCase();
-              const matchDay = String(s.day).replace(/^0/, '') === String(selectedDay).replace(/^0/, '');
-              return matchYear && matchMonth && matchDay;
-            });
-            if (matchSsr.length > 0) {
-              const deduped = deduplicateStories(matchSsr);
-              const ranked = selectDigestHighlights(deduped, 5);
-              setDateHighlightsCache((prev) => ({
-                ...prev,
-                [selectedDateKey]: { stories: ranked.length > 0 ? ranked : deduped.slice(0, 5), total: matchSsr.length },
-              }));
-            }
+            setDateHighlightsCache((prev) => ({
+              ...prev,
+              [selectedDateKey]: { stories: [], total: 0 },
+            }));
           }
         })
         .finally(() => {
-          inFlightFetches.delete(fetchKey);
-          if (active) setIsLoadingHighlights(false);
+          pendingFetchRef.current.delete(fetchKey);
+          finishLoading();
         });
 
       return () => {
-        active = false;
-        inFlightFetches.delete(fetchKey);
+        if (activeFetchKeyRef.current === fetchKey) activeFetchKeyRef.current = null;
       };
     }
   }, [view, selectedDateKey, feedMode, dateHighlightsCache, dateAllCache]);
@@ -866,6 +884,14 @@ export function ExploreTabs({
   };
 
   const handleGoToToday = () => {
+    const defaultMonthIdx = MONTHS.findIndex((m) => m.name.toLowerCase() === defaultMonth.toLowerCase());
+    const todayKey = `${defaultYear}-${String(defaultMonthIdx >= 0 ? defaultMonthIdx + 1 : 11).padStart(2, '0')}-${String(defaultDay).padStart(2, '0')}`;
+    attemptedFetchRef.current.delete(`hl:${todayKey}`);
+    setDateHighlightsCache((prev) => {
+      const next = { ...prev };
+      delete next[todayKey];
+      return next;
+    });
     resetFeedBatch(setSelectedYear, defaultYear);
     resetFeedBatch(setSelectedMonth, defaultMonth);
     resetFeedBatch(setSelectedDay, defaultDay);
@@ -1013,9 +1039,9 @@ export function ExploreTabs({
             <Link href="/home" className="ex-brand" aria-label="NEUBENCH, home" title="NEUBENCH home">
               <span className="neubench-logo-e" aria-hidden="true" style={{ width: 26, height: 30, display: 'inline-flex' }}>
                 <svg viewBox="0 0 65 72" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                  <rect className="neubench-logo-bar neubench-logo-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#4777FF" />
-                  <rect className="neubench-logo-bar neubench-logo-bar--yellow" x="0" y="28" width="65" height="16" rx="8" fill="#FDE047" />
-                  <rect className="neubench-logo-bar neubench-logo-bar--teal" x="0" y="56" width="65" height="16" rx="8" fill="#13DCCB" />
+              <rect className="neubench-logo-bar neubench-logo-bar--blue" x="0" y="0" width="65" height="16" rx="8" fill="#22E6FF" />
+              <rect className="neubench-logo-bar neubench-logo-bar--yellow" x="0" y="28" width="65" height="16" rx="8" fill="#F5D300" />
+              <rect className="neubench-logo-bar neubench-logo-bar--teal" x="0" y="56" width="65" height="16" rx="8" fill="#FF6A1A" />
                 </svg>
               </span>
             </Link>
@@ -1035,7 +1061,6 @@ export function ExploreTabs({
               >
                 <Search size={15} />
               </button>
-              <ThemeToggle />
               <AccountButton iconOnly />
             </div>
           </div>
@@ -1184,7 +1209,6 @@ export function ExploreTabs({
                 <Search size={16} />
               </button>
             )}
-            <ThemeToggle />
             <AccountButton iconOnly />
           </div>
         </header>
@@ -1438,44 +1462,26 @@ export function ExploreTabs({
                   />
                 </button>
                 <div id="ex-mobile-filter-fields" className="ex-toolbar-filters">
-                  <label className="ex-mobile-filter-field">
+                  <div className="ex-mobile-filter-field">
                     <span>Company</span>
-                    <select
+                    <FilterSelect
                       value={selectedCompany}
-                      onChange={(e) => resetFeedBatch(setSelectedCompany, e.target.value)}
-                      className="ex-filter-dropdown"
-                      aria-label="Filter by Company"
-                    >
-                      <option value="all">All Companies</option>
-                      <option value="OpenAI">OpenAI</option>
-                      <option value="Google">Google / DeepMind</option>
-                      <option value="Anthropic">Anthropic</option>
-                      <option value="Meta">Meta</option>
-                      <option value="NVIDIA">NVIDIA</option>
-                      <option value="DeepSeek">DeepSeek</option>
-                      <option value="Mistral">Mistral AI</option>
-                      <option value="Apple">Apple</option>
-                    </select>
-                  </label>
+                      options={COMPANY_OPTIONS}
+                      onChange={(next) => resetFeedBatch(setSelectedCompany, next)}
+                      ariaLabel="Filter by Company"
+                    />
+                  </div>
 
-                  <label className="ex-mobile-filter-field">
+                  <div className="ex-mobile-filter-field">
                     <span>Category</span>
-                    <select
+                    <FilterSelect
                       value={selectedTopic}
-                      onChange={(e) => resetFeedBatch(setSelectedTopic, e.target.value)}
-                      className="ex-filter-dropdown"
-                      aria-label="Filter by Category"
-                    >
-                      <option value="all">All Categories</option>
-                      <option value="Models">Models</option>
-                      <option value="Dev Tools & Infra">Dev Tools & Infra</option>
-                      <option value="Research">Research</option>
-                      <option value="Policy">Policy</option>
-                      <option value="Business">Business</option>
-                      <option value="Robotics">Robotics</option>
-                      <option value="Products">Products</option>
-                    </select>
-                  </label>
+                      options={CATEGORY_OPTIONS}
+                      onChange={(next) => resetFeedBatch(setSelectedTopic, next)}
+                      ariaLabel="Filter by Category"
+                      align="right"
+                    />
+                  </div>
                   {activeFilterCount > 0 && (
                     <button
                       type="button"
@@ -1910,7 +1916,7 @@ export function ExploreTabs({
                     {/* Rank Rail (OUTSIDE the panel card) */}
                     <div className="ex-timeline-rail">
                       <div className={`ex-timeline-date-badge is-trending-rank ${idx < 3 ? 'is-lead-rank' : ''}`}>
-                        <span className="ex-timeline-date-day">Trending #{idx + 1}</span>
+                        <span className="ex-timeline-date-day">Rank #{idx + 1}</span>
                       </div>
                       {!isLast && <span className="ex-timeline-rail-line" />}
                     </div>

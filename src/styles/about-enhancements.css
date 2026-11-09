@@ -49,7 +49,7 @@
 }
 
 .about-v2-title-gradient {
-  background: linear-gradient(96deg, var(--brand-violet, #8055F5) 0%, var(--accent) 85%);
+  background: linear-gradient(96deg, var(--brand-violet, #c9d0d5) 0%, var(--accent) 85%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

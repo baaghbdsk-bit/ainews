@@ -54,7 +54,7 @@
   border: 0;
   border-radius: 999px;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;

@@ -29,7 +29,7 @@
   height: 24px;
   border-radius: 50%;
   border: 3px solid transparent;
-  background: conic-gradient(from 0deg, #4777FF 0deg, #FDE047 120deg, #13DCCB 240deg, #4777FF 360deg) border-box;
+  background: conic-gradient(from 0deg, #4777FF 0deg, #FDE047 120deg, #3fb27f 240deg, #4777FF 360deg) border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -94,8 +94,7 @@
 }
 
 @keyframes app-loading-pulse {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 0.45;
   }
   50% {
@@ -149,8 +148,7 @@
 }
 
 @keyframes neubench-bar-wave {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 0.4;
     transform: scaleY(0.4) scaleX(1.1);
   }
@@ -162,14 +160,12 @@
 
 /* Glow effect that travels across bars during the wave */
 .neubench-spinner-bar {
-  filter: drop-shadow(0 0 0px rgba(139, 92, 246, 0));
+  filter: drop-shadow(0 0 0px rgba(201, 208, 213, 0));
   transition: filter 0.3s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-loading-spinner,
-  .app-skeleton-node,
-  .app-skeleton-line {
+  .app-loading-spinner, .app-skeleton-node, .app-skeleton-line {
     animation: none;
   }
 
@@ -182,20 +178,6 @@
     opacity: 1;
     transform: scaleY(1) scaleX(1);
   }
-}
-
-html[data-theme="light"] .app-loading {
-  color: #64748b;
-}
-
-html[data-theme="light"] .app-loading-panel {
-  background: #ffffff;
-  border-color: #e2e8f0;
-}
-
-html[data-theme="light"] .app-skeleton-node,
-html[data-theme="light"] .app-skeleton-line {
-  background: #e8ecf3;
 }
 
 
@@ -222,16 +204,10 @@ html[data-theme="light"] .app-skeleton-line {
   padding: 9px 20px;
   border-radius: 9999px;
   background: rgba(18, 18, 22, 0.92);
-  border: 1px solid rgba(139, 92, 246, 0.32);
+  border: 1px solid rgba(201, 208, 213, 0.32);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-}
-
-html[data-theme="light"] .timeline-spinner-pill {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .timeline-spinner-text {
@@ -241,10 +217,6 @@ html[data-theme="light"] .timeline-spinner-pill {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #e4e4e7;
-}
-
-html[data-theme="light"] .timeline-spinner-text {
-  color: #3f3f46;
 }
 
 
@@ -280,19 +252,13 @@ html[data-theme="light"] .timeline-spinner-text {
   background-size: 7px 7px;
 }
 
-html[data-theme="light"] .neubench-loading-fullscreen {
-  background-color: #fbfbf9;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-  background-size: 7px 7px;
-}
-
 .neubench-loading-pulse-ring {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(128, 85, 245, 0.07);
-  border: 1px solid rgba(128, 85, 245, 0.2);
+  background: rgba(201, 208, 213, 0.07);
+  border: 1px solid rgba(201, 208, 213, 0.2);
   box-shadow: 0 0 32px -4px rgba(71, 119, 255, 0.22);
   animation: neubench-loader-glow 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
 }
@@ -304,13 +270,13 @@ html[data-theme="light"] .neubench-loading-fullscreen {
     border-color: rgba(71, 119, 255, 0.2);
   }
   50% {
-    box-shadow: 0 0 34px 2px rgba(128, 85, 245, 0.28);
-    border-color: rgba(128, 85, 245, 0.35);
+    box-shadow: 0 0 34px 2px rgba(201, 208, 213, 0.28);
+    border-color: rgba(201, 208, 213, 0.35);
   }
   100% {
     transform: scale(1.04);
-    box-shadow: 0 0 32px -2px rgba(19, 220, 203, 0.22);
-    border-color: rgba(19, 220, 203, 0.3);
+    box-shadow: 0 0 32px -2px rgba(63, 178, 127, 0.22);
+    border-color: rgba(63, 178, 127, 0.3);
   }
 }
 
@@ -331,7 +297,7 @@ html[data-theme="light"] .neubench-loading-fullscreen {
 
 /* ============================================================
  * NeuBench Universal 3-Color Circular Spinner
- * Electric Blue (#4777FF) • Solar Yellow (#FDE047) • Teal (#13DCCB)
+ * Electric Blue (#4777FF) • Solar Yellow (#FDE047) • Teal (#3fb27f)
  * ============================================================ */
 .neubench-spinner-wrap {
   display: inline-flex;
@@ -358,10 +324,6 @@ html[data-theme="light"] .neubench-loading-fullscreen {
 
 .neubench-spinner-track {
   opacity: 0.14;
-}
-
-html[data-theme="light"] .neubench-spinner-track {
-  opacity: 0.10;
 }
 
 .neubench-inline-loader {
@@ -400,13 +362,6 @@ html[data-theme="light"] .neubench-spinner-track {
   letter-spacing: 0.02em;
   z-index: 99999;
   animation: neubench-top-bar-slide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-html[data-theme="light"] .neubench-top-loading-bar {
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom-color: rgba(71, 119, 255, 0.4);
-  color: #0f172a;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes neubench-top-bar-slide {

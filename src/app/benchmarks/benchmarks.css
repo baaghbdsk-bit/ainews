@@ -29,41 +29,12 @@
   --bench-dev-indigo: var(--brand-violet);
   --bench-dev-sky: var(--brand-electric);
   --bench-dev-teal: var(--brand-teal);
-  --bench-dev-lime: #84CC16;
-  --bench-dev-orange: #F97316;
+  --bench-dev-lime: #f5d300;
+  --bench-dev-orange: #ff6a1a;
   --bench-dev-pink: var(--brand-violet);
   --bench-dev-purple: var(--brand-violet);
   --bench-dev-red: #DC2626;
   --bench-dev-slate: var(--fg-muted);
-}
-
-html[data-theme="light"] {
-  --bench-bg: var(--bg);
-  --bench-surface: var(--surface);
-  --bench-surface-elevated: var(--surface-elevated);
-  --bench-line: var(--border);
-  --bench-text: var(--fg);
-  --bench-muted: var(--fg-muted);
-  --bench-violet: var(--brand-violet);
-  --bench-violet-strong: var(--brand-violet-hover);
-  --bench-violet-soft: var(--brand-violet-soft);
-  --bench-violet-line: var(--brand-violet-line);
-  --bench-violet-hover: var(--brand-violet-hover);
-  --bench-dev-violet: var(--brand-violet);
-  --bench-dev-blue: var(--brand-electric);
-  --bench-dev-cyan: var(--brand-teal);
-  --bench-dev-amber: var(--brand-amber);
-  --bench-dev-emerald: var(--brand-teal);
-  --bench-dev-rose: #DC2626;
-  --bench-dev-indigo: var(--brand-violet);
-  --bench-dev-sky: var(--brand-electric);
-  --bench-dev-teal: var(--brand-teal);
-  --bench-dev-lime: #4D7C0F;
-  --bench-dev-orange: #C2410C;
-  --bench-dev-pink: #BE185D;
-  --bench-dev-purple: var(--brand-violet);
-  --bench-dev-red: #B91C1C;
-  --bench-dev-slate: #18181B;
 }
 
 .benchmarks-page {
@@ -167,12 +138,6 @@ html[data-theme="light"] {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
   margin-bottom: 20px;
   overflow: hidden;
-}
-
-html[data-theme="light"] .bench-header-panel {
-  background: var(--surface);
-  border-color: var(--border-strong);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
 }
 
 .bench-header-panel::before {
@@ -309,7 +274,7 @@ html[data-theme="light"] .bench-header-panel {
 
 .hero-art.hero-benchmarks-art {
   background: radial-gradient(circle at 50% 50%, rgba(244, 114, 182, 0.18) 0%, rgba(219, 39, 119, 0.08) 54%, transparent 74%);
-  --hero-halo-color: #f472b6;
+  --hero-halo-color: #f5d300;
   animation: hero-art-float 4.2s ease-in-out infinite;
 }
 
@@ -347,13 +312,13 @@ html[data-theme="light"] .bench-header-panel {
   flex-shrink: 0;
 }
 
-.fill-anthropic, .fill-violet { background-color: #a855f7; }
-.fill-openai, .fill-emerald { background-color: #10b981; }
+.fill-anthropic, .fill-violet { background-color: #aab2b8; }
+.fill-openai, .fill-emerald { background-color: #3fb27f; }
 .fill-google, .fill-blue { background-color: #3b82f6; }
-.fill-deepseek, .fill-indigo { background-color: #6366f1; }
+.fill-deepseek, .fill-indigo { background-color: #aab2b8; }
 .fill-meta, .fill-cyan { background-color: #06b6d4; }
-.fill-qwen, .fill-alibaba, .fill-amber { background-color: #f59e0b; }
-.fill-mistralai, .fill-orange { background-color: #f97316; }
+.fill-qwen, .fill-alibaba, .fill-amber { background-color: #ff6a1a; }
+.fill-mistralai, .fill-orange { background-color: #ff6a1a; }
 .fill-x-ai, .fill-rose { background-color: #f43f5e; }
 .fill-moonshotai, .fill-teal { background-color: #14b8a6; }
 .fill-z-ai, .fill-sky { background-color: #0ea5e9; }
@@ -460,8 +425,8 @@ html[data-theme="light"] .bench-header-panel {
 }
 
 .capacity-max-tag {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(255, 106, 26, 0.15);
+  border: 1px solid rgba(255, 106, 26, 0.35);
   color: #fbbf24;
   font-size: 10.5px;
   font-weight: 750;
@@ -493,8 +458,8 @@ html[data-theme="light"] .bench-header-panel {
 }
 
 .drawer-alert-banner {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(255, 106, 26, 0.1);
+  border: 1px solid rgba(255, 106, 26, 0.3);
   border-radius: 8px;
   padding: 8px 12px;
   display: flex;
@@ -675,7 +640,7 @@ html[data-theme="light"] .bench-header-panel {
   background: rgba(11, 16, 26, 0.88);
   padding: 6px;
   border-radius: 10px;
-  border: 1px solid rgba(139, 92, 246, 0.22);
+  border: 1px solid rgba(201, 208, 213, 0.22);
 }
 
 .view-tab-btn {
@@ -772,12 +737,6 @@ html[data-theme="light"] .bench-header-panel {
   overflow: hidden;
 }
 
-html[data-theme="light"] .bench-grid-card {
-  background: var(--surface);
-  border-color: var(--border-strong);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-}
-
 .bench-grid-card::before {
   content: "";
   position: absolute;
@@ -794,7 +753,7 @@ html[data-theme="light"] .bench-grid-card {
 .bench-grid-card:hover {
   border-color: rgba(255, 255, 255, 0.16);
   transform: translateY(-2px);
-  box-shadow: 0 14px 32px -4px rgba(0, 0, 0, 0.5), 0 0 24px -4px var(--card-glow, rgba(139, 92, 246, 0.18));
+  box-shadow: 0 14px 32px -4px rgba(0, 0, 0, 0.5), 0 0 24px -4px var(--card-glow, rgba(201, 208, 213, 0.18));
 }
 
 .bench-grid-card:hover::before {
@@ -803,16 +762,16 @@ html[data-theme="light"] .bench-grid-card {
 }
 
 .bench-grid-card.cat-coding {
-  --card-accent: #10B981;
+  --card-accent: #3fb27f;
   --card-glow: rgba(16, 185, 129, 0.22);
 }
 .bench-grid-card.cat-agentic {
-  --card-accent: #8B5CF6;
-  --card-glow: rgba(139, 92, 246, 0.22);
+  --card-accent: #c9d0d5;
+  --card-glow: rgba(201, 208, 213, 0.22);
 }
 .bench-grid-card.cat-reasoning {
-  --card-accent: #F59E0B;
-  --card-glow: rgba(245, 158, 11, 0.22);
+  --card-accent: #ff6a1a;
+  --card-glow: rgba(255, 106, 26, 0.22);
 }
 .bench-grid-card.cat-mathematics {
   --card-accent: #F43F5E;
@@ -823,8 +782,8 @@ html[data-theme="light"] .bench-grid-card {
   --card-glow: rgba(14, 165, 233, 0.22);
 }
 .bench-grid-card.cat-human-preference {
-  --card-accent: #F97316;
-  --card-glow: rgba(249, 115, 22, 0.22);
+  --card-accent: #ff6a1a;
+  --card-glow: rgba(255, 106, 26, 0.22);
 }
 
 .bench-card-head {
@@ -912,17 +871,16 @@ html[data-theme="light"] .bench-grid-card {
   flex-shrink: 0;
 }
 
-.bench-card-info-btn:hover,
-.bench-card-info-btn.is-active {
-  background: rgba(139, 92, 246, 0.16);
-  border-color: rgba(139, 92, 246, 0.4);
+.bench-card-info-btn:hover, .bench-card-info-btn.is-active {
+  background: rgba(201, 208, 213, 0.16);
+  border-color: rgba(201, 208, 213, 0.4);
   color: #C4B5FD;
 }
 
 /* Explanation Drawer */
 .bench-card-explanation {
   background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  border: 1px solid rgba(201, 208, 213, 0.25);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 12px;
@@ -959,8 +917,8 @@ html[data-theme="light"] .bench-grid-card {
   gap: 6px;
   font-size: 11px;
   color: #FBBF24;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: rgba(255, 106, 26, 0.08);
+  border: 1px solid rgba(255, 106, 26, 0.2);
   border-radius: 7px;
   padding: 6px 9px;
   margin-top: 4px;
@@ -972,12 +930,12 @@ html[data-theme="light"] .bench-grid-card {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, rgba(255, 106, 26, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+  border: 1px solid rgba(255, 106, 26, 0.3);
   border-radius: 9px;
   padding: 7px 11px;
   font-size: 11.5px;
-  box-shadow: 0 2px 8px -2px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 2px 8px -2px rgba(255, 106, 26, 0.2);
 }
 
 .leader-strip-left {
@@ -991,7 +949,7 @@ html[data-theme="light"] .bench-grid-card {
   width: 18px;
   height: 18px;
   border-radius: 5px;
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(255, 106, 26, 0.2);
   display: grid;
   place-items: center;
   color: #FBBF24;
@@ -1017,10 +975,10 @@ html[data-theme="light"] .bench-grid-card {
 .leader-score {
   font-weight: 800;
   color: #FDE68A;
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(255, 106, 26, 0.2);
   padding: 1px 6px;
   border-radius: 5px;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid rgba(255, 106, 26, 0.35);
   font-variant-numeric: tabular-nums;
   font-size: 11px;
 }
@@ -1065,8 +1023,8 @@ html[data-theme="light"] .bench-grid-card {
 }
 
 .bench-bar-item.is-first-rank {
-  background: rgba(245, 158, 11, 0.04);
-  border-color: rgba(245, 158, 11, 0.15);
+  background: rgba(255, 106, 26, 0.04);
+  border-color: rgba(255, 106, 26, 0.15);
 }
 
 .bench-bar-identity {
@@ -1182,7 +1140,7 @@ html[data-theme="light"] .bench-grid-card {
 
 .bench-source-link.is-independent {
   background: rgba(14, 165, 233, 0.12);
-  color: #38BDF8;
+  color: #7b848b;
   border: 1px solid rgba(14, 165, 233, 0.25);
 }
 
@@ -1529,10 +1487,10 @@ html[data-theme="light"] .bench-grid-card {
   transition: opacity 200ms ease;
 }
 
-.quadrant-zone.zone-reasoning { fill: #8b5cf6; }
-.quadrant-zone.zone-premium { fill: #f59e0b; }
+.quadrant-zone.zone-reasoning { fill: #c9d0d5; }
+.quadrant-zone.zone-premium { fill: #ff6a1a; }
 .quadrant-zone.zone-open { fill: #3b82f6; }
-.quadrant-zone.zone-efficient { fill: #10b981; }
+.quadrant-zone.zone-efficient { fill: #3fb27f; }
 
 .quadrant-label-text {
   font-size: 10px;
@@ -1658,8 +1616,8 @@ html[data-theme="light"] .bench-grid-card {
 
 /* Quadrant Unplottable Notice & Data Provenance */
 .quadrant-unplottable-notice {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(255, 106, 26, 0.08);
+  border: 1px solid rgba(255, 106, 26, 0.25);
   border-radius: 8px;
   padding: 12px 14px;
   display: flex;
@@ -1672,7 +1630,7 @@ html[data-theme="light"] .bench-grid-card {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #f59e0b;
+  color: #ff6a1a;
   font-weight: 650;
   font-size: 12.5px;
 }
@@ -1892,8 +1850,8 @@ html[data-theme="light"] .bench-grid-card {
   font-size: 10.5px;
   font-weight: 700;
   color: #fbbf24;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(255, 106, 26, 0.12);
+  border: 1px solid rgba(255, 106, 26, 0.25);
 }
 
 .official-link-stack {
@@ -2085,8 +2043,7 @@ html[data-theme="light"] .bench-grid-card {
   min-width: 0;
 }
 
-.bench-coverage-name,
-.bench-coverage-value {
+.bench-coverage-name, .bench-coverage-value {
   color: var(--bench-muted);
   font-size: 10.5px;
   white-space: nowrap;
@@ -2112,7 +2069,7 @@ html[data-theme="light"] .bench-grid-card {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--bench-violet), #f472b6);
+  background: linear-gradient(90deg, var(--marker), var(--marker-hover));
 }
 
 .bench-audit-bar {
@@ -2187,163 +2144,6 @@ html[data-theme="light"] .bench-grid-card {
   flex-direction: column;
   gap: 16px;
   min-width: 0;
-}
-
-/* ── Light theme specifics for Benchmarks ── */
-html[data-theme="light"] .bench-header-panel,
-html[data-theme="light"] .bench-views-toolbar,
-html[data-theme="light"] .bench-grid-card,
-html[data-theme="light"] .radar-graph-card,
-html[data-theme="light"] .quadrant-chart-card,
-html[data-theme="light"] .specs-table-container,
-html[data-theme="light"] .bench-guide-panel {
-  background: #ffffff;
-  border-color: #e2dfef;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-}
-
-html[data-theme="light"] .active-model-tag {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #18181b;
-}
-
-html[data-theme="light"] .views-segmented-control {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-}
-
-html[data-theme="light"] .view-tab-btn.is-active {
-  background: #ffffff;
-  color: #18181b;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-html[data-theme="light"] .bench-card-explanation,
-html[data-theme="light"] .radar-stats-side-panel,
-html[data-theme="light"] .quadrant-svg,
-html[data-theme="light"] .guide-card-compact,
-html[data-theme="light"] .bench-audit-bar,
-html[data-theme="light"] .drawer-search-box,
-html[data-theme="light"] .drawer-pill-filter,
-html[data-theme="light"] .drawer-model-chip {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-}
-
-html[data-theme="light"] .table-th-feature,
-html[data-theme="light"] .table-th-model {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #64748b;
-}
-
-html[data-theme="light"] .table-td-val,
-html[data-theme="light"] .table-td-feature {
-  border-color: #e2e8f0;
-  color: #18181b;
-}
-
-html[data-theme="light"] .feature-icon-violet { color: #7c3aed; }
-html[data-theme="light"] .feature-icon-blue { color: #1d4ed8; }
-html[data-theme="light"] .feature-icon-amber { color: #b45309; }
-html[data-theme="light"] .feature-icon-emerald { color: #047857; }
-
-html[data-theme="light"] .bench-grid-card {
-  background: #FFFFFF;
-  border-color: #E2E8F0;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
-}
-
-html[data-theme="light"] .bench-card-title {
-  color: #0F172A;
-}
-
-html[data-theme="light"] .bench-card-unit {
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-card-info-btn {
-  background: #F8FAFC;
-  border-color: #E2E8F0;
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-card-info-btn:hover {
-  background: #F1F5F9;
-  border-color: #CBD5E1;
-  color: #0F172A;
-}
-
-html[data-theme="light"] .bench-card-explanation {
-  background: #F8FAFC;
-  border-color: #E2E8F0;
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-explanation-label {
-  color: #0F172A;
-}
-
-html[data-theme="light"] .bench-card-leader-strip {
-  background: linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%);
-  border-color: #FDE68A;
-  box-shadow: 0 2px 8px -1px rgba(245, 158, 11, 0.12);
-}
-
-html[data-theme="light"] .leader-trophy-wrap {
-  background: rgba(245, 158, 11, 0.25);
-  color: #B45309;
-}
-
-html[data-theme="light"] .leader-tag {
-  color: #B45309;
-}
-
-html[data-theme="light"] .leader-name {
-  color: #78350F;
-}
-
-html[data-theme="light"] .leader-score {
-  color: #92400E;
-  background: #FDE68A;
-  border-color: #FCD34D;
-}
-
-html[data-theme="light"] .leader-delta-badge {
-  background: #DCFCE7;
-  border-color: #86EFAC;
-  color: #15803D;
-}
-
-html[data-theme="light"] .bench-bar-item:hover {
-  background: #F8FAFC;
-  border-color: #E2E8F0;
-}
-
-html[data-theme="light"] .bench-bar-item.is-first-rank {
-  background: #FFFBEB;
-  border-color: #FDE68A;
-}
-
-html[data-theme="light"] .bench-bar-rank {
-  color: #94A3B8;
-}
-
-html[data-theme="light"] .bench-bar-rank.is-rank-first {
-  color: #D97706;
-}
-
-html[data-theme="light"] .bench-bar-model-name {
-  color: #0F172A;
-}
-
-html[data-theme="light"] .bench-bar-track {
-  background: #E2E8F0;
-}
-
-html[data-theme="light"] .bench-score-num {
-  color: #0F172A;
 }
 
 /* ── Responsive Queries ── */
@@ -2458,8 +2258,8 @@ html[data-theme="light"] .bench-score-num {
 .bench-unified-filter-panel.is-expanded {
   padding: 18px 24px;
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.55) 0%, var(--bench-surface) 100%);
-  border-color: rgba(139, 92, 246, 0.35);
-  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.5), 0 0 20px -6px rgba(139, 92, 246, 0.18);
+  border-color: rgba(201, 208, 213, 0.35);
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.5), 0 0 20px -6px rgba(201, 208, 213, 0.18);
 }
 
 .bench-unified-header-strip {
@@ -2531,10 +2331,10 @@ html[data-theme="light"] .bench-score-num {
 
 /* Models Highlight Badge: Electric Violet */
 .bench-highlight-badge.badge-models {
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.42);
+  background: rgba(201, 208, 213, 0.15);
+  border: 1px solid rgba(201, 208, 213, 0.42);
   color: #ddd6fe;
-  box-shadow: 0 0 10px -2px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 0 10px -2px rgba(201, 208, 213, 0.25);
 }
 
 .bench-highlight-badge.badge-models .badge-dot {
@@ -2555,8 +2355,8 @@ html[data-theme="light"] .bench-score-num {
 }
 
 .bench-highlight-badge.badge-benchmarks .badge-dot {
-  background: #f472b6;
-  box-shadow: 0 0 6px #f472b6;
+  background: #f5d300;
+  box-shadow: 0 0 6px #f5d300;
 }
 
 .bench-highlight-badge.badge-benchmarks .badge-val {
@@ -2598,7 +2398,7 @@ html[data-theme="light"] .bench-score-num {
   background: var(--bench-violet-soft);
   border-color: var(--bench-violet);
   color: var(--bench-violet);
-  box-shadow: 0 0 14px -2px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 14px -2px rgba(201, 208, 213, 0.4);
 }
 
 .bench-unified-header-actions {
@@ -2724,8 +2524,7 @@ html[data-theme="light"] .bench-score-num {
   border-color: var(--bench-violet-line);
 }
 
-.bench-control-toggle,
-.bench-control-link {
+.bench-control-toggle, .bench-control-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2981,64 +2780,64 @@ html[data-theme="light"] .bench-score-num {
   background: rgba(16, 185, 129, 0.16);
 }
 .bench-category-card.cat-coding .bench-picker-chip.is-on .bench-picker-chip-mark {
-  border-color: #10b981;
-  background: #10b981;
+  border-color: #3fb27f;
+  background: #3fb27f;
   color: #042f2e;
 }
 
 /* ── 2. Agentic: Violet / Indigo ── */
 .bench-category-card.cat-agentic {
-  border-color: rgba(139, 92, 246, 0.25);
-  background: linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, rgba(14, 18, 26, 0.95) 100%);
+  border-color: rgba(201, 208, 213, 0.25);
+  background: linear-gradient(180deg, rgba(201, 208, 213, 0.05) 0%, rgba(14, 18, 26, 0.95) 100%);
 }
 .bench-category-card.cat-agentic:hover {
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 4px 18px -2px rgba(139, 92, 246, 0.25);
+  border-color: rgba(201, 208, 213, 0.5);
+  box-shadow: 0 4px 18px -2px rgba(201, 208, 213, 0.25);
 }
 .bench-category-card.cat-agentic .bench-category-card-name {
   color: #a78bfa;
 }
 .bench-category-card.cat-agentic .bench-category-toggle-btn.is-active {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: rgba(139, 92, 246, 0.45);
+  background: rgba(201, 208, 213, 0.2);
+  border-color: rgba(201, 208, 213, 0.45);
   color: #c4b5fd;
 }
 .bench-category-card.cat-agentic .bench-picker-chip.is-on {
   color: #ede9fe;
-  border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(139, 92, 246, 0.16);
+  border-color: rgba(201, 208, 213, 0.5);
+  background: rgba(201, 208, 213, 0.16);
 }
 .bench-category-card.cat-agentic .bench-picker-chip.is-on .bench-picker-chip-mark {
-  border-color: #8b5cf6;
-  background: #8b5cf6;
+  border-color: #c9d0d5;
+  background: #c9d0d5;
   color: #2e1065;
 }
 
 /* ── 3. Reasoning: Amber / Gold ── */
 .bench-category-card.cat-reasoning {
-  border-color: rgba(245, 158, 11, 0.25);
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(14, 18, 26, 0.95) 100%);
+  border-color: rgba(255, 106, 26, 0.25);
+  background: linear-gradient(180deg, rgba(255, 106, 26, 0.05) 0%, rgba(14, 18, 26, 0.95) 100%);
 }
 .bench-category-card.cat-reasoning:hover {
-  border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 4px 18px -2px rgba(245, 158, 11, 0.25);
+  border-color: rgba(255, 106, 26, 0.5);
+  box-shadow: 0 4px 18px -2px rgba(255, 106, 26, 0.25);
 }
 .bench-category-card.cat-reasoning .bench-category-card-name {
   color: #fbbf24;
 }
 .bench-category-card.cat-reasoning .bench-category-toggle-btn.is-active {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(255, 106, 26, 0.2);
+  border-color: rgba(255, 106, 26, 0.45);
   color: #fde68a;
 }
 .bench-category-card.cat-reasoning .bench-picker-chip.is-on {
   color: #fef3c7;
-  border-color: rgba(245, 158, 11, 0.5);
-  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(255, 106, 26, 0.5);
+  background: rgba(255, 106, 26, 0.16);
 }
 .bench-category-card.cat-reasoning .bench-picker-chip.is-on .bench-picker-chip-mark {
-  border-color: #f59e0b;
-  background: #f59e0b;
+  border-color: #ff6a1a;
+  background: #ff6a1a;
   color: #451a03;
 }
 
@@ -3052,7 +2851,7 @@ html[data-theme="light"] .bench-score-num {
   box-shadow: 0 4px 18px -2px rgba(244, 63, 94, 0.25);
 }
 .bench-category-card.cat-mathematics .bench-category-card-name {
-  color: #fb7185;
+  color: #aab2b8;
 }
 .bench-category-card.cat-mathematics .bench-category-toggle-btn.is-active {
   background: rgba(244, 63, 94, 0.2);
@@ -3080,7 +2879,7 @@ html[data-theme="light"] .bench-score-num {
   box-shadow: 0 4px 18px -2px rgba(14, 165, 233, 0.25);
 }
 .bench-category-card.cat-general-knowledge .bench-category-card-name {
-  color: #38bdf8;
+  color: #7b848b;
 }
 .bench-category-card.cat-general-knowledge .bench-category-toggle-btn.is-active {
   background: rgba(14, 165, 233, 0.2);
@@ -3100,29 +2899,29 @@ html[data-theme="light"] .bench-score-num {
 
 /* ── 6. Human Preference: Coral / Tangerine ── */
 .bench-category-card.cat-human-preference {
-  border-color: rgba(249, 115, 22, 0.25);
-  background: linear-gradient(180deg, rgba(249, 115, 22, 0.05) 0%, rgba(14, 18, 26, 0.95) 100%);
+  border-color: rgba(255, 106, 26, 0.25);
+  background: linear-gradient(180deg, rgba(255, 106, 26, 0.05) 0%, rgba(14, 18, 26, 0.95) 100%);
 }
 .bench-category-card.cat-human-preference:hover {
-  border-color: rgba(249, 115, 22, 0.5);
-  box-shadow: 0 4px 18px -2px rgba(249, 115, 22, 0.25);
+  border-color: rgba(255, 106, 26, 0.5);
+  box-shadow: 0 4px 18px -2px rgba(255, 106, 26, 0.25);
 }
 .bench-category-card.cat-human-preference .bench-category-card-name {
   color: #fb923c;
 }
 .bench-category-card.cat-human-preference .bench-category-toggle-btn.is-active {
-  background: rgba(249, 115, 22, 0.2);
-  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(255, 106, 26, 0.2);
+  border-color: rgba(255, 106, 26, 0.45);
   color: #fed7aa;
 }
 .bench-category-card.cat-human-preference .bench-picker-chip.is-on {
   color: #ffedd5;
-  border-color: rgba(249, 115, 22, 0.5);
-  background: rgba(249, 115, 22, 0.16);
+  border-color: rgba(255, 106, 26, 0.5);
+  background: rgba(255, 106, 26, 0.16);
 }
 .bench-category-card.cat-human-preference .bench-picker-chip.is-on .bench-picker-chip-mark {
-  border-color: #f97316;
-  background: #f97316;
+  border-color: #ff6a1a;
+  background: #ff6a1a;
   color: #431407;
 }
 
@@ -3130,10 +2929,10 @@ html[data-theme="light"] .bench-score-num {
 
 /* Presets with vibrant gradients */
 .bench-preset-link.preset-frontier.is-active {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(99, 102, 241, 0.22) 100%);
-  border-color: rgba(168, 85, 247, 0.55);
+  background: linear-gradient(135deg, rgba(170, 178, 184, 0.22) 0%, rgba(170, 178, 184, 0.22) 100%);
+  border-color: rgba(170, 178, 184, 0.55);
   color: #f3e8ff;
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 12px rgba(170, 178, 184, 0.3);
 }
 
 .bench-preset-link.preset-open-weights.is-active {
@@ -3157,29 +2956,29 @@ html[data-theme="light"] .bench-score-num {
   border: 1px solid rgba(16, 185, 129, 0.35);
 }
 .bench-domain-badge.cat-agentic {
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(201, 208, 213, 0.15);
   color: #c4b5fd;
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  border: 1px solid rgba(201, 208, 213, 0.35);
 }
 .bench-domain-badge.cat-reasoning {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(255, 106, 26, 0.15);
   color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid rgba(255, 106, 26, 0.35);
 }
 .bench-domain-badge.cat-mathematics {
   background: rgba(244, 63, 94, 0.15);
-  color: #fb7185;
+  color: #aab2b8;
   border: 1px solid rgba(244, 63, 94, 0.35);
 }
 .bench-domain-badge.cat-general-knowledge {
   background: rgba(14, 165, 233, 0.15);
-  color: #38bdf8;
+  color: #7b848b;
   border: 1px solid rgba(14, 165, 233, 0.35);
 }
 .bench-domain-badge.cat-human-preference {
-  background: rgba(249, 115, 22, 0.15);
+  background: rgba(255, 106, 26, 0.15);
   color: #fb923c;
-  border: 1px solid rgba(249, 115, 22, 0.35);
+  border: 1px solid rgba(255, 106, 26, 0.35);
 }
 
 /* Subtle top border accent on grid cards matching category */
@@ -3187,10 +2986,10 @@ html[data-theme="light"] .bench-score-num {
   border-top: 2px solid rgba(16, 185, 129, 0.45);
 }
 .bench-grid-card.cat-agentic {
-  border-top: 2px solid rgba(139, 92, 246, 0.45);
+  border-top: 2px solid rgba(201, 208, 213, 0.45);
 }
 .bench-grid-card.cat-reasoning {
-  border-top: 2px solid rgba(245, 158, 11, 0.45);
+  border-top: 2px solid rgba(255, 106, 26, 0.45);
 }
 .bench-grid-card.cat-mathematics {
   border-top: 2px solid rgba(244, 63, 94, 0.45);
@@ -3199,7 +2998,7 @@ html[data-theme="light"] .bench-score-num {
   border-top: 2px solid rgba(14, 165, 233, 0.45);
 }
 .bench-grid-card.cat-human-preference {
-  border-top: 2px solid rgba(249, 115, 22, 0.45);
+  border-top: 2px solid rgba(255, 106, 26, 0.45);
 }
 
 .bench-picker-chips {
@@ -3251,34 +3050,6 @@ html[data-theme="light"] .bench-score-num {
   border-color: var(--bench-violet);
   background: var(--bench-violet);
   color: #0b0d12;
-}
-
-
-
-html[data-theme="light"] .bench-control-toggle {
-  background: #ffffff;
-  border-color: #e2e8f0;
-}
-
-html[data-theme="light"] .bench-preset-link:hover,
-html[data-theme="light"] .bench-control-link:hover {
-  background: #f1f5f9;
-}
-
-html[data-theme="light"] .bench-picker-chip.is-on {
-  background: #ede9fe;
-  border-color: #c4b5fd;
-  color: #5b21b6;
-}
-
-html[data-theme="light"] .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #7c3aed;
-  border-color: #7c3aed;
-  color: #ffffff;
-}
-
-html[data-theme="light"] .bench-picker-chip:hover {
-  border-color: #c4b5fd;
 }
 
 @media (max-width: 900px) {
@@ -3442,17 +3213,11 @@ html[data-theme="light"] .bench-picker-chip:hover {
 
 /* ── Accessibility utilities ── */
 /* Expand small inline control hit areas without changing visual density. */
-.active-tag-remove,
-.active-tag-src,
-.bench-source-link,
-.official-verification-link {
+.active-tag-remove, .active-tag-src, .bench-source-link, .official-verification-link {
   position: relative;
 }
 
-.active-tag-remove::before,
-.active-tag-src::before,
-.bench-source-link::before,
-.official-verification-link::before {
+.active-tag-remove::before, .active-tag-src::before, .bench-source-link::before, .official-verification-link::before {
   content: "";
   position: absolute;
   top: 50%;
@@ -3468,8 +3233,7 @@ html[data-theme="light"] .bench-picker-chip:hover {
 }
 
 /* ── Specs table: sticky identity column ── */
-.specs-comparison-table th.table-th-feature,
-.specs-comparison-table th.table-td-feature {
+.specs-comparison-table th.table-th-feature, .specs-comparison-table th.table-td-feature {
   position: sticky;
   left: 0;
   z-index: 2;
@@ -3478,339 +3242,6 @@ html[data-theme="light"] .bench-picker-chip:hover {
 
 .specs-comparison-table thead th.table-th-feature {
   z-index: 4;
-}
-
-/* ── Consolidated light-theme accent contrast (>=4.5:1) ── */
-html[data-theme="light"] .bench-meta-val.is-verified,
-html[data-theme="light"] .bench-source-link.is-official,
-html[data-theme="light"] .radar-leader-val,
-html[data-theme="light"] .official-verification-link {
-  color: #047857;
-}
-
-html[data-theme="light"] .bench-source-link.is-independent,
-html[data-theme="light"] .license-open {
-  color: #1d4ed8;
-}
-
-html[data-theme="light"] .leader-label,
-html[data-theme="light"] .leader-name,
-html[data-theme="light"] .leader-score,
-html[data-theme="light"] .license-proprietary,
-html[data-theme="light"] .bench-card-caveat {
-  color: #92400e;
-}
-
-html[data-theme="light"] .table-th-feature {
-  color: #18181b;
-}
-
-html[data-theme="light"] .official-verification-link:hover {
-  color: #065f46;
-}
-
-
-/* ── Light Theme: Benchmarks Hero Metrics Strip ── */
-html[data-theme="light"] .bench-metric-chip {
-  background: #FFFFFF;
-  border-color: #E2E8F0;
-  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.06);
-}
-
-html[data-theme="light"] .bench-metric-chip:hover {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
-}
-
-html[data-theme="light"] .bench-metric-chip .metric-val {
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-metric-chip .metric-lbl {
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-metric-chip.is-verified {
-  background: #ECFDF5;
-  border-color: #A7F3D0;
-}
-
-html[data-theme="light"] .bench-metric-chip.is-verified .metric-val {
-  color: #047857;
-}
-
-/* ── Light Theme: Unified Filter Panel (Models & Benchmarks Bar) ── */
-html[data-theme="light"] .bench-unified-filter-panel {
-  background: #FFFFFF;
-  border-color: #E2E8F0;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
-}
-
-html[data-theme="light"] .bench-unified-filter-panel.is-expanded {
-  background: #FFFFFF;
-  border-color: #CBD5E1;
-  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
-}
-
-html[data-theme="light"] .bench-unified-filter-panel.is-expanded .bench-unified-header-strip {
-  border-bottom-color: #F1F5F9;
-}
-
-html[data-theme="light"] .bench-unified-header-title .bench-control-label {
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-highlight-badge.badge-models {
-  background: #F3E8FF;
-  border-color: #C084FC;
-  color: #6B21A8;
-  box-shadow: none;
-}
-
-html[data-theme="light"] .bench-highlight-badge.badge-models .badge-val {
-  color: #581C87;
-}
-
-html[data-theme="light"] .bench-highlight-badge.badge-models .badge-dot {
-  background: #7C3AED;
-  box-shadow: none;
-}
-
-html[data-theme="light"] .bench-highlight-badge.badge-benchmarks {
-  background: #FDF2F8;
-  border-color: #F472B6;
-  color: #9D174D;
-  box-shadow: none;
-}
-
-html[data-theme="light"] .bench-highlight-badge.badge-benchmarks .badge-val {
-  color: #831843;
-}
-
-html[data-theme="light"] .bench-highlight-badge.badge-benchmarks .badge-dot {
-  background: #DB2777;
-  box-shadow: none;
-}
-
-html[data-theme="light"] .bench-highlight-status {
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-unified-toggle-btn {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-unified-toggle-btn:hover {
-  background: #F1F5F9;
-  border-color: #a1a1aa;
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-unified-toggle-btn.is-active {
-  background: #F3E8FF;
-  border-color: #A855F7;
-  color: #7E22CE;
-}
-
-html[data-theme="light"] .bench-subsection-label {
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-control-hint {
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-preset-label {
-  color: #64748B;
-}
-
-html[data-theme="light"] .bench-preset-link {
-  background: #F1F5F9;
-  border-color: #CBD5E1;
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-preset-link.is-active {
-  background: #EDE9FE;
-  border-color: #A78BFA;
-  color: #6D28D9;
-}
-
-/* ── Light Theme: Benchmark Category Cards in Expanded Filter ── */
-html[data-theme="light"] .bench-category-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
-}
-
-html[data-theme="light"] .bench-category-card:hover {
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-}
-
-html[data-theme="light"] .bench-category-card-head {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-html[data-theme="light"] .bench-category-card.cat-coding {
-  background: #F0FDF4;
-  border-color: #BBF7D0;
-}
-html[data-theme="light"] .bench-category-card.cat-coding .bench-category-card-name {
-  color: #059669;
-}
-html[data-theme="light"] .bench-category-card.cat-coding .bench-category-toggle-btn.is-active {
-  background: #DCFCE7;
-  border-color: #86EFAC;
-  color: #047857;
-}
-html[data-theme="light"] .bench-category-card.cat-coding .bench-picker-chip.is-on {
-  background: #DCFCE7;
-  border-color: #86EFAC;
-  color: #065F46;
-}
-html[data-theme="light"] .bench-category-card.cat-coding .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #059669;
-  border-color: #059669;
-  color: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-category-card.cat-agentic {
-  background: #F5F3FF;
-  border-color: #DDD6FE;
-}
-html[data-theme="light"] .bench-category-card.cat-agentic .bench-category-card-name {
-  color: #7C3AED;
-}
-html[data-theme="light"] .bench-category-card.cat-agentic .bench-category-toggle-btn.is-active {
-  background: #EDE9FE;
-  border-color: #C4B5FD;
-  color: #6D28D9;
-}
-html[data-theme="light"] .bench-category-card.cat-agentic .bench-picker-chip.is-on {
-  background: #EDE9FE;
-  border-color: #C4B5FD;
-  color: #5B21B6;
-}
-html[data-theme="light"] .bench-category-card.cat-agentic .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #7C3AED;
-  border-color: #7C3AED;
-  color: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-category-card.cat-reasoning {
-  background: #FFFBEB;
-  border-color: #FDE68A;
-}
-html[data-theme="light"] .bench-category-card.cat-reasoning .bench-category-card-name {
-  color: #D97706;
-}
-html[data-theme="light"] .bench-category-card.cat-reasoning .bench-category-toggle-btn.is-active {
-  background: #FEF3C7;
-  border-color: #FCD34D;
-  color: #B45309;
-}
-html[data-theme="light"] .bench-category-card.cat-reasoning .bench-picker-chip.is-on {
-  background: #FEF3C7;
-  border-color: #FCD34D;
-  color: #92400E;
-}
-html[data-theme="light"] .bench-category-card.cat-reasoning .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #D97706;
-  border-color: #D97706;
-  color: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-category-card.cat-mathematics {
-  background: #FFF1F2;
-  border-color: #FECDD3;
-}
-html[data-theme="light"] .bench-category-card.cat-mathematics .bench-category-card-name {
-  color: #E11D48;
-}
-html[data-theme="light"] .bench-category-card.cat-mathematics .bench-category-toggle-btn.is-active {
-  background: #FFE4E6;
-  border-color: #FDA4AF;
-  color: #BE123C;
-}
-html[data-theme="light"] .bench-category-card.cat-mathematics .bench-picker-chip.is-on {
-  background: #FFE4E6;
-  border-color: #FDA4AF;
-  color: #9F1239;
-}
-html[data-theme="light"] .bench-category-card.cat-mathematics .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #E11D48;
-  border-color: #E11D48;
-  color: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-category-card.cat-general-knowledge {
-  background: #F0F9FF;
-  border-color: #BAE6FD;
-}
-html[data-theme="light"] .bench-category-card.cat-general-knowledge .bench-category-card-name {
-  color: #0284C7;
-}
-html[data-theme="light"] .bench-category-card.cat-general-knowledge .bench-category-toggle-btn.is-active {
-  background: #E0F2FE;
-  border-color: #7DD3FC;
-  color: #0369A1;
-}
-html[data-theme="light"] .bench-category-card.cat-general-knowledge .bench-picker-chip.is-on {
-  background: #E0F2FE;
-  border-color: #7DD3FC;
-  color: #075985;
-}
-html[data-theme="light"] .bench-category-card.cat-general-knowledge .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #0284C7;
-  border-color: #0284C7;
-  color: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-category-card.cat-human-preference {
-  background: #FFF7ED;
-  border-color: #FED7AA;
-}
-html[data-theme="light"] .bench-category-card.cat-human-preference .bench-category-card-name {
-  color: #EA580C;
-}
-html[data-theme="light"] .bench-category-card.cat-human-preference .bench-category-toggle-btn.is-active {
-  background: #FFEDD5;
-  border-color: #FDBA74;
-  color: #C2410C;
-}
-html[data-theme="light"] .bench-category-card.cat-human-preference .bench-picker-chip.is-on {
-  background: #FFEDD5;
-  border-color: #FDBA74;
-  color: #9A3412;
-}
-html[data-theme="light"] .bench-category-card.cat-human-preference .bench-picker-chip.is-on .bench-picker-chip-mark {
-  background: #EA580C;
-  border-color: #EA580C;
-  color: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-picker-chip {
-  background: #FFFFFF;
-  border-color: #CBD5E1;
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-picker-chip:hover {
-  background: #F8FAFC;
-  border-color: #a1a1aa;
-  color: #18181b;
-}
-
-html[data-theme="light"] .bench-picker-chip-mark {
-  border-color: #CBD5E1;
-  background: #FFFFFF;
-}
-
-html[data-theme="light"] .bench-picker-groups {
-  background: #F8FAFC;
-  border-color: #E2E8F0;
 }
 
 /* Bespoke Empirical Benchmarks Header */
@@ -3829,9 +3260,9 @@ html[data-theme="light"] .bench-picker-groups {
   gap: 8px;
   padding: 5px 14px;
   border-radius: 999px;
-  background: rgba(245, 158, 11, 0.12);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.32);
+  background: rgba(255, 106, 26, 0.12);
+  color: #ff6a1a;
+  border: 1px solid rgba(255, 106, 26, 0.32);
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -3839,7 +3270,7 @@ html[data-theme="light"] .bench-picker-groups {
 }
 
 .bench-kicker-icon {
-  color: #F59E0B;
+  color: #ff6a1a;
 }
 
 .bench-custom-title {
@@ -3853,13 +3284,7 @@ html[data-theme="light"] .bench-picker-groups {
 }
 
 .bench-custom-title-gradient {
-  background: linear-gradient(96deg, #F59E0B 0%, #EF4444 85%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-html[data-theme="light"] .bench-custom-title-gradient {
-  background: linear-gradient(96deg, #D97706 0%, #DC2626 85%);
+  background: linear-gradient(96deg, #ff6a1a 0%, #EF4444 85%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -3900,9 +3325,9 @@ html[data-theme="light"] .bench-custom-title-gradient {
   height: 6px;
   border-radius: 50%;
 }
-.bullet-agent { background: #38BDF8; }
+.bullet-agent { background: #7b848b; }
 .bullet-code { background: #A78BFA; }
-.bullet-reason { background: #F472B6; }
+.bullet-reason { background: #f5d300; }
 .bullet-math { background: #FBBF24; }
 .bullet-livecode { background: #34D399; }
 .bullet-pricing { background: #94A3B8; }

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NeubenchLogo } from "@/components/neubench-logo";
 import { AccountButton } from "@/components/auth/account-button";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 function GlobalNavLinks() {
   const pathname = usePathname() || "";
@@ -100,7 +99,6 @@ export function SiteHeader({
       <div className="account-slot">
         {children}
         {right}
-        <ThemeToggle />
         <AccountButton iconOnly />
       </div>
     </header>

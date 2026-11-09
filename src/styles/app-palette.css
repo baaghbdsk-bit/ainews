@@ -42,15 +42,13 @@
   --shell-accent-soft: var(--warning-soft) !important;
 }
 
-.archive-page.mode-saved,
-.archive-page.mode-feedback {
+.archive-page.mode-saved, .archive-page.mode-feedback {
   --shell-accent: var(--success) !important;
   --shell-accent-2: var(--success) !important;
   --shell-accent-soft: var(--success-soft) !important;
 }
 
-.archive-page.mode-about,
-.archive-page.mode-benchmarks {
+.archive-page.mode-about, .archive-page.mode-benchmarks {
   --shell-accent: var(--secondary) !important;
   --shell-accent-2: var(--secondary) !important;
   --shell-accent-soft: var(--secondary-soft) !important;
@@ -88,17 +86,14 @@
   color: var(--fg) !important;
 }
 
-.archive-page .sidebar-nav-item.is-active,
-.archive-page .sidebar-nav-item.item-latest.is-active {
+.archive-page .sidebar-nav-item.is-active, .archive-page .sidebar-nav-item.item-latest.is-active {
   background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--secondary) 8%, transparent)) !important;
   border-color: var(--accent-line) !important;
   box-shadow: 0 3px 14px -3px color-mix(in srgb, var(--accent) 28%, transparent) !important;
   color: var(--fg) !important;
 }
 
-.archive-page .sidebar-nav-item.item-digest.is-active,
-.archive-page .sidebar-nav-item.item-about.is-active,
-.archive-page .sidebar-nav-item.item-benchmarks.is-active {
+.archive-page .sidebar-nav-item.item-digest.is-active, .archive-page .sidebar-nav-item.item-about.is-active, .archive-page .sidebar-nav-item.item-benchmarks.is-active {
   background: linear-gradient(135deg, var(--secondary-soft), color-mix(in srgb, var(--accent) 8%, transparent)) !important;
   border-color: var(--secondary-line) !important;
   box-shadow: 0 3px 14px -3px color-mix(in srgb, var(--secondary) 28%, transparent) !important;
@@ -109,15 +104,14 @@
   border-color: var(--warning-line) !important;
 }
 
-.archive-page .sidebar-nav-item.item-saved.is-active,
-.archive-page .sidebar-nav-item.item-feedback.is-active {
+.archive-page .sidebar-nav-item.item-saved.is-active, .archive-page .sidebar-nav-item.item-feedback.is-active {
   background: linear-gradient(135deg, var(--success-soft), color-mix(in srgb, var(--accent) 8%, transparent)) !important;
   border-color: var(--success-line) !important;
 }
 
 .archive-page .sidebar-nav-item.is-active .sidebar-nav-icon {
   background: var(--accent) !important;
-  color: #ffffff !important;
+  color: var(--on-accent) !important;
 }
 
 .archive-page .sidebar-badge-pill {
@@ -134,14 +128,7 @@
 
 /* Replace the older purple-only atmosphere with the landing page's restrained
    blue / violet / teal observatory glow. */
-.archive-page::before,
-.archive-page.mode-latest::before,
-.archive-page.mode-digest::before,
-.archive-page.mode-trending::before,
-.archive-page.mode-saved::before,
-.archive-page.mode-feedback::before,
-.archive-page.mode-about::before,
-.archive-page.mode-benchmarks::before {
+.archive-page::before, .archive-page.mode-latest::before, .archive-page.mode-digest::before, .archive-page.mode-trending::before, .archive-page.mode-saved::before, .archive-page.mode-feedback::before, .archive-page.mode-about::before, .archive-page.mode-benchmarks::before {
   background-image:
     radial-gradient(1100px 520px at 15% -5%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%),
     radial-gradient(900px 480px at 85% -10%, color-mix(in srgb, var(--secondary) 10%, transparent), transparent 60%),

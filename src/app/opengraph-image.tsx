@@ -19,9 +19,9 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "center",
-          backgroundColor: "#000000",
+          backgroundColor: "#14171A",
           padding: "0 96px",
-          color: "#F4F3FA",
+          color: "#E8ECEF",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
@@ -30,7 +30,7 @@ export default function OpengraphImage() {
               width: 76,
               height: 76,
               borderRadius: 9999,
-              border: "3px solid #8B5CF6",
+              border: "3px solid #FF6A1A",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -41,20 +41,20 @@ export default function OpengraphImage() {
                 width: 22,
                 height: 22,
                 borderRadius: 9999,
-                backgroundColor: "#8B5CF6",
+                backgroundColor: "#FF6A1A",
               }}
             />
           </div>
           <div style={{ display: "flex", fontSize: 108, fontWeight: 800, letterSpacing: -2 }}>
             NeuBench
-            <div style={{ color: "#F472B6" }}>.</div>
+            <div style={{ color: "#FF6A1A" }}>.</div>
           </div>
         </div>
         <div
           style={{
             marginTop: 40,
             fontSize: 38,
-            color: "#A3A8BF",
+            color: "#AAB2B8",
             letterSpacing: 6,
             fontWeight: 600,
           }}
@@ -66,7 +66,7 @@ export default function OpengraphImage() {
             marginTop: 30,
             width: 170,
             height: 7,
-            backgroundColor: "#8B5CF6",
+            backgroundColor: "#FF6A1A",
             borderRadius: 4,
           }}
         />

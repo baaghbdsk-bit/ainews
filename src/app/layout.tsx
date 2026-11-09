@@ -55,8 +55,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [{ url: "/icon.svg?v=4", type: "image/svg+xml" }],
-    apple: [{ url: "/icon.svg?v=4" }],
+    icon: [{ url: "/icon.svg?v=5", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg?v=5" }],
   },
   openGraph: {
     title: "NeuBench — The One-Stop AI News Platform",
@@ -89,10 +89,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#08090B" },
-    { media: "(prefers-color-scheme: light)", color: "#FAFAFA" },
-  ],
+  themeColor: "#14171A",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -104,11 +101,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           type="application/rss+xml"
           title="NeuBench — Real-Time AI News & Intelligence Radar"
           href="/rss.xml"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{const t=localStorage.getItem("neubench-theme");if(t==="light")document.documentElement.dataset.theme="light";}catch(e){}`,
-          }}
         />
         <script
           type="application/ld+json"
@@ -170,7 +162,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   padding: 10px 16px;
   border-radius: 8px;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
   font-size: 14px;
   font-weight: 650;
   text-decoration: none;
@@ -178,7 +170,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 }
 .skip-to-stories:focus {
   top: 12px;
-  outline: 2px solid #ffffff;
+  outline: 2px solid var(--fg);
   outline-offset: 2px;
 }
           .timeline-result-bar {
@@ -255,21 +247,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             flex-direction: column;
             gap: 12px;
             padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-            border: 1px solid rgba(139, 92, 246, 0.32);
+            border: 1px solid var(--accent-line);
             border-bottom: 0;
             border-radius: 18px 18px 0 0;
-            background: #18181b;
+            background: var(--surface-elevated);
             box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.6);
           }
-          html[data-theme="light"] .mobile-filter-sheet {
-            background: #ffffff;
-            border-color: #d3c9e3;
-          }
           .mobile-filter-sheet .company-select-option[data-active="true"] {
-            background: #18181b;
-          }
-          html[data-theme="light"] .mobile-filter-sheet .company-select-option[data-active="true"] {
-            background: #ede6f9;
+            background: var(--accent-soft);
           }
           @media (prefers-reduced-motion: reduce) {
             .skip-to-stories {
