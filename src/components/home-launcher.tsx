@@ -136,12 +136,14 @@ export function HomeLauncher() {
           </h1>
           <p className="bh-sub">
           <span className="bh-sub-line-1">
-            Daily AI news and highlights in one single feed.
+            Daily AI news, papers, model releases, and research highlights —
+            all in one single feed.
           </span>
           <br />
           <span className="bh-sub-line-2">
-            Don&apos;t browse 10 different sites, track model releases, research
-            &amp; industry shifts in real time.
+            Don&apos;t browse 10 different sites. Track frontier models,
+            research breakthroughs, and industry shifts in real time —
+            curated for AI practitioners.
           </span>
         </p>
       </div>
@@ -176,9 +178,9 @@ export function HomeLauncher() {
                   <span className="bh-ic">
                     <Icon size={20} aria-hidden="true" />
                   </span>
+                  <span className="bh-mod-title">{m.title}</span>
                 </span>
                 <span className="bh-mod-copy">
-                  <span className="bh-mod-title">{m.title}</span>
                   <span className="bh-mod-desc">{m.desc}</span>
                 </span>
               </Link>

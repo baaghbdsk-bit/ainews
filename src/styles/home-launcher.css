@@ -238,7 +238,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 145px;
+  min-height: 130px;
   border: 1px solid var(--line);
   border-bottom: 2px solid var(--line2);
   border-radius: 3px;
@@ -273,8 +273,18 @@
 }
 
 .bh-mod:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px);
   border-color: var(--bh-tone);
+  box-shadow: 0 12px 28px -6px color-mix(in srgb, var(--bh-tone) 35%, transparent);
+}
+
+.bh-mod:hover .bh-ic {
+  transform: translateX(6px) scale(1.15);
+  color: var(--bh-tone);
+}
+
+.bh-mod:hover .bh-mod-title {
+  color: var(--bh-tone);
 }
 
 .bh-mod-topline {
@@ -282,7 +292,7 @@
   position: relative;
   z-index: 1;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
 }
 
 .bh-mod .bh-ic {
@@ -309,16 +319,17 @@
   position: relative;
   z-index: 1;
   max-width: 290px;
+  margin-top: 8px;
 }
 
 .bh-mod-title {
-  display: block;
+  display: inline;
   font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
-  font-size: clamp(28px, 3vw, 38px);
-  margin: 0 0 10px;
+  font-size: clamp(26px, 3vw, 34px);
+  margin: 0;
   font-weight: 700;
   color: var(--fg);
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .bh-mod-desc {
@@ -382,7 +393,7 @@
     padding-left: 16px;
   }
   .bh-mod {
-    min-height: 130px;
+    min-height: 115px;
     padding: 18px 19px;
   }
   .bh-mod-title {
