@@ -755,6 +755,16 @@ h1 em {
   .right-rail { display: none; }
 }
 
+@media (min-width: 701px) and (max-width: 1024px) {
+  .global-nav {
+    gap: 2px;
+  }
+  .global-nav-link {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
+
 @media (max-width: 700px) {
   .topbar { height: 62px; padding: 0 20px;   }
 }

@@ -151,11 +151,12 @@
 
 .bh-hallmark {
   position: absolute;
-  right: 0;
+  left: 50%;
   top: 100%;
-  margin-top: 10px;
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  transform: translateX(-50%);
+  margin-top: 12px;
+  font-size: 13px;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--accent);
   font-weight: 650;
@@ -232,6 +233,31 @@
   padding: 4px max(24px, calc((100vw - 1272px) / 2)) 18px;
 }
 
+@media (max-width: 1080px) and (min-width: 601px) {
+  .bh-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 4px 24px 18px;
+  }
+  .bh-mod {
+    min-height: 150px;
+    padding: 20px 22px;
+  }
+}
+
+@media (max-width: 600px) {
+  .bh-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 10px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+  .bh-mod {
+    min-height: 115px;
+    padding: 18px 19px;
+  }
+
 .bh-mod {
   text-align: left;
   cursor: pointer;
@@ -293,6 +319,50 @@
   z-index: 1;
   align-items: center;
   gap: 10px;
+}
+
+/* Hero stat strip — fills empty space below tabs */
+.bh-stat-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  max-width: 1320px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+  flex-wrap: wrap;
+}
+
+.bh-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.bh-stat-value {
+  font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.bh-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 650;
+  text-align: center;
+}
+
+.bh-stat-divider {
+  width: 1px;
+  height: 48px;
+  background: var(--border);
+  flex-shrink: 0;
 }
 
 .bh-mod .bh-ic {
@@ -386,25 +456,30 @@
     padding: 0 16px;
     font-size: 11px;
   }
-  .bh-grid {
-    gap: 12px;
-    margin-top: 10px;
-    padding-right: 16px;
-    padding-left: 16px;
+  .bh-stat-strip {
+    gap: 16px;
+    margin: 16px auto 0;
+    padding: 0 16px;
   }
-  .bh-mod {
-    min-height: 115px;
-    padding: 18px 19px;
+  .bh-stat-value {
+    font-size: clamp(20px, 8vw, 32px);
   }
-  .bh-mod-title {
-    font-size: 30px;
-  }
-  .bh-mod-desc {
-    font-size: 13px;
+  .bh-stat-divider {
+    height: 32px;
   }
 }
 
-/* Home backdrop: a quiet gunmetal gradient with a soft vignette. */
+/* Tablet: 2-column tab grid */
+@media (min-width: 601px) and (max-width: 1080px) {
+  .bh-stat-strip {
+    gap: 20px;
+    margin: 20px auto 0;
+    padding: 0 24px;
+  }
+  .bh-stat-divider {
+    height: 40px;
+  }
+}
 .hl-backdrop {
   position: absolute;
   inset: 0;
