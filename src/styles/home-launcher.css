@@ -169,7 +169,7 @@
   color: var(--muted);
   max-width: 1050px;
   width: 100%;
-  margin: 22px auto 0;
+  margin: 30px auto 0;
   line-height: 1.55;
   text-align: center;
 }
@@ -238,7 +238,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 160px;
+  min-height: 145px;
   border: 1px solid var(--line);
   border-bottom: 2px solid var(--line2);
   border-radius: 3px;
@@ -261,39 +261,10 @@
   position: absolute;
   z-index: 0;
   inset: 0;
-  background:
-    radial-gradient(
-      460px circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
-      color-mix(in srgb, var(--bh-tone) 15%, transparent),
-      transparent 72%
-    ),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 58%);
+  background: transparent;
   pointer-events: none;
-  transform: translate3d(
-    var(--pointer-shift-x, 0px),
-    var(--pointer-shift-y, 0px),
-    0
-  );
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.bh-mod-watermark {
-  position: absolute;
-  z-index: 0;
-  right: 12px;
-  bottom: -42px;
-  color: color-mix(in srgb, var(--bh-tone) 10%, transparent);
-  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  font-size: clamp(130px, 19vw, 220px);
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
-  transform: translate3d(
-    var(--pointer-shift-x, 0px),
-    var(--pointer-shift-y, 0px),
-    18px
-  );
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(0, 0, 0);
+  transition: none;
 }
 
 .bh-mod:focus-visible {
@@ -411,7 +382,7 @@
     padding-left: 16px;
   }
   .bh-mod {
-    min-height: 140px;
+    min-height: 130px;
     padding: 18px 19px;
   }
   .bh-mod-title {

@@ -172,15 +172,9 @@ export function HomeLauncher() {
                   } as CSSProperties
                 }
               >
-                <span className="bh-mod-watermark" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
                 <span className="bh-mod-topline">
                   <span className="bh-ic">
                     <Icon size={20} aria-hidden="true" />
-                  </span>
-                  <span className="bh-mod-index" aria-hidden="true">
-                    {String(index + 1).padStart(2, "0")} / 06
                   </span>
                 </span>
                 <span className="bh-mod-copy">
