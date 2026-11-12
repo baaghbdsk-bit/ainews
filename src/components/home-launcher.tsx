@@ -136,6 +136,22 @@ export function HomeLauncher() {
           </h1>
         </div>
       </div>
+      <div className="bh-stat-strip">
+          <div className="bh-stat-item">
+            <span className="bh-stat-value">10k+</span>
+            <span className="bh-stat-label">Articles tracked</span>
+          </div>
+          <div className="bh-stat-divider" />
+          <div className="bh-stat-item">
+            <span className="bh-stat-value">50+</span>
+            <span className="bh-stat-label">Sources monitored</span>
+          </div>
+          <div className="bh-stat-divider" />
+          <div className="bh-stat-item">
+            <span className="bh-stat-value">Real-time</span>
+            <span className="bh-stat-label">Updates live</span>
+          </div>
+        </div>
       <div className="bh-shell">
           <div className="bh-section-head">
             <div>
@@ -175,22 +191,6 @@ export function HomeLauncher() {
             );
           })}
         </nav>
-        <div className="bh-stat-strip">
-          <div className="bh-stat-item">
-            <span className="bh-stat-value">10k+</span>
-            <span className="bh-stat-label">Articles tracked</span>
-          </div>
-          <div className="bh-stat-divider" />
-          <div className="bh-stat-item">
-            <span className="bh-stat-value">50+</span>
-            <span className="bh-stat-label">Sources monitored</span>
-          </div>
-          <div className="bh-stat-divider" />
-          <div className="bh-stat-item">
-            <span className="bh-stat-value">Real-time</span>
-            <span className="bh-stat-label">Updates live</span>
-          </div>
-        </div>
       </div>
     </section>
   );
