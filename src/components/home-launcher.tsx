@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type CSSProperties } from "react";
+import { type CSSProperties } from "react";
 import "@/styles/neubench-logo.css";
 import { AccountButton } from "@/components/auth/account-button";
 import { HomeBackdrop } from "@/components/home-backdrop";
 import {
-  ArrowLeft,
-  ArrowRight,
   BarChart2,
   Bookmark,
   Flame,
@@ -77,40 +75,8 @@ const MODULES: ModuleConfig[] = [
 ];
 
 const WORDMARK = ["N", "E", "U", "B", "E", "N", "C", "H"];
-const SPLASH_POSITIONS = [68, 192, 318, 444, 562, 684, 812, 932];
 
 export function HomeLauncher() {
-  const railRef = useRef<HTMLDivElement>(null);
-  const [railEdge, setRailEdge] = useState({ start: true, end: false });
-
-  function updateRailEdge() {
-    const rail = railRef.current;
-    if (!rail) return;
-
-    const nextEdge = {
-      start: rail.scrollLeft <= 8,
-      end: rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8,
-    };
-
-    setRailEdge((current) =>
-      current.start === nextEdge.start && current.end === nextEdge.end
-        ? current
-        : nextEdge,
-    );
-  }
-
-  function scrollRail(direction: -1 | 1) {
-    const rail = railRef.current;
-    if (!rail) return;
-
-    rail.scrollBy({
-      left: direction * Math.max(rail.clientWidth * 0.78, 260),
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
-  }
-
   return (
     <section className="hl-root" aria-label="NeuBench home">
       <HomeBackdrop />
@@ -168,57 +134,7 @@ export function HomeLauncher() {
             ))}
             <span className="bh-hallmark">The One-Stop AI News Platform</span>
           </h1>
-          <svg
-            className="bh-liquid"
-            viewBox="0 0 1000 180"
-            preserveAspectRatio="none"
-            role="presentation"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <defs>
-              <linearGradient id="bh-liquid-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22e6ff" stopOpacity=".34" />
-                <stop offset="100%" stopColor="#22e6ff" stopOpacity=".015" />
-              </linearGradient>
-            </defs>
-            <path
-              className="bh-liquid-body"
-              d="M0 83 C72 73 125 89 190 82 S315 74 380 84 S493 94 565 82 S702 72 770 83 S916 91 1000 79 V180 H0Z"
-            />
-            <path
-              className="bh-liquid-edge"
-              d="M0 83 C72 73 125 89 190 82 S315 74 380 84 S493 94 565 82 S702 72 770 83 S916 91 1000 79"
-            />
-            {SPLASH_POSITIONS.map((position, index) => (
-              <g
-                key={position}
-                className="bh-liquid-impact"
-                style={{ "--impact-index": index } as CSSProperties}
-                transform={`translate(${position} 84)`}
-              >
-                <circle className="bh-impact-ripple" r="3" />
-                <path
-                  className="bh-impact-crown"
-                  d="M-30 2 C-20 1 -17 -14 -10 -5 C-5 2 -3 7 0 -18 C3 7 5 2 10 -5 C17 -14 20 1 30 2"
-                />
-                <circle
-                  className="bh-impact-drop bh-impact-drop--left"
-                  cx="-13"
-                  cy="-2"
-                  r="3"
-                />
-                <circle
-                  className="bh-impact-drop bh-impact-drop--right"
-                  cx="13"
-                  cy="-2"
-                  r="3"
-                />
-              </g>
-            ))}
-          </svg>
-        </div>
-        <p className="bh-sub">
+          <p className="bh-sub">
           <span className="bh-sub-line-1">
             Daily AI news and highlights in one single feed.
           </span>
@@ -229,42 +145,17 @@ export function HomeLauncher() {
           </span>
         </p>
       </div>
+      </div>
       <div className="bh-shell">
-        <div className="bh-section-head">
-          <div>
-            <p className="bh-section-kicker">NEUBENCH / DESTINATIONS</p>
-            <h2>Choose a section</h2>
+          <div className="bh-section-head">
+            <div>
+              <p className="bh-section-kicker">NEUBENCH / DESTINATIONS</p>
+            </div>
           </div>
-          <div className="bh-rail-controls" aria-label="Section controls">
-            <button
-              type="button"
-              aria-label="Scroll to previous sections"
-              onClick={() => scrollRail(-1)}
-              disabled={railEdge.start}
-            >
-              <ArrowLeft size={18} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label="Scroll to next sections"
-              onClick={() => scrollRail(1)}
-              disabled={railEdge.end}
-            >
-              <ArrowRight size={18} aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-        <p className="bh-rail-hint" id="bh-rail-hint">
-          Scroll sideways to move through NeuBench
-        </p>
-        <nav
-          ref={railRef}
-          className="bh-grid"
-          aria-label="Explore NeuBench sections"
-          aria-describedby="bh-rail-hint"
-          tabIndex={0}
-          onScroll={updateRailEdge}
-        >
+          <nav
+            className="bh-grid"
+            aria-label="Explore NeuBench sections"
+          >
           {MODULES.map((m, index) => {
             const Icon = m.icon;
             return (
