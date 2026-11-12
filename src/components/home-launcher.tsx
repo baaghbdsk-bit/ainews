@@ -134,19 +134,7 @@ export function HomeLauncher() {
             ))}
             <span className="bh-hallmark">The One-Stop AI News Platform</span>
           </h1>
-          <p className="bh-sub">
-          <span className="bh-sub-line-1">
-            Daily AI news, papers, model releases, and research highlights —
-            all in one single feed.
-          </span>
-          <br />
-          <span className="bh-sub-line-2">
-            Don&apos;t browse 10 different sites. Track frontier models,
-            research breakthroughs, and industry shifts in real time —
-            curated for AI practitioners.
-          </span>
-        </p>
-      </div>
+        </div>
       </div>
       <div className="bh-shell">
           <div className="bh-section-head">
