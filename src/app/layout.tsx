@@ -8,6 +8,7 @@ import { GuestNotice } from "@/components/auth/guest-notice";
 import { PwaRegister } from "@/components/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { MobilePrimaryNavigation } from "@/components/mobile-primary-navigation";
+import { RouteMotion } from "@/components/route-motion";
 
 import "./globals.css";
 
@@ -94,7 +95,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${geistSans.variable} h-full antialiased`}>
       <head>
         <link
           rel="alternate"
@@ -262,7 +263,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             }
           }
           `}</style>
-        {children}
+        <RouteMotion>{children}</RouteMotion>
         <MobilePrimaryNavigation />
         <WelcomeGate />
         <AuthDialog />

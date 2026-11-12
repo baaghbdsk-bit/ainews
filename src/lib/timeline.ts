@@ -372,7 +372,7 @@ export async function getStoriesForDate(
 
   // 3. All Feed Mode (Full Chronological Ingestion):
   const [dbRows, upvoteCounts] = await Promise.all([
-    getPublishedStoriesForDate(dateStr, 300),
+    getPublishedStoriesForDate(dateStr, 60),
     getUpvoteCounts().catch((): Record<string, number> => ({})),
   ]);
 

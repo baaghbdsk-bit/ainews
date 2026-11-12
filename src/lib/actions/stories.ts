@@ -54,7 +54,7 @@ export async function getPublishedStories(): Promise<Story[]> {
   if (!supabase) return [];
 
   try {
-    const MAX_STORIES = 500;
+    const MAX_STORIES = 60;
     const fetchQuery = async (): Promise<Story[]> => {
       const { data, error } = await supabase
         .from('stories')
@@ -79,7 +79,7 @@ export async function getPublishedStories(): Promise<Story[]> {
 }
 
 export async function getPublishedStoriesBySlugs(slugs: string[]): Promise<Story[]> {
-  const uniqueSlugs = [...new Set(slugs)].slice(0, 500);
+  const uniqueSlugs = [...new Set(slugs)].slice(0, 60);
   if (uniqueSlugs.length === 0) return [];
 
   const supabase = createPublicClient();

@@ -1,5 +1,4 @@
-/* Home launcher — finalized broadsheet masthead + module grid.
-   Palette: masonry dark (default) with a light override + dotted matrix texture. */
+/* Home is a letter-drop splash above a touch-first horizontal section rail. */
 
 .hl-root {
   --bg: #14171a;
@@ -18,7 +17,8 @@
   font-family: var(--font-geist-sans), sans-serif;
   min-height: 100dvh;
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   isolation: isolate;
 }
 
@@ -66,37 +66,96 @@
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 34px 24px 26px;
-  border-bottom: 3px double var(--line2);
+  padding: clamp(42px, 7vh, 78px) 24px 0;
+}
+
+.bh-brand-stage {
+  display: inline-grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  width: max-content;
+  max-width: 100%;
+  vertical-align: top;
 }
 
 .bh-mast h1.bh-wordmark {
   font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
-  font-size: clamp(52px, 9.5vw, 140px);
+  font-size: clamp(48px, 10.8vw, 132px);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  margin: 0 0 10px;
+  letter-spacing: -0.045em;
+  margin: 0;
   line-height: 0.95;
   color: var(--fg);
   display: inline-flex;
   align-items: center;
-  gap: 0.02em;
+  justify-content: center;
+  gap: 0;
   position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
-.bh-mast h1.bh-wordmark .neubench-logo-e {
-  width: 0.58em;
-  height: 0.66em;
-  transform: translateY(0.03em);
+.bh-letter {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: bh-letter-drop 780ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(80ms + var(--letter-index) * 120ms);
+}
+
+.bh-letter--signal {
+  display: inline-flex;
+  width: 0.62em;
+  height: 0.78em;
+  align-items: center;
+  justify-content: center;
+}
+
+.bh-letter--signal .neubench-logo-e {
+  display: inline-flex;
+  width: 100%;
+  height: 74%;
+}
+
+.bh-letter--signal .neubench-logo-e svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.bh-letter--signal .neubench-logo-bar {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@keyframes bh-letter-drop {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, -105vh, 0) rotate(-13deg) scale(1.12);
+  }
+  65% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0.1em, 0) rotate(2deg) scaleY(0.9);
+  }
+  82% {
+    transform: translate3d(0, -0.035em, 0) rotate(-0.7deg) scaleY(1.03);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
 }
 
 .bh-hallmark {
   position: absolute;
   right: 0;
   top: 100%;
-  margin-top: 4px;
-  font-size: 11px;
-  letter-spacing: 0.26em;
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--accent);
   font-weight: 650;
@@ -106,12 +165,12 @@
 .bh-sub {
   font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
   font-style: italic;
-  font-size: 16.5px;
+  font-size: clamp(14px, 1.5vw, 17px);
   color: var(--muted);
   max-width: 1050px;
   width: 100%;
-  margin: 16px auto 0;
-  line-height: 1.65;
+  margin: 22px auto 0;
+  line-height: 1.55;
   text-align: center;
 }
 
@@ -123,108 +182,378 @@
   display: inline-block;
 }
 
+.bh-liquid {
+  display: block;
+  width: 100%;
+  height: clamp(68px, 10vw, 112px);
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.bh-liquid-body {
+  fill: url("#bh-liquid-fill");
+  opacity: 0;
+  animation: bh-liquid-arrive 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 480ms forwards;
+}
+
+.bh-liquid-edge {
+  fill: none;
+  stroke: #22e6ff;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.55;
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: bh-waterline-draw 1500ms cubic-bezier(0.22, 1, 0.36, 1) 450ms forwards;
+}
+
+.bh-liquid-impact {
+  color: #22e6ff;
+}
+
+.bh-impact-ripple {
+  fill: none;
+  stroke: #8af5ff;
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: bh-ripple-burst 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(760ms + var(--impact-index) * 120ms);
+}
+
+.bh-impact-crown {
+  fill: none;
+  stroke: #22e6ff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  opacity: 0;
+  animation: bh-crown-splash 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(760ms + var(--impact-index) * 120ms);
+}
+
+.bh-impact-drop {
+  fill: #b6faff;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(760ms + var(--impact-index) * 120ms);
+}
+
+.bh-impact-drop--left {
+  animation-name: bh-drop-left;
+}
+
+.bh-impact-drop--right {
+  animation-name: bh-drop-right;
+}
+
+@keyframes bh-liquid-arrive {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes bh-waterline-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes bh-ripple-burst {
+  0% { opacity: 0; transform: scale(0.35, 0.5); }
+  18% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(5.2, 2.3); }
+}
+
+@keyframes bh-crown-splash {
+  0% { opacity: 0; transform: scaleY(0.15); }
+  35% { opacity: 0.9; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(0.2) translateY(-4px); }
+}
+
+@keyframes bh-drop-left {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-12px, -20px) scale(0.2); }
+}
+
+@keyframes bh-drop-right {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: translate(12px, -23px) scale(0.2); }
+}
+
 .bh-shell {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 28px 24px 32px;
+  padding: 0 0 24px;
+}
+
+.bh-section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 8px 24px 0;
+}
+
+.bh-section-kicker {
+  margin: 0 0 6px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.bh-section-head h2 {
+  margin: 0;
+  color: var(--fg);
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.bh-rail-controls {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.bh-rail-controls button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--line2);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.bh-rail-controls button:not(:disabled):hover {
+  border-color: #22e6ff;
+  color: #22e6ff;
+}
+
+.bh-rail-controls button:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.bh-rail-controls button:focus-visible,
+.bh-grid:focus-visible,
+.bh-mod:focus-visible {
+  outline: 2px solid #22e6ff;
+  outline-offset: 3px;
+}
+
+.bh-rail-hint {
+  max-width: 1320px;
+  margin: 5px auto 0;
+  padding: 0 24px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .bh-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  display: flex;
+  gap: 14px;
+  max-width: 100%;
+  margin-top: 14px;
+  padding: 4px max(24px, calc((100vw - 1272px) / 2)) 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 24px;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: var(--line2) transparent;
+  scrollbar-width: thin;
 }
 
 .bh-mod {
+  --bh-tone: #22e6ff;
   text-align: left;
   cursor: pointer;
   display: flex;
+  flex: 0 0 clamp(270px, 35vw, 410px);
   flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--surface);
-  padding: 20px 22px;
+  justify-content: space-between;
+  min-height: 236px;
+  border: 1px solid color-mix(in srgb, var(--bh-tone) 25%, var(--line));
+  border-bottom: 2px solid color-mix(in srgb, var(--bh-tone) 55%, var(--line));
+  border-radius: 3px;
+  background:
+    radial-gradient(ellipse at 92% 10%, color-mix(in srgb, var(--bh-tone) 14%, transparent), transparent 48%),
+    var(--surface);
+  padding: 22px 24px;
   font-family: inherit;
   color: inherit;
   text-decoration: none;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.18s ease,
-              background 0.18s ease,
-              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: none;
+  scroll-snap-align: start;
+  transform-style: preserve-3d;
+  animation: none;
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms ease,
+              background-color 180ms ease;
   position: relative;
   overflow: hidden;
 }
 
+.bh-mod::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    radial-gradient(
+      460px circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+      color-mix(in srgb, var(--bh-tone) 15%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 58%);
+  pointer-events: none;
+  transform: translate3d(
+    var(--pointer-shift-x, 0px),
+    var(--pointer-shift-y, 0px),
+    0
+  );
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bh-mod-watermark {
+  position: absolute;
+  z-index: 0;
+  right: 12px;
+  bottom: -42px;
+  color: color-mix(in srgb, var(--bh-tone) 10%, transparent);
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(130px, 19vw, 220px);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  transform: translate3d(
+    var(--pointer-shift-x, 0px),
+    var(--pointer-shift-y, 0px),
+    18px
+  );
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .bh-mod:hover {
-  transform: translate(-2px, -2px);
-  border-color: var(--bh-tone, var(--line2));
-  background: var(--surface-elevated);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.45),
-              0 0 0 1px var(--bh-tone, transparent);
+  transform: translateY(-4px);
+  border-color: var(--bh-tone);
+}
+
+@media (min-width: 1081px) {
+  .bh-mod {
+    animation: bh-deck-arrive 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(940ms + var(--deck-index) * 110ms);
+  }
+
+  .bh-mod:hover {
+    transform:
+      perspective(1000px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateY(-9px)
+      translateZ(8px);
+  }
+}
+
+.bh-mod:nth-child(even) {
+  --deck-direction: 1;
+}
+
+.bh-mod:nth-child(odd) {
+  --deck-direction: -1;
+}
+
+@keyframes bh-deck-arrive {
+  from {
+    opacity: 0;
+    translate: calc(var(--deck-direction) * 90px) 26px;
+    rotate: calc(var(--deck-direction) * 4deg);
+    scale: 0.92;
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
+    scale: 1;
+    filter: blur(0);
+  }
 }
 
 .bh-mod:focus-visible {
-  outline: 2px solid var(--bh-tone, var(--fg));
+  outline: 2px solid var(--bh-tone);
   outline-offset: 2px;
 }
 
-.bh-mod .bh-ic {
+.bh-mod-topline {
   display: flex;
+  position: relative;
+  z-index: 1;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bh-mod .bh-ic {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--bh-tone, var(--muted));
-  font-weight: 700;
-  margin-bottom: 12px;
-  transition: color 0.18s ease;
+  transition: transform 180ms ease;
 }
 
 .bh-mod:hover .bh-ic {
-  color: var(--bh-tone, var(--fg));
+  transform: translateX(3px);
 }
 
-.bh-mod h3 {
+.bh-mod-index {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.bh-mod-copy {
+  display: block;
+  position: relative;
+  z-index: 1;
+  max-width: 290px;
+}
+
+.bh-mod-title {
+  display: block;
   font-family: "Iowan Old Style", "Source Serif 4", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
-  font-size: 21px;
-  margin: 0 0 8px;
+  font-size: clamp(28px, 3vw, 38px);
+  margin: 0 0 10px;
   font-weight: 700;
   color: var(--fg);
   line-height: 1.25;
 }
 
-.bh-mod p {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.55;
+.bh-mod-desc {
+  display: block;
+  max-width: 34ch;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--muted);
 }
 
-/* Tablet Layout (601px - 960px) */
-@media (max-width: 960px) {
-  .bh-shell {
-    padding: 20px 20px 28px;
-  }
-  .bh-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .bh-mod:last-child {
-    grid-column: auto;
-  }
-  .bh-mast {
-    padding: 26px 18px 20px;
-  }
-  .bh-mast h1.bh-wordmark {
-    font-size: clamp(42px, 12vw, 84px);
-  }
-}
-
-/* Mobile Layout (up to 600px) */
 @media (max-width: 600px) {
   .hl-user {
     position: static;
@@ -232,37 +561,78 @@
     justify-content: flex-end;
     padding: 12px 16px 0;
   }
-  .bh-shell {
-    padding: 14px 14px 32px;
-  }
-  .bh-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .bh-mod:last-child {
-    grid-column: auto;
-  }
-  .bh-mod {
-    padding: 16px 18px;
-  }
   .bh-mast {
-    padding: 16px 14px 18px;
+    padding: 12px 12px 0;
   }
   .bh-mast h1.bh-wordmark {
-    font-size: clamp(34px, 11vw, 54px);
+    font-size: clamp(38px, 11.6vw, 54px);
+    width: 100%;
     flex-wrap: wrap;
     justify-content: center;
   }
+  .bh-brand-stage {
+    width: max-content;
+  }
   .bh-hallmark {
     position: static;
-    margin-top: 8px;
+    flex-basis: 100%;
+    margin-top: 10px;
     display: block;
     text-align: center;
+    font-size: 9px;
+    letter-spacing: 0.16em;
   }
   .bh-sub {
-    font-size: 14.5px;
-    margin-top: 10px;
+    max-width: 36ch;
+    margin-top: 16px;
     line-height: 1.5;
+  }
+  .bh-sub-line-2 {
+    margin-top: 4px;
+  }
+  .bh-liquid {
+    height: 74px;
+  }
+  .bh-section-head {
+    padding: 8px 16px 0;
+  }
+  .bh-section-kicker {
+    font-size: 9px;
+  }
+  .bh-rail-hint {
+    padding: 0 16px;
+    font-size: 11px;
+  }
+  .bh-grid {
+    gap: 10px;
+    margin-top: 10px;
+    padding-right: 16px;
+    padding-left: 16px;
+    scroll-padding-inline: 16px;
+  }
+  .bh-mod {
+    flex-basis: min(78vw, 340px);
+    min-height: 210px;
+    padding: 18px 19px;
+  }
+  .bh-mod-title {
+    font-size: 30px;
+  }
+  .bh-mod-desc {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 350px) {
+  .bh-rail-controls {
+    gap: 4px;
+  }
+  .bh-rail-controls button {
+    width: 40px;
+    height: 40px;
+  }
+  .bh-section-head {
+    gap: 8px;
   }
 }
 
@@ -287,45 +657,61 @@
   pointer-events: none;
 }
 
-.bh-live-marker {
-  display: flex;
-  width: max-content;
-  margin: 0 auto 18px;
-  align-items: center;
-  gap: 7px;
-  padding: 3px 9px;
-  border: 1px solid var(--signal-line);
-  border-radius: 4px;
-  background: var(--signal-soft);
-  color: var(--signal);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.bh-live-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--signal);
-  box-shadow: 0 0 8px var(--signal);
-  animation: bh-live-pulse 1.8s ease-in-out infinite;
-}
-
-@keyframes bh-live-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .bh-live-dot {
+  .bh-letter {
     animation: none;
+    filter: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .bh-liquid-body,
+  .bh-liquid-edge,
+  .bh-impact-ripple,
+  .bh-impact-crown,
+  .bh-impact-drop {
+    animation: none;
+  }
+
+  .bh-liquid-body {
+    opacity: 1;
+  }
+
+  .bh-liquid-edge {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .bh-impact-ripple,
+  .bh-impact-crown,
+  .bh-impact-drop {
+    display: none;
+  }
+
+  .bh-rail-controls button,
+  .bh-mod,
+  .bh-mod .bh-ic {
+    transition: none;
   }
 }
 
-@media (max-width: 600px) {
-  .bh-live-marker {
-    margin-bottom: 14px;
+@media (max-width: 1080px) {
+  .bh-shell {
+    padding-bottom: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bh-grid {
+    scroll-behavior: auto;
+  }
+
+  .bh-mod {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    translate: none;
+    rotate: none;
+    scale: none;
   }
 }

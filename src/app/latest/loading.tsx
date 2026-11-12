@@ -1,5 +1,5 @@
-import { NeubenchLoadingLogo } from '@/components/loading';
+import { RouteSignalLoading } from '@/components/route-signal-loading';
 
 export default function LatestLoading() {
-  return <NeubenchLoadingLogo variant="fullscreen" size={56} label="Loading Latest AI News…" />;
+  return <RouteSignalLoading destination="Latest AI News" tone="#22e6ff" />;
 }

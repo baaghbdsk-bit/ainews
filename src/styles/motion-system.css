@@ -1,0 +1,695 @@
+@media (min-width: 1081px) {
+  ::view-transition {
+    pointer-events: none;
+  }
+
+  .score-card,
+  .admin-stat,
+  .admin-feedback,
+  .connect-channels-card,
+  .related-card {
+    transform-style: preserve-3d;
+    transition:
+      border-color 220ms ease,
+      background-color 220ms ease,
+      transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .score-card:hover,
+  .admin-stat:hover,
+  .admin-feedback:hover,
+  .connect-channels-card:hover,
+  .related-card:hover {
+    border-color: var(--accent-line);
+    transform:
+      perspective(1200px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateY(-5px)
+      translateZ(10px);
+  }
+
+  .comparison-page .comparison-section,
+  .comparison-page .comparison-hero,
+  .comparison-page .comparison-cta,
+  .admin-shell > * {
+    animation: signal-arrive linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+
+  .score-card,
+  .admin-stat,
+  .admin-feedback,
+  .related-card {
+    --signal-direction: 1;
+    animation: signal-arrive linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 54%;
+  }
+
+  .score-card:nth-child(even),
+  .admin-stat:nth-child(even),
+  .admin-feedback:nth-child(even),
+  .related-card:nth-child(even) {
+    --signal-direction: -1;
+  }
+
+  .feedback-console-card,
+  .connect-channels-card {
+    --signal-direction: 1;
+    animation: signal-arrive linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+
+  .connect-channels-card {
+    --signal-direction: -1;
+  }
+
+  ::view-transition-old(.page-depart) {
+    animation: page-depart 180ms ease-in both;
+  }
+
+  ::view-transition-new(.page-arrive) {
+    animation: page-arrive 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes page-depart {
+    to {
+      opacity: 0;
+      filter: blur(4px);
+      transform: scale(0.985);
+    }
+  }
+
+  @keyframes page-arrive {
+    from {
+      clip-path: inset(0 0 100% 0);
+      filter: blur(8px);
+      transform: translateY(28px) scale(0.985);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+      filter: blur(0);
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .archive-page {
+    background-color: var(--bg);
+    background-image: linear-gradient(180deg, #191d21 0%, var(--bg) 42%);
+  }
+
+  .archive-topbar .global-nav-link {
+    position: relative;
+    letter-spacing: 0.06em;
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .archive-topbar .global-nav-link::after {
+    position: absolute;
+    right: 12px;
+    bottom: 3px;
+    left: 12px;
+    height: 2px;
+    background: var(--accent);
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .archive-topbar .global-nav-link:hover::after,
+  .archive-topbar .global-nav-link[aria-current="page"]::after,
+  .archive-topbar .global-nav-link.active::after {
+    transform: scaleX(1);
+  }
+
+  .archive-page h1,
+  .about-title,
+  .bench-custom-title,
+  .dossier-hero h1 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.035em;
+  }
+
+  .about-title-accent,
+  .bench-custom-title-gradient,
+  .bench-headline {
+    background: linear-gradient(100deg, var(--accent), var(--marker) 76%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .comparison-page {
+    background:
+      radial-gradient(80% 42% at 50% 0%, var(--accent-soft), transparent 70%),
+      var(--bg);
+  }
+
+  .comparison-badge,
+  .score-card.lead {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-hover);
+  }
+
+  .comparison-cta {
+    border-color: var(--accent-line);
+    background:
+      linear-gradient(110deg, var(--accent-soft), var(--marker-soft)),
+      var(--surface);
+  }
+
+  .comparison-cta-btn {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .comparison-cta-btn:hover {
+    background: var(--accent-hover);
+  }
+
+  .admin-kicker {
+    color: var(--accent-hover);
+  }
+
+  .admin-title,
+  .comparison-title,
+  .about-title {
+    font-family: var(--font-serif);
+  }
+
+  .admin-subtitle,
+  .admin-stat-label,
+  .admin-stat-note {
+    color: var(--fg-muted);
+  }
+
+  .admin-stat-value {
+    color: var(--fg);
+  }
+
+  .admin-stat::after {
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .archive-timeline .story-row {
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    transform-style: preserve-3d;
+    transition:
+      background-color 220ms ease,
+      border-color 220ms ease,
+      transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .archive-timeline .story-row:hover {
+    background: var(--surface);
+    border-color: var(--accent-line);
+    transform:
+      perspective(1300px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateX(8px)
+      translateZ(8px);
+  }
+
+  .archive-page .story-thumb img {
+    transform: translate3d(
+      var(--pointer-shift-x, 0px),
+      var(--pointer-shift-y, 0px),
+      0
+    ) scale(1);
+    transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .archive-page .story-row:hover .story-thumb img {
+    transform: translate3d(
+      var(--pointer-shift-x, 0px),
+      var(--pointer-shift-y, 0px),
+      0
+    ) scale(1.09);
+  }
+
+  .ex-row,
+  .ex-panel-card {
+    background-color: var(--surface);
+    transform-style: preserve-3d;
+  }
+
+  .ex-row:hover {
+    background-color: var(--surface-elevated);
+    border-color: var(--accent-line);
+    transform:
+      perspective(1300px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateY(-5px)
+      translateZ(10px);
+  }
+
+  .ex-date-col {
+    background: var(--surface-elevated);
+    transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .ex-row:hover .ex-date-col,
+  .ex-timeline-panel-item:hover .ex-timeline-date-badge {
+    transform: rotate(-6deg) translateZ(18px) scale(1.06);
+  }
+
+  .ex-topic-models,
+  .ex-topic-devtools,
+  .ex-topic-opensource {
+    border-color: var(--signal-line);
+    background: var(--signal-soft);
+    color: var(--signal-hover);
+  }
+
+  .ex-topic-research,
+  .ex-topic-business,
+  .ex-topic-benchmarks {
+    border-color: var(--marker-line);
+    background: var(--marker-soft);
+    color: var(--marker);
+  }
+
+  .ex-topic-products,
+  .ex-topic-policy {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-hover);
+  }
+
+  .ex-tag-entity[class*="ex-entity-"] {
+    border-color: var(--border-strong);
+    background: var(--surface-elevated);
+    color: var(--fg-muted);
+  }
+
+  .archive-timeline .story-meta.meta-blue,
+  .archive-timeline .story-meta.meta-cyan,
+  .archive-timeline .story-meta.meta-green {
+    border-color: var(--signal-line);
+    background: var(--signal-soft);
+    color: var(--signal-hover);
+  }
+
+  .archive-timeline .story-meta.meta-violet,
+  .archive-timeline .story-meta.meta-amber {
+    border-color: var(--marker-line);
+    background: var(--marker-soft);
+    color: var(--marker);
+  }
+
+  .archive-timeline .story-meta.meta-rose {
+    border-color: var(--border-strong);
+    background: var(--surface-elevated);
+    color: var(--fg-muted);
+  }
+
+  .bench-grid-card.cat-coding,
+  .bench-grid-card.cat-general-knowledge {
+    --card-accent: var(--signal);
+    --card-glow: var(--signal-soft);
+  }
+
+  .bench-grid-card.cat-agentic,
+  .bench-grid-card.cat-mathematics {
+    --card-accent: var(--marker);
+    --card-glow: var(--marker-soft);
+  }
+
+  .bench-grid-card.cat-reasoning,
+  .bench-grid-card.cat-human-preference {
+    --card-accent: var(--accent);
+    --card-glow: var(--accent-soft);
+  }
+
+  .bench-grid-card:nth-child(even),
+  .archive-page .timeline-item:nth-child(even) {
+    --signal-direction: -1;
+  }
+
+  .bench-grid-card:nth-child(odd),
+  .archive-page .timeline-item:nth-child(odd) {
+    --signal-direction: 1;
+  }
+
+  .bench-grid-card:hover {
+    transform:
+      perspective(1200px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateY(-6px)
+      translateZ(12px);
+  }
+
+  .bench-bar-fill {
+    transform: scaleX(0.08);
+    transform-origin: left center;
+    animation: score-bar-arrive linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 72%;
+  }
+
+  .bench-bar-item:nth-child(even) .bench-bar-fill {
+    animation-delay: 80ms;
+  }
+
+  .bench-bar-item:nth-child(3n) .bench-bar-fill {
+    animation-delay: 150ms;
+  }
+
+  @keyframes score-bar-arrive {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .about-feature-card,
+  .about-pillar-card,
+  .connect-card,
+  .about-stat-card {
+    transform-style: preserve-3d;
+    transition:
+      border-color 220ms ease,
+      background-color 220ms ease,
+      transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .about-feature-card:hover,
+  .about-pillar-card:hover,
+  .connect-card:hover,
+  .about-stat-card:hover {
+    border-color: var(--accent-line);
+    transform:
+      perspective(1200px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateY(-6px)
+      translateZ(10px);
+  }
+
+  .bench-grid-card,
+  .comparison-section,
+  .comparison-hero,
+  .comparison-cta,
+  .admin-stat,
+  .admin-feedback,
+  .feedback-console-card,
+  .connect-channels-card,
+  .score-card,
+  .related-card,
+  .about-section,
+  .ex-timeline-panel-item:not(.ex-skeleton-item),
+  .ex-highlight-panel-item,
+  .archive-page .timeline-item,
+  .dossier-page .dossier-layout > * {
+    view-timeline-axis: block;
+    view-timeline-name: --editorial-entry;
+  }
+
+  .bench-grid-card,
+  .comparison-section,
+  .comparison-hero,
+  .comparison-cta,
+  .admin-stat,
+  .admin-feedback,
+  .feedback-console-card,
+  .connect-channels-card,
+  .score-card,
+  .related-card,
+  .about-section,
+  .ex-timeline-panel-item:not(.ex-skeleton-item),
+  .ex-highlight-panel-item,
+  .archive-page .timeline-item,
+  .dossier-page .dossier-layout > * {
+    animation: signal-arrive linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 52%;
+  }
+
+  .ex-timeline-panel-item:not(.ex-skeleton-item),
+  .ex-highlight-panel-item {
+    --signal-direction: -1;
+    view-timeline-name: --story-arrival;
+    transform-style: preserve-3d;
+  }
+
+  .ex-timeline-panel-item:nth-child(even),
+  .ex-highlight-panel-item:nth-child(even) {
+    --signal-direction: 1;
+  }
+
+  .ex-timeline-panel-item .ex-panel-meta-row,
+  .ex-highlight-panel-item .ex-panel-meta-row {
+    animation: signal-copy-arrive linear both;
+    animation-timeline: --story-arrival;
+    animation-range: entry 8% entry 40%;
+  }
+
+  .ex-timeline-panel-item .ex-panel-title,
+  .ex-highlight-panel-item .ex-panel-title {
+    animation: signal-copy-arrive linear both;
+    animation-timeline: --story-arrival;
+    animation-range: entry 14% entry 48%;
+  }
+
+  .ex-timeline-panel-item .ex-panel-summary,
+  .ex-highlight-panel-item .ex-panel-summary {
+    animation: signal-copy-arrive linear both;
+    animation-timeline: --story-arrival;
+    animation-range: entry 20% entry 56%;
+  }
+
+  .ex-timeline-panel-item .ex-panel-actions,
+  .ex-highlight-panel-item .ex-panel-actions {
+    animation: signal-copy-arrive linear both;
+    animation-timeline: --story-arrival;
+    animation-range: entry 27% entry 62%;
+  }
+
+  .ex-panel-card:hover {
+    transform:
+      perspective(1300px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateX(7px)
+      translateZ(12px);
+  }
+
+  .ex-panel-card.is-lead-card:hover {
+    transform:
+      perspective(1300px)
+      rotateX(var(--pointer-tilt-x, 0deg))
+      rotateY(var(--pointer-tilt-y, 0deg))
+      translateX(9px)
+      translateZ(16px);
+  }
+
+  .ex-panel-card .ex-panel-title {
+    transition: color 200ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .ex-panel-card:hover .ex-panel-title {
+    color: var(--accent-hover);
+    transform: translateZ(20px);
+  }
+
+  .ex-timeline-rail-line {
+    background-size: 100% 220%;
+    background-position: 50% 100%;
+    transition: background-position 450ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .ex-timeline-panel-item:hover .ex-timeline-rail-line {
+    background-position: 50% 0;
+  }
+
+  .ex-panel-card .ex-panel-meta-row,
+  .ex-panel-card .ex-panel-title,
+  .ex-panel-card .ex-panel-summary,
+  .ex-panel-card .ex-panel-actions {
+    transform-style: preserve-3d;
+  }
+
+  .about-section {
+    --signal-direction: 1;
+  }
+
+  .about-section:nth-of-type(even) {
+    --signal-direction: -1;
+  }
+
+  .about-stat-card,
+  .about-feature-card,
+  .about-pillar-card,
+  .connect-card {
+    animation: signal-arrive linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 54%;
+  }
+
+  .about-stat-card:nth-child(even),
+  .about-feature-card:nth-child(even),
+  .about-pillar-card:nth-child(even) {
+    --signal-direction: 1;
+  }
+
+  .about-stat-card:nth-child(odd),
+  .about-feature-card:nth-child(odd),
+  .about-pillar-card:nth-child(odd) {
+    --signal-direction: -1;
+  }
+
+  @keyframes signal-arrive {
+    from {
+      opacity: 0.1;
+      translate: calc(var(--signal-direction, 1) * 112px) 34px;
+      rotate: calc(var(--signal-direction, 1) * 3deg);
+      scale: 0.92;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      rotate: 0deg;
+      scale: 1;
+    }
+  }
+
+  @keyframes signal-copy-arrive {
+    from {
+      opacity: 0.15;
+      translate: 0 22px;
+      filter: blur(5px);
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      filter: blur(0);
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    .bench-grid-card,
+    .comparison-section,
+    .comparison-hero,
+    .comparison-cta,
+    .admin-shell > *,
+    .admin-stat,
+    .admin-feedback,
+    .feedback-console-card,
+    .connect-channels-card,
+    .score-card,
+    .related-card,
+    .about-section,
+    .about-stat-card,
+    .about-feature-card,
+    .about-pillar-card,
+    .connect-card,
+    .ex-timeline-panel-item:not(.ex-skeleton-item),
+    .ex-highlight-panel-item,
+    .archive-page .timeline-item,
+    .dossier-page .dossier-layout > *,
+    .bench-bar-fill {
+      animation: none;
+      opacity: 1;
+      filter: none;
+      translate: none;
+      rotate: none;
+      scale: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  .bh-mod {
+    animation: none !important;
+    opacity: 1;
+    filter: none;
+    translate: none;
+    rotate: none;
+    scale: none;
+  }
+
+  .archive-topbar .global-nav-link::after,
+  .archive-timeline .story-row,
+  .bench-grid-card,
+  .comparison-section,
+  .comparison-hero,
+  .comparison-cta,
+  .admin-shell > *,
+  .admin-stat,
+  .admin-feedback,
+  .feedback-console-card,
+  .connect-channels-card,
+  .score-card,
+  .related-card,
+  .bench-bar-fill,
+  .about-feature-card,
+  .about-pillar-card,
+  .connect-card,
+  .about-stat-card,
+  .ex-date-col,
+  .ex-panel-card .ex-panel-title {
+    animation: none !important;
+    transition: none;
+  }
+
+  .bench-grid-card,
+  .comparison-section,
+  .comparison-hero,
+  .comparison-cta,
+  .admin-shell > *,
+  .admin-stat,
+  .admin-feedback,
+  .feedback-console-card,
+  .connect-channels-card,
+  .score-card,
+  .related-card,
+  .about-section,
+  .about-stat-card,
+  .about-feature-card,
+  .about-pillar-card,
+  .connect-card,
+  .ex-timeline-panel-item:not(.ex-skeleton-item),
+  .ex-highlight-panel-item,
+  .archive-page .timeline-item,
+  .dossier-page .dossier-layout > * {
+    animation: none !important;
+    opacity: 1;
+    filter: none;
+    translate: none;
+    rotate: none;
+    scale: none;
+  }
+
+  .archive-timeline .story-row:hover,
+  .bench-grid-card:hover,
+  .admin-stat:hover,
+  .admin-feedback:hover,
+  .connect-channels-card:hover,
+  .score-card:hover,
+  .related-card:hover,
+  .about-feature-card:hover,
+  .about-pillar-card:hover,
+  .connect-card:hover,
+  .about-stat-card:hover,
+  .ex-row:hover,
+  .ex-panel-card:hover {
+    transform: none;
+  }
+}

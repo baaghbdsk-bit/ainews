@@ -338,6 +338,114 @@
   font-weight: 500;
 }
 
+.route-signal-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: #14171a;
+}
+
+.route-signal-loading__art {
+  display: block;
+  width: min(88vw, 420px);
+  height: auto;
+  overflow: visible;
+}
+
+.route-signal-loading__track,
+.route-signal-loading__flow {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.route-signal-loading__track {
+  stroke: #41474e;
+  stroke-width: 1.25;
+}
+
+.route-signal-loading__flow {
+  stroke-dasharray: 4 15;
+  stroke-width: 2.5;
+  animation: route-signal-transfer 1.05s linear infinite;
+}
+
+.route-signal-loading__flow--cyan {
+  stroke: #22e6ff;
+}
+
+.route-signal-loading__flow--yellow {
+  stroke: #f5d300;
+  animation-delay: -0.3s;
+}
+
+.route-signal-loading__flow--orange {
+  stroke: #ff6a1a;
+  animation-delay: -0.62s;
+}
+
+.route-signal-loading__flow--route {
+  stroke: currentColor;
+  animation-delay: -0.45s;
+}
+
+.route-signal-loading__core {
+  fill: #14171a;
+  stroke: currentColor;
+  stroke-width: 1.25;
+}
+
+.route-signal-loading__bar--cyan {
+  fill: #22e6ff;
+}
+
+.route-signal-loading__bar--yellow {
+  fill: #f5d300;
+}
+
+.route-signal-loading__bar--orange {
+  fill: #ff6a1a;
+}
+
+.route-signal-loading__label {
+  margin: 0;
+  color: #aab2b8;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(16px, 2.5vw, 20px);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.route-signal-loading__label span {
+  color: #e8ecef;
+}
+
+@keyframes route-signal-transfer {
+  to {
+    stroke-dashoffset: -38;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-signal-loading__flow {
+    animation: none;
+    stroke-dasharray: 2 12;
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 1080px) {
+  .route-signal-loading {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* ============================================================
  * NeuBench Sticky Top Progress Loading Bar
  * ============================================================ */
